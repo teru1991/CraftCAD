@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E2033F4B2D4BAC6D00A32EF8 /* create_project_structure.sh in Resources */ = {isa = PBXBuildFile; fileRef = E2033F4A2D4BAC6800A32EF8 /* create_project_structure.sh */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		E2125EE42D4BA5D20012586B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		E2033F4A2D4BAC6800A32EF8 /* create_project_structure.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = create_project_structure.sh; sourceTree = "<group>"; };
 		E2125ED32D4BA5D00012586B /* CraftCAD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CraftCAD.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2125EE32D4BA5D20012586B /* CraftCADTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CraftCADTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2125EED2D4BA5D20012586B /* CraftCADUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CraftCADUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +80,7 @@
 		E2125ECA2D4BA5D00012586B = {
 			isa = PBXGroup;
 			children = (
+				E2033F4A2D4BAC6800A32EF8 /* create_project_structure.sh */,
 				E2125ED52D4BA5D00012586B /* CraftCAD */,
 				E2125EE62D4BA5D20012586B /* CraftCADTests */,
 				E2125EF02D4BA5D20012586B /* CraftCADUITests */,
@@ -212,6 +218,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2033F4B2D4BAC6D00A32EF8 /* create_project_structure.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
