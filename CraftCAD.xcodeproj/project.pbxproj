@@ -8,6 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		E2033F4B2D4BAC6D00A32EF8 /* create_project_structure.sh in Resources */ = {isa = PBXBuildFile; fileRef = E2033F4A2D4BAC6800A32EF8 /* create_project_structure.sh */; };
+		E2221E682D51DB23004D5ED3 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = E2221E672D51DB23004D5ED3 /* FirebaseAnalytics */; };
+		E2221E6A2D51DB2D004D5ED3 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = E2221E692D51DB2D004D5ED3 /* FirebaseCrashlytics */; };
+		E2221E6C2D51DB5B004D5ED3 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = E2221E6B2D51DB5B004D5ED3 /* FirebaseFirestore */; };
+		E24C46482D530BA900291545 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E24C46472D530BA900291545 /* GoogleService-Info.plist */; };
+		E24C46492D530BA900291545 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E24C46472D530BA900291545 /* GoogleService-Info.plist */; };
+		E24C464A2D530BA900291545 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = E24C46472D530BA900291545 /* GoogleService-Info.plist */; };
+		E24C466C2D53495100291545 /* organize_craftcad.sh in Resources */ = {isa = PBXBuildFile; fileRef = E24C466B2D53493F00291545 /* organize_craftcad.sh */; };
+		E24C48452D62104200291545 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = E24C48442D62104200291545 /* FirebaseAuth */; };
+		E24C48472D62104200291545 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = E24C48462D62104200291545 /* FirebaseCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +41,8 @@
 		E2125ED32D4BA5D00012586B /* CraftCAD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CraftCAD.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2125EE32D4BA5D20012586B /* CraftCADTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CraftCADTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2125EED2D4BA5D20012586B /* CraftCADUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CraftCADUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E24C46472D530BA900291545 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		E24C466B2D53493F00291545 /* organize_craftcad.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = organize_craftcad.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -57,6 +68,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2221E6A2D51DB2D004D5ED3 /* FirebaseCrashlytics in Frameworks */,
+				E24C48472D62104200291545 /* FirebaseCore in Frameworks */,
+				E2221E6C2D51DB5B004D5ED3 /* FirebaseFirestore in Frameworks */,
+				E2221E682D51DB23004D5ED3 /* FirebaseAnalytics in Frameworks */,
+				E24C48452D62104200291545 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,7 +96,9 @@
 		E2125ECA2D4BA5D00012586B = {
 			isa = PBXGroup;
 			children = (
+				E24C46472D530BA900291545 /* GoogleService-Info.plist */,
 				E2033F4A2D4BAC6800A32EF8 /* create_project_structure.sh */,
+				E24C466B2D53493F00291545 /* organize_craftcad.sh */,
 				E2125ED52D4BA5D00012586B /* CraftCAD */,
 				E2125EE62D4BA5D20012586B /* CraftCADTests */,
 				E2125EF02D4BA5D20012586B /* CraftCADUITests */,
@@ -117,8 +135,6 @@
 				E2125ED52D4BA5D00012586B /* CraftCAD */,
 			);
 			name = CraftCAD;
-			packageProductDependencies = (
-			);
 			productName = CraftCAD;
 			productReference = E2125ED32D4BA5D00012586B /* CraftCAD.app */;
 			productType = "com.apple.product-type.application";
@@ -140,8 +156,6 @@
 				E2125EE62D4BA5D20012586B /* CraftCADTests */,
 			);
 			name = CraftCADTests;
-			packageProductDependencies = (
-			);
 			productName = CraftCADTests;
 			productReference = E2125EE32D4BA5D20012586B /* CraftCADTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -163,8 +177,6 @@
 				E2125EF02D4BA5D20012586B /* CraftCADUITests */,
 			);
 			name = CraftCADUITests;
-			packageProductDependencies = (
-			);
 			productName = CraftCADUITests;
 			productReference = E2125EED2D4BA5D20012586B /* CraftCADUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -201,6 +213,10 @@
 			);
 			mainGroup = E2125ECA2D4BA5D00012586B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E200A02E2D51CA78008A3BDD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				E2F79BF42D521C5B00093F24 /* XCRemoteSwiftPackageReference "Euclid" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E2125ED42D4BA5D00012586B /* Products */;
 			projectDirPath = "";
@@ -219,6 +235,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E2033F4B2D4BAC6D00A32EF8 /* create_project_structure.sh in Resources */,
+				E24C466C2D53495100291545 /* organize_craftcad.sh in Resources */,
+				E24C464A2D530BA900291545 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,6 +244,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E24C46492D530BA900291545 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,6 +252,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E24C46482D530BA900291545 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -402,7 +422,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"CraftCAD/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -430,7 +450,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"CraftCAD/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -559,6 +579,53 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E200A02E2D51CA78008A3BDD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.8.0;
+			};
+		};
+		E2F79BF42D521C5B00093F24 /* XCRemoteSwiftPackageReference "Euclid" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/nicklockwood/Euclid";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.7.9;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E2221E672D51DB23004D5ED3 /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E200A02E2D51CA78008A3BDD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		E2221E692D51DB2D004D5ED3 /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E200A02E2D51CA78008A3BDD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
+		E2221E6B2D51DB5B004D5ED3 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E200A02E2D51CA78008A3BDD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		E24C48442D62104200291545 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E200A02E2D51CA78008A3BDD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		E24C48462D62104200291545 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E200A02E2D51CA78008A3BDD /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E2125ECB2D4BA5D00012586B /* Project object */;
 }
