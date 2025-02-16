@@ -2,6 +2,7 @@ import SwiftUI
 import RealityKit
 
 struct LeatherModelView: View {
+    @EnvironmentObject var sharedData: SharedData
     @State private var leatherParts: [LeatherPart] = []
     @State private var selectedPart: LeatherPart?
     private let partManager = LeatherPartManager()
@@ -12,6 +13,10 @@ struct LeatherModelView: View {
 
     var body: some View {
         VStack {
+            Text("レザークラフトモード - \(sharedData.currentProject)")
+                .font(.largeTitle)
+                .padding()
+
             RealityView { content in
                 let anchor = AnchorEntity(world: .zero)
                 for part in leatherParts {
@@ -48,7 +53,10 @@ struct LeatherModelView: View {
                 Button("ズームイン", action: zoomIn)
                 Button("ズームアウト", action: zoomOut)
             }
+
+            Spacer()
         }
+        .background(Color.brown.opacity(0.1))
     }
 
     private func addLeatherPart() {
