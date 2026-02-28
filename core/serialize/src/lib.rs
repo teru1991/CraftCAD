@@ -39,6 +39,11 @@ pub enum ReasonCode {
     SerializeUnsupportedSchemaVersion,
     ModelReferenceNotFound,
     GeomInvalidNumeric,
+    GeomNoIntersection,
+    GeomIntersectionAmbiguous,
+    GeomDegenerate,
+    GeomSplitPointNotOnGeom,
+    CoreInvariantViolation,
 }
 
 impl ReasonCode {
@@ -49,6 +54,11 @@ impl ReasonCode {
             Self::SerializeUnsupportedSchemaVersion => "SERIALIZE_UNSUPPORTED_SCHEMA_VERSION",
             Self::ModelReferenceNotFound => "MODEL_REFERENCE_NOT_FOUND",
             Self::GeomInvalidNumeric => "GEOM_INVALID_NUMERIC",
+            Self::GeomNoIntersection => "GEOM_NO_INTERSECTION",
+            Self::GeomIntersectionAmbiguous => "GEOM_INTERSECTION_AMBIGUOUS",
+            Self::GeomDegenerate => "GEOM_DEGENERATE",
+            Self::GeomSplitPointNotOnGeom => "GEOM_SPLIT_POINT_NOT_ON_GEOM",
+            Self::CoreInvariantViolation => "CORE_INVARIANT_VIOLATION",
         }
     }
 }

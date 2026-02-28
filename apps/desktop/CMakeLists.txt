@@ -9,22 +9,26 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 add_executable(craftcad_desktop
   src/main.cpp
+  src/doc_store.cpp
+  src/canvas_widget.cpp
+  src/camera.cpp
+  src/selection_state.cpp
+  src/hittest.cpp
+  src/snap_engine.cpp
+  src/overlay_renderer.cpp
+  src/input/numeric_input.cpp
+  src/input/shortcut_map.cpp
+  src/tools/tool_base.cpp
+  src/tools/line_tool.cpp
+  src/ffi/craftcad_ffi.cpp
 )
 
 target_include_directories(craftcad_desktop PRIVATE
-  ${CMAKE_CURRENT_SOURCE_DIR}/../../core/ffi_desktop/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-if (WIN32)
-  set(FFI_LIB_NAME craftcad_ffi_desktop.dll)
-elseif (APPLE)
-  set(FFI_LIB_NAME libcraftcad_ffi_desktop.dylib)
-else()
-  set(FFI_LIB_NAME libcraftcad_ffi_desktop.so)
-endif()
-
 if (NOT DEFINED FFI_LIB_DIR)
-  set(FFI_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../core/target/release")
+  set(FFI_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../core/target/debug")
 endif()
 
 find_library(CRAFTCAD_DESKTOP_FFI_LIB
@@ -37,7 +41,4 @@ if (NOT CRAFTCAD_DESKTOP_FFI_LIB)
   message(FATAL_ERROR "craftcad_ffi_desktop library not found. Build Rust FFI first and set -DFFI_LIB_DIR=<path>.")
 endif()
 
-target_link_libraries(craftcad_desktop PRIVATE
-  Qt6::Widgets
-  ${CRAFTCAD_DESKTOP_FFI_LIB}
-)
+target_link_libraries(craftcad_desktop PRIVATE Qt6::Widgets ${CRAFTCAD_DESKTOP_FFI_LIB})
