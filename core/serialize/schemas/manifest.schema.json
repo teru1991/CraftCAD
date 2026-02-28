@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/manifest.schema.json",
+  "title": "CraftCAD Manifest v1",
+  "type": "object",
+  "required": ["schema_version", "app", "created_at", "document_path", "assets_path"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "app": {
+      "type": "object",
+      "required": ["name", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "created_at": { "type": "string" },
+    "document_path": { "type": "string", "const": "data/document.json" },
+    "assets_path": { "type": "string", "const": "assets/" },
+    "settings_digest": { "type": ["string", "null"] }
+  }
+}
