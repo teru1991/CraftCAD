@@ -1,7 +1,5 @@
 pub mod command;
-pub mod commands {
-    pub mod create_line;
-}
+pub mod commands;
 pub mod delta;
 pub mod history;
 

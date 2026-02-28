@@ -1,4 +1,7 @@
 use craftcad_commands::commands::create_line::{CreateLineCommand, CreateLineInput};
+use craftcad_commands::commands::transform_selection::{
+    Transform, TransformSelectionCommand, TransformSelectionInput,
+};
 use craftcad_commands::{Command, CommandContext, History};
 use craftcad_serialize::{load_diycad, Document, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
@@ -240,6 +243,58 @@ pub unsafe extern "C" fn craftcad_history_apply_create_line(
     })
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_transform_selection(
+    handle: u64,
+    doc_json: *const c_char,
+    selection_json: *const c_char,
+    transform_json: *const c_char,
+    _eps_json: *const c_char,
+) -> *mut c_char {
+    #[derive(serde::Deserialize)]
+    struct SelectionIds {
+        ids: Vec<String>,
+    }
+
+    let selection: SelectionIds = match parse_cstr(selection_json, "selection").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::EditInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+
+    let selection_ids = {
+        let mut ids = Vec::with_capacity(selection.ids.len());
+        for s in selection.ids {
+            let id = match Uuid::parse_str(&s) {
+                Ok(v) => v,
+                Err(_) => return encode_err(Reason::from_code(ReasonCode::ModelReferenceNotFound)),
+            };
+            ids.push(id);
+        }
+        ids
+    };
+
+    let transform: Transform = match parse_cstr(transform_json, "transform").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::EditInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut cmd = TransformSelectionCommand::new();
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(TransformSelectionInput {
+            selection_ids,
+            transform,
+        })?;
+        let delta = cmd.commit()?;
+        delta.apply(doc)?;
+        h.push(delta);
+        Ok(())
+    })
+}
 #[no_mangle]
 pub extern "C" fn craftcad_history_undo(handle: u64, doc_json: *const c_char) -> *mut c_char {
     with_history_doc(handle, doc_json, |h, doc| h.undo(doc))
