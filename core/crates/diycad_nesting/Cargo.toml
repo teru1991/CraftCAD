@@ -1,0 +1,9 @@
+[package]
+name = "diycad_nesting"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+diycad_geom = { path = "../diycad_geom" }
