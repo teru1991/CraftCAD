@@ -1,7 +1,9 @@
 use craftcad_commands::commands::create_line::{CreateLineCommand, CreateLineInput};
+use craftcad_commands::commands::offset_entity::{OffsetEntityCommand, OffsetEntityInput};
 use craftcad_commands::commands::transform_selection::{
     Transform, TransformSelectionCommand, TransformSelectionInput,
 };
+use craftcad_commands::commands::trim_entity::{TrimEntityCommand, TrimEntityInput};
 use craftcad_commands::{Command, CommandContext, History};
 use craftcad_serialize::{load_diycad, Document, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
@@ -288,6 +290,118 @@ pub unsafe extern "C" fn craftcad_history_apply_transform_selection(
         cmd.update(TransformSelectionInput {
             selection_ids,
             transform,
+        })?;
+        let delta = cmd.commit()?;
+        delta.apply(doc)?;
+        h.push(delta);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_offset_entity(
+    handle: u64,
+    doc_json: *const c_char,
+    entity_id_uuid: *const c_char,
+    dist: f64,
+    eps_json: *const c_char,
+) -> *mut c_char {
+    let entity_id = match parse_cstr(entity_id_uuid, "entity_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let eps: EpsilonPolicy = match parse_cstr(eps_json, "eps").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::GeomInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut cmd = OffsetEntityCommand::new();
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(OffsetEntityInput {
+            entity_id,
+            dist,
+            eps,
+        })?;
+        let delta = cmd.commit()?;
+        delta.apply(doc)?;
+        h.push(delta);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_trim_entity(
+    handle: u64,
+    doc_json: *const c_char,
+    target_id_uuid: *const c_char,
+    cutter_id_uuid: *const c_char,
+    pick_point_json: *const c_char,
+    eps_json: *const c_char,
+) -> *mut c_char {
+    craftcad_history_apply_trim_entity_with_candidate_index(
+        handle,
+        doc_json,
+        target_id_uuid,
+        cutter_id_uuid,
+        pick_point_json,
+        eps_json,
+        -1,
+    )
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_trim_entity_with_candidate_index(
+    handle: u64,
+    doc_json: *const c_char,
+    target_id_uuid: *const c_char,
+    cutter_id_uuid: *const c_char,
+    pick_point_json: *const c_char,
+    eps_json: *const c_char,
+    candidate_index: i32,
+) -> *mut c_char {
+    let target_id = match parse_cstr(target_id_uuid, "target_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let cutter_id = match parse_cstr(cutter_id_uuid, "cutter_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let pick_point: Vec2 = match parse_cstr(pick_point_json, "pick_point").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::GeomInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let eps: EpsilonPolicy = match parse_cstr(eps_json, "eps").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::GeomInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut cmd = TrimEntityCommand::new();
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(TrimEntityInput {
+            entity_id: target_id,
+            cutter_id,
+            pick_point,
+            eps,
+            candidate_index: if candidate_index < 0 {
+                None
+            } else {
+                Some(candidate_index as usize)
+            },
         })?;
         let delta = cmd.commit()?;
         delta.apply(doc)?;

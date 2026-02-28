@@ -22,11 +22,13 @@ protected:
 private:
     DocStore* store_;
     Camera camera_;
-    enum class ActiveTool { Line, Move, Rotate, Scale };
+    enum class ActiveTool { Line, Move, Rotate, Scale, Offset, Trim };
     ActiveTool activeTool_{ActiveTool::Line};
     LineTool lineTool_;
     MoveTool moveTool_;
     RotateTool rotateTool_;
     ScaleTool scaleTool_;
+    OffsetTool offsetTool_;
+    TrimTool trimTool_;
     ToolBase* currentTool();
 };

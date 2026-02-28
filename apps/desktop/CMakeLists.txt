@@ -23,6 +23,8 @@ add_executable(craftcad_desktop
   src/tools/scale_tool.cpp
   src/tools/rotate_tool.cpp
   src/tools/move_tool.cpp
+  src/tools/trim_tool.cpp
+  src/tools/offset_tool.cpp
   src/ffi/craftcad_ffi.cpp
 )
 

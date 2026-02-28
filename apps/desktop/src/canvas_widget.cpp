@@ -6,7 +6,7 @@
 #include <QMessageBox>
 
 CanvasWidget::CanvasWidget(DocStore* store, QWidget* parent)
-    : QWidget(parent), store_(store), lineTool_(store, &camera_), moveTool_(store, &camera_), rotateTool_(store, &camera_), scaleTool_(store, &camera_) {
+    : QWidget(parent), store_(store), lineTool_(store, &camera_), moveTool_(store, &camera_), rotateTool_(store, &camera_), scaleTool_(store, &camera_), offsetTool_(store, &camera_), trimTool_(store, &camera_) {
     setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -17,6 +17,8 @@ ToolBase* CanvasWidget::currentTool() {
         case ActiveTool::Move: return &moveTool_;
         case ActiveTool::Rotate: return &rotateTool_;
         case ActiveTool::Scale: return &scaleTool_;
+        case ActiveTool::Offset: return &offsetTool_;
+        case ActiveTool::Trim: return &trimTool_;
     }
     return &lineTool_;
 }
@@ -49,6 +51,11 @@ void CanvasWidget::mouseMoveEvent(QMouseEvent* e) { currentTool()->onPointerMove
 void CanvasWidget::mouseReleaseEvent(QMouseEvent* e) { if(e->button()==Qt::LeftButton){ currentTool()->onPointerUp(e->position()); update(); } }
 
 void CanvasWidget::wheelEvent(QWheelEvent* e) {
+    if (activeTool_ == ActiveTool::Trim) {
+        currentTool()->onWheel(e);
+        update();
+        return;
+    }
     double z = e->angleDelta().y() > 0 ? 1.1 : (1.0/1.1);
     camera_.zoom *= z;
     if (camera_.zoom < 0.05) camera_.zoom = 0.05;
@@ -64,6 +71,8 @@ void CanvasWidget::keyPressEvent(QKeyEvent* e) {
     if (e->key() == Qt::Key_2) activeTool_ = ActiveTool::Move;
     if (e->key() == Qt::Key_3) activeTool_ = ActiveTool::Rotate;
     if (e->key() == Qt::Key_4) activeTool_ = ActiveTool::Scale;
+    if (e->key() == Qt::Key_5) activeTool_ = ActiveTool::Offset;
+    if (e->key() == Qt::Key_6) activeTool_ = ActiveTool::Trim;
     currentTool()->onKeyPress(e);
     update();
 }
