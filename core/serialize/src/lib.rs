@@ -44,6 +44,10 @@ pub enum ReasonCode {
     GeomDegenerate,
     GeomSplitPointNotOnGeom,
     CoreInvariantViolation,
+    EditNoSelection,
+    EditTargetLockedOrHidden,
+    EditInvalidNumeric,
+    EditTransformWouldDegenerate,
 }
 
 impl ReasonCode {
@@ -59,6 +63,10 @@ impl ReasonCode {
             Self::GeomDegenerate => "GEOM_DEGENERATE",
             Self::GeomSplitPointNotOnGeom => "GEOM_SPLIT_POINT_NOT_ON_GEOM",
             Self::CoreInvariantViolation => "CORE_INVARIANT_VIOLATION",
+            Self::EditNoSelection => "EDIT_NO_SELECTION",
+            Self::EditTargetLockedOrHidden => "EDIT_TARGET_LOCKED_OR_HIDDEN",
+            Self::EditInvalidNumeric => "EDIT_INVALID_NUMERIC",
+            Self::EditTransformWouldDegenerate => "EDIT_TRANSFORM_WOULD_DEGENERATE",
         }
     }
 }
