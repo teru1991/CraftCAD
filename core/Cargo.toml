@@ -1,0 +1,18 @@
+[workspace]
+members = [
+  "crates/diycad_common",
+  "crates/diycad_project",
+  "crates/diycad_geom",
+  "crates/diycad_nesting",
+  "crates/diycad_ffi",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+version = "0.1.0"
+authors = ["CraftCAD Contributors"]
+
+[workspace.dependencies]
+thiserror = "1"

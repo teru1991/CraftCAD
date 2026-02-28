@@ -1,0 +1,14 @@
+[package]
+name = "diycad-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "diycad-cli"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+diycad_common = { path = "../../core/crates/diycad_common" }
+diycad_project = { path = "../../core/crates/diycad_project" }
+serde_json = "1"
