@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/document.schema.json",
+  "title": "CraftCAD Document v1",
+  "type": "object",
+  "required": ["schema_version", "id", "units", "layers", "entities", "parts", "jobs"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "id": { "$ref": "#/$defs/Uuid" },
+    "units": { "type": "string", "enum": ["mm", "inch"] },
+
+    "layers": { "type": "array", "items": { "$ref": "#/$defs/Layer" } },
+    "entities": { "type": "array", "items": { "$ref": "#/$defs/Entity" } },
+    "parts": { "type": "array", "items": { "$ref": "#/$defs/Part" } },
+    "jobs": { "type": "array", "items": { "$ref": "#/$defs/NestJob" } }
+  },
+
+  "$defs": {
+    "Uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    },
+
+    "Vec2": {
+      "type": "object",
+      "required": ["x", "y"],
+      "additionalProperties": false,
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+
+    "Style": {
+      "type": "object",
+      "description": "自由形式（将来の互換性のため additionalProperties=true）",
+      "additionalProperties": true
+    },
+
+    "Layer": {
+      "type": "object",
+      "required": ["id", "name", "visible", "locked", "editable"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "name": { "type": "string", "minLength": 1 },
+        "visible": { "type": "boolean" },
+        "locked": { "type": "boolean" },
+        "editable": { "type": "boolean" }
+      }
+    },
+
+    "Geom2D": {
+      "oneOf": [
+        { "$ref": "#/$defs/Line" },
+        { "$ref": "#/$defs/Circle" },
+        { "$ref": "#/$defs/Arc" },
+        { "$ref": "#/$defs/Polyline" }
+      ]
+    },
+
+    "Line": {
+      "type": "object",
+      "required": ["type", "a", "b"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "Line" },
+        "a": { "$ref": "#/$defs/Vec2" },
+        "b": { "$ref": "#/$defs/Vec2" }
+      }
+    },
+
+    "Circle": {
+      "type": "object",
+      "required": ["type", "c", "r"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "Circle" },
+        "c": { "$ref": "#/$defs/Vec2" },
+        "r": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+
+    "Arc": {
+      "type": "object",
+      "required": ["type", "c", "r", "start_angle", "end_angle", "ccw"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "Arc" },
+        "c": { "$ref": "#/$defs/Vec2" },
+        "r": { "type": "number", "exclusiveMinimum": 0 },
+        "start_angle": { "type": "number" },
+        "end_angle": { "type": "number" },
+        "ccw": { "type": "boolean" }
+      }
+    },
+
+    "Polyline": {
+      "type": "object",
+      "required": ["type", "pts", "closed"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "Polyline" },
+        "pts": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/Vec2" }
+        },
+        "closed": { "type": "boolean" }
+      }
+    },
+
+    "Entity": {
+      "type": "object",
+      "required": ["id", "layer_id", "geom", "style", "tags", "meta"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "layer_id": { "$ref": "#/$defs/Uuid" },
+        "geom": { "$ref": "#/$defs/Geom2D" },
+        "style": { "$ref": "#/$defs/Style" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "meta": { "type": "object", "additionalProperties": true }
+      }
+    },
+
+    "Polygon2D": {
+      "type": "object",
+      "required": ["outer", "holes"],
+      "additionalProperties": false,
+      "properties": {
+        "outer": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "$ref": "#/$defs/Vec2" }
+        },
+        "holes": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 3,
+            "items": { "$ref": "#/$defs/Vec2" }
+          }
+        }
+      }
+    },
+
+    "Part": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "outline",
+        "thickness",
+        "quantity",
+        "material_id",
+        "grain_dir",
+        "allow_rotate",
+        "margin",
+        "kerf"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "name": { "type": "string", "minLength": 1 },
+        "outline": { "$ref": "#/$defs/Polygon2D" },
+        "thickness": { "type": "number", "minimum": 0 },
+        "quantity": { "type": "integer", "minimum": 1 },
+        "material_id": { "$ref": "#/$defs/Uuid" },
+        "grain_dir": { "type": ["number", "null"] },
+        "allow_rotate": { "type": "boolean" },
+        "margin": { "type": "number", "minimum": 0 },
+        "kerf": { "type": "number", "minimum": 0 }
+      }
+    },
+
+    "SheetDef": {
+      "type": "object",
+      "required": ["id", "material_id", "width", "height", "quantity"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "material_id": { "$ref": "#/$defs/Uuid" },
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 },
+        "quantity": { "type": "integer", "minimum": 1 }
+      }
+    },
+
+    "NestConstraints": {
+      "type": "object",
+      "required": ["global_margin", "global_kerf", "allow_rotate_default"],
+      "additionalProperties": false,
+      "properties": {
+        "global_margin": { "type": "number", "minimum": 0 },
+        "global_kerf": { "type": "number", "minimum": 0 },
+        "allow_rotate_default": { "type": "boolean" }
+      }
+    },
+
+    "NestObjective": {
+      "type": "object",
+      "required": ["w_utilization", "w_sheet_count", "w_cut_count"],
+      "additionalProperties": false,
+      "properties": {
+        "w_utilization": { "type": "number" },
+        "w_sheet_count": { "type": "number" },
+        "w_cut_count": { "type": "number" }
+      }
+    },
+
+    "NestResult": {
+      "type": "object",
+      "description": "v1では自由形式（将来の互換のため）",
+      "additionalProperties": true
+    },
+
+    "NestTrace": {
+      "type": "object",
+      "description": "v1では自由形式（将来の互換のため）",
+      "additionalProperties": true
+    },
+
+    "NestJob": {
+      "type": "object",
+      "required": ["id", "sheet_defs", "parts_ref", "constraints", "objective", "seed", "result", "trace"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/Uuid" },
+        "sheet_defs": { "type": "array", "items": { "$ref": "#/$defs/SheetDef" } },
+        "parts_ref": { "type": "array", "items": { "$ref": "#/$defs/Uuid" } },
+        "constraints": { "$ref": "#/$defs/NestConstraints" },
+        "objective": { "$ref": "#/$defs/NestObjective" },
+        "seed": { "type": "integer", "minimum": 0 },
+        "result": { "anyOf": [{ "$ref": "#/$defs/NestResult" }, { "type": "null" }] },
+        "trace": { "anyOf": [{ "$ref": "#/$defs/NestTrace" }, { "type": "null" }] }
+      }
+    }
+  }
+}

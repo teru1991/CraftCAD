@@ -5,6 +5,9 @@ members = [
   "crates/diycad_geom",
   "crates/diycad_nesting",
   "crates/diycad_ffi",
+  "serialize",
+  "commands",
+  "ffi_desktop",
 ]
 resolver = "2"
 
