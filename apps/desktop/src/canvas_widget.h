@@ -5,8 +5,6 @@
 #include "tools/move_tool.h"
 #include "tools/rotate_tool.h"
 #include "tools/scale_tool.h"
-#include "tools/trim_tool.h"
-#include "tools/offset_tool.h"
 #include <QWidget>
 
 class CanvasWidget : public QWidget {
