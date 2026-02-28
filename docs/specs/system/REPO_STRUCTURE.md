@@ -11,6 +11,8 @@
   - Qt デスクトップ UI、入出力操作、表示・編集導線
 - `apps/mobile/`
   - Flutter モバイル UI、入出力操作、表示・編集導線
+- `core/crates/diycad_ffi/`
+  - Desktop 連携向け C ABI 境界（Qt などから呼び出す薄いブリッジ）
 - `tools/`
   - 開発補助スクリプト、CI 補助、フォーマット・検証支援
 - `docs/specs/system/`
@@ -28,6 +30,7 @@
 
 - 許可:
   - `apps/desktop -> core`
+  - `apps/desktop -> core/crates/diycad_ffi`（C ABI 経由）
   - `apps/mobile -> core`
   - `tools -> (core, apps)`
 - 禁止:

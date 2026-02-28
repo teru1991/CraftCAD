@@ -4,6 +4,7 @@ members = [
   "crates/diycad_project",
   "crates/diycad_geom",
   "crates/diycad_nesting",
+  "crates/diycad_ffi",
 ]
 resolver = "2"
 
