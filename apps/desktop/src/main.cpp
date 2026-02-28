@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     }
 
     QMainWindow w;
-    w.setWindowTitle("CraftCAD Desktop (read-only + line tool)");
+    w.setWindowTitle("CraftCAD Desktop (line/move/rotate/scale/offset/trim)");
     w.setCentralWidget(new CanvasWidget(&store));
     w.resize(1200, 800);
     w.show();

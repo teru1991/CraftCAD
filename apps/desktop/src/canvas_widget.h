@@ -2,6 +2,11 @@
 #include "camera.h"
 #include "doc_store.h"
 #include "tools/line_tool.h"
+#include "tools/move_tool.h"
+#include "tools/rotate_tool.h"
+#include "tools/scale_tool.h"
+#include "tools/trim_tool.h"
+#include "tools/offset_tool.h"
 #include <QWidget>
 
 class CanvasWidget : public QWidget {
@@ -19,5 +24,13 @@ protected:
 private:
     DocStore* store_;
     Camera camera_;
+    enum class ActiveTool { Line, Move, Rotate, Scale, Offset, Trim };
+    ActiveTool activeTool_{ActiveTool::Line};
     LineTool lineTool_;
+    MoveTool moveTool_;
+    RotateTool rotateTool_;
+    ScaleTool scaleTool_;
+    OffsetTool offsetTool_;
+    TrimTool trimTool_;
+    ToolBase* currentTool();
 };

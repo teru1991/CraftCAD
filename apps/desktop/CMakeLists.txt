@@ -20,6 +20,11 @@ add_executable(craftcad_desktop
   src/input/shortcut_map.cpp
   src/tools/tool_base.cpp
   src/tools/line_tool.cpp
+  src/tools/scale_tool.cpp
+  src/tools/rotate_tool.cpp
+  src/tools/move_tool.cpp
+  src/tools/trim_tool.cpp
+  src/tools/offset_tool.cpp
   src/ffi/craftcad_ffi.cpp
 )
 

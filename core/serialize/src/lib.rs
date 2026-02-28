@@ -44,6 +44,15 @@ pub enum ReasonCode {
     GeomDegenerate,
     GeomSplitPointNotOnGeom,
     CoreInvariantViolation,
+    GeomOffsetSelfIntersection,
+    GeomOffsetNotSupported,
+    GeomTrimNoIntersection,
+    EditAmbiguousTarget,
+    EditTrimAmbiguousCandidate,
+    EditNoSelection,
+    EditTargetLockedOrHidden,
+    EditInvalidNumeric,
+    EditTransformWouldDegenerate,
 }
 
 impl ReasonCode {
@@ -59,6 +68,15 @@ impl ReasonCode {
             Self::GeomDegenerate => "GEOM_DEGENERATE",
             Self::GeomSplitPointNotOnGeom => "GEOM_SPLIT_POINT_NOT_ON_GEOM",
             Self::CoreInvariantViolation => "CORE_INVARIANT_VIOLATION",
+            Self::GeomOffsetSelfIntersection => "GEOM_OFFSET_SELF_INTERSECTION",
+            Self::GeomOffsetNotSupported => "GEOM_OFFSET_NOT_SUPPORTED",
+            Self::GeomTrimNoIntersection => "GEOM_TRIM_NO_INTERSECTION",
+            Self::EditAmbiguousTarget => "EDIT_AMBIGUOUS_TARGET",
+            Self::EditTrimAmbiguousCandidate => "EDIT_TRIM_AMBIGUOUS_CANDIDATE",
+            Self::EditNoSelection => "EDIT_NO_SELECTION",
+            Self::EditTargetLockedOrHidden => "EDIT_TARGET_LOCKED_OR_HIDDEN",
+            Self::EditInvalidNumeric => "EDIT_INVALID_NUMERIC",
+            Self::EditTransformWouldDegenerate => "EDIT_TRANSFORM_WOULD_DEGENERATE",
         }
     }
 }
