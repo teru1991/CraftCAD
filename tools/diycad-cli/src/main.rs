@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use diycad_common::collect_basic_diagnostics;
-use diycad_project::{load, Manifest};
+use diycad_project::{create_empty_project, load, save, Manifest};
 use std::error::Error;
 use std::path::PathBuf;
 
@@ -21,6 +21,8 @@ enum Commands {
     Validate { path: PathBuf },
     /// Print manifest.json in pretty JSON.
     PrintManifest { path: PathBuf },
+    /// Generate a minimal v0 .diycad sample file.
+    GenerateSample { outpath: PathBuf },
 }
 
 fn main() {
@@ -64,6 +66,13 @@ fn run(cli: Cli) -> Result<i32, Box<dyn Error>> {
             println!("{manifest}");
             Ok(0)
         }
+        Some(Commands::GenerateSample { outpath }) => {
+            let diagnostics = collect_basic_diagnostics();
+            let project = create_empty_project(&diagnostics.app_version, "mm", "2026-01-01T00:00:00Z");
+            save(&outpath, &project)?;
+            println!("generated {}", outpath.display());
+            Ok(0)
+        }
         None => {
             eprintln!("no command provided. use --help.");
             Ok(1)
@@ -91,6 +100,7 @@ fn require_field(field_name: &str, value: &str) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tempfile::tempdir;
 
     #[test]
     fn validate_manifest_requires_non_empty_fields() {
@@ -104,5 +114,21 @@ mod tests {
 
         let result = validate_manifest(&manifest);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn generate_sample_creates_file() {
+        let dir = tempdir().expect("tempdir");
+        let outpath = dir.path().join("sample_v0.diycad");
+        let cli = Cli {
+            version: false,
+            command: Some(Commands::GenerateSample {
+                outpath: outpath.clone(),
+            }),
+        };
+
+        let code = run(cli).expect("run should succeed");
+        assert_eq!(code, 0);
+        assert!(outpath.exists());
     }
 }

@@ -59,6 +59,20 @@ pub fn validate_project_path(path: &str) -> ProjectResult<()> {
     }
 }
 
+pub fn create_empty_project(app_version: &str, units: &str, timestamp: &str) -> DiycadProject {
+    DiycadProject {
+        manifest: Manifest {
+            schema_version: SUPPORTED_SCHEMA_VERSION.to_string(),
+            app_version: app_version.to_string(),
+            units: units.to_string(),
+            created_at: timestamp.to_string(),
+            modified_at: timestamp.to_string(),
+        },
+        data: DataJson::default(),
+        thumbnail_png: None,
+    }
+}
+
 pub fn save(path: impl AsRef<Path>, project: &DiycadProject) -> ProjectResult<()> {
     let path_ref = path.as_ref();
     validate_project_path(path_ref.to_string_lossy().as_ref())?;
@@ -137,24 +151,25 @@ mod tests {
     use tempfile::tempdir;
 
     fn sample_project() -> DiycadProject {
-        DiycadProject {
-            manifest: Manifest {
-                schema_version: SUPPORTED_SCHEMA_VERSION.to_string(),
-                app_version: "0.1.0".to_string(),
-                units: "mm".to_string(),
-                created_at: "2026-02-28T00:00:00Z".to_string(),
-                modified_at: "2026-02-28T00:00:00Z".to_string(),
-            },
-            data: DataJson {
-                entities: vec!["rect-1".to_string()],
-            },
-            thumbnail_png: Some(vec![137, 80, 78, 71]),
-        }
+        let mut project = create_empty_project("0.1.0", "mm", "2026-02-28T00:00:00Z");
+        project.data = DataJson {
+            entities: vec!["rect-1".to_string()],
+        };
+        project.thumbnail_png = Some(vec![137, 80, 78, 71]);
+        project
     }
 
     #[test]
     fn accepts_diycad_extension() {
         assert!(validate_project_path("sample.diycad").is_ok());
+    }
+
+    #[test]
+    fn create_empty_project_sets_defaults() {
+        let project = create_empty_project("0.1.0", "mm", "2026-02-28T00:00:00Z");
+        assert_eq!(project.manifest.schema_version, SUPPORTED_SCHEMA_VERSION);
+        assert_eq!(project.data.entities.len(), 0);
+        assert!(project.thumbnail_png.is_none());
     }
 
     #[test]

@@ -33,3 +33,11 @@ jobs:
 
       - name: Test
         run: cargo test --all
+
+      - name: Generate sample_v0.diycad
+        working-directory: ${{ github.workspace }}
+        run: cargo run --manifest-path tools/diycad-cli/Cargo.toml -- generate-sample /tmp/sample_v0.diycad
+
+      - name: Validate generated sample_v0.diycad
+        working-directory: ${{ github.workspace }}
+        run: cargo run --manifest-path tools/diycad-cli/Cargo.toml -- validate /tmp/sample_v0.diycad
