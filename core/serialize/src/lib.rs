@@ -37,6 +37,8 @@ pub enum ReasonCode {
     SerializeSchemaValidationFailed,
     SerializePackageCorrupted,
     SerializeUnsupportedSchemaVersion,
+    ModelReferenceNotFound,
+    GeomInvalidNumeric,
 }
 
 impl ReasonCode {
@@ -45,6 +47,8 @@ impl ReasonCode {
             Self::SerializeSchemaValidationFailed => "SERIALIZE_SCHEMA_VALIDATION_FAILED",
             Self::SerializePackageCorrupted => "SERIALIZE_PACKAGE_CORRUPTED",
             Self::SerializeUnsupportedSchemaVersion => "SERIALIZE_UNSUPPORTED_SCHEMA_VERSION",
+            Self::ModelReferenceNotFound => "MODEL_REFERENCE_NOT_FOUND",
+            Self::GeomInvalidNumeric => "GEOM_INVALID_NUMERIC",
         }
     }
 }
