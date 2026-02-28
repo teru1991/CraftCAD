@@ -1,0 +1,63 @@
+# --- Rust ---
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# --- Qt / CMake ---
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+build/
+compile_commands.json
+Makefile
+*.cmake.user
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.moc
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# --- Flutter / Dart ---
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+.pub-cache/
+build/
+**/generated_plugin_registrant.*
+
+# Flutter platform artifacts
+**/android/.gradle/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/macos/Pods/
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.iml
+
+# --- Logs / temp ---
+*.log
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.Spotlight-V100/
+.Trashes/
