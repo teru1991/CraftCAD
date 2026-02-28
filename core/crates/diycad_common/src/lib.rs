@@ -1,10 +1,14 @@
 pub mod determinism;
+pub mod diagnostics;
+pub mod logging;
 pub mod paths;
 pub mod settings;
 
 use thiserror::Error;
 
 pub use determinism::{nearly_equal, round_f64, DeterminismConfig, SeededRng};
+pub use diagnostics::{collect_basic_diagnostics, BasicDiagnostics};
+pub use logging::{init_logging, log_info};
 pub use settings::{Settings, UiSettings};
 
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -14,10 +18,6 @@ pub enum DiycadError {
 }
 
 pub type DiycadResult<T> = Result<T, DiycadError>;
-
-pub fn init_logging() {
-    // logging backend will be introduced in a later bootstrap phase.
-}
 
 #[cfg(test)]
 mod tests {
