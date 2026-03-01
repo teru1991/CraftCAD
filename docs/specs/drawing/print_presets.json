@@ -1,0 +1,21 @@
+{
+  "version": "v1",
+  "presets": [
+    {
+      "id": "print_a4_bw",
+      "sheet_template": "a4_portrait_v1",
+      "margin_mm": 10,
+      "scale": "1:1",
+      "line_width_scale": 1.0,
+      "bw_conversion": true
+    },
+    {
+      "id": "print_a3_bw",
+      "sheet_template": "a3_landscape_v1",
+      "margin_mm": 12,
+      "scale": "1:1",
+      "line_width_scale": 1.0,
+      "bw_conversion": true
+    }
+  ]
+}

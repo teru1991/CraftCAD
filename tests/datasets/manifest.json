@@ -15,7 +15,8 @@
       ],
       "perf_budget": {
         "nesting_ms_p95": 200,
-        "io_roundtrip_ms_p95": 150
+        "io_roundtrip_ms_p95": 150,
+        "render_ms_p95": 180
       }
     }
   ]
