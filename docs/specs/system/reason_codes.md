@@ -10,6 +10,10 @@ Transform editing and desktop tools use these edit-specific reason codes:
 - `GEOM_OFFSET_SELF_INTERSECTION`: offset would create invalid/self-intersecting result.
 - `GEOM_OFFSET_NOT_SUPPORTED`: requested offset is not supported for this geometry in v1.
 - `GEOM_TRIM_NO_INTERSECTION`: trim/extend target does not intersect cutter.
+- `GEOM_ARC_RANGE_INVALID`: arc angle range inputs are invalid (non-finite or unsupported span).
+- `GEOM_CIRCLE_RADIUS_INVALID`: circle/arc radius is non-finite or non-positive.
+- `GEOM_FALLBACK_LIMIT_REACHED`: numeric fallback strategy was exhausted without stable convergence.
+
 - `EDIT_AMBIGUOUS_TARGET`: target selection is ambiguous.
 - `EDIT_TRIM_AMBIGUOUS_CANDIDATE`: trim produced multiple equally valid candidates; user must choose.
 

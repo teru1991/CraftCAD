@@ -47,3 +47,16 @@ Part/Face and BOM FFI:
 - Pattern:
   - Linear: `{"selection_ids":[...],"params":{"type":"Linear","dx":num,"dy":num,"count":int>=2}}`
   - Circular: `{"selection_ids":[...],"params":{"type":"Circular","cx":num,"cy":num,"step_deg":num,"count":int>=2}}`
+
+
+## Circle/Arc numeric safety (v1)
+
+- `intersect` supports `Line×Circle`, `Line×Arc`/`Arc×Line`, and `Circle×Circle` with deterministic ordering and epsilon-based dedupe.
+- Intersection classification is explicit in `IntersectionSet.debug.classification`:
+  - `"tangent_or_single"` for a single hit
+  - `"secant"` for two hits
+- Arc intersections are filtered by angular range (`start_angle`, `end_angle`, `ccw`) with epsilon tolerance.
+- Numeric stability uses staged fallback (`intersect_tol` relaxed deterministically). When fallback is used and converges, debug trail includes `GEOM_NUMERIC_UNSTABLE_FALLBACK_USED`.
+- If fallback stages are exhausted without stable result, return `GEOM_FALLBACK_LIMIT_REACHED`.
+- `project_point` supports `Circle`/`Arc` and returns deterministic `t_global` in `[0,1]` for arc span.
+- `split_at` supports `Arc` and rejects endpoint splits within epsilon with `GEOM_SPLIT_POINT_NOT_ON_GEOM`.
