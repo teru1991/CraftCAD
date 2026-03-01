@@ -1,7 +1,7 @@
 name: diycad_mobile
 publish_to: "none"
-description: Lightweight DIY CAD Viewer app scaffold.
-version: 0.1.0+1
+description: CraftCAD mobile viewer + annotation layer.
+version: 0.2.0+1
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -9,6 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  archive: ^3.6.1
+  file_picker: ^8.0.7
+  path: ^1.9.0
+  path_provider: ^2.1.4
+  share_plus: ^10.0.2
 
 dev_dependencies:
   flutter_test:

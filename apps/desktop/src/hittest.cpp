@@ -6,11 +6,17 @@ static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(
 
 std::optional<Hit> hitTest(const DocStore& store, const Camera& camera, const QPointF& screenPos, double radiusPx) {
     WVec2 w = camera.screenToWorld(screenPos);
+    const double radiusWorld = radiusPx / camera.zoom;
     QJsonObject p{{"x", w.x}, {"y", w.y}};
     QString pjson = QString::fromUtf8(QJsonDocument(p).toJson(QJsonDocument::Compact));
     std::optional<Hit> best;
-    for (const auto& e : store.entities()) {
-        QRectF ex = e.worldAabb.adjusted(-radiusPx/camera.zoom, -radiusPx/camera.zoom, radiusPx/camera.zoom, radiusPx/camera.zoom);
+
+    const auto candidates = store.querySpatialCandidates(QPointF(w.x, w.y), radiusWorld);
+    const auto& entities = store.entities();
+    for (int idx : candidates) {
+        if (idx < 0 || idx >= entities.size()) continue;
+        const auto& e = entities[idx];
+        QRectF ex = e.worldAabb.adjusted(-radiusWorld, -radiusWorld, radiusWorld, radiusWorld);
         if (!ex.contains(QPointF(w.x,w.y))) continue;
         QString gjson = QString::fromUtf8(QJsonDocument(e.geom).toJson(QJsonDocument::Compact));
         QByteArray gb=gjson.toUtf8(), pb=pjson.toUtf8(), eb=store.epsPolicyJson().toUtf8();

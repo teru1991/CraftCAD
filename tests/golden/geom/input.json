@@ -1,0 +1,105 @@
+{
+  "cases": [
+    {
+      "name": "line_line_cross",
+      "op": "intersect",
+      "a": {
+        "type": "Line",
+        "a": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "b": {
+          "x": 10.0,
+          "y": 10.0
+        }
+      },
+      "b": {
+        "type": "Line",
+        "a": {
+          "x": 0.0,
+          "y": 10.0
+        },
+        "b": {
+          "x": 10.0,
+          "y": 0.0
+        }
+      }
+    },
+    {
+      "name": "line_arc_tangent",
+      "op": "intersect",
+      "a": {
+        "type": "Line",
+        "a": {
+          "x": -5.0,
+          "y": 1.0
+        },
+        "b": {
+          "x": 5.0,
+          "y": 1.0
+        }
+      },
+      "b": {
+        "type": "Arc",
+        "c": {
+          "x": 0.0,
+          "y": 0.0
+        },
+        "r": 1.0,
+        "start_angle": 0.0,
+        "end_angle": 3.141592653589793,
+        "ccw": true
+      }
+    },
+    {
+      "name": "polyline_project",
+      "op": "project",
+      "geom": {
+        "type": "Polyline",
+        "pts": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 10.0,
+            "y": 0.0
+          },
+          {
+            "x": 10.0,
+            "y": 10.0
+          }
+        ],
+        "closed": false
+      },
+      "point": {
+        "x": 9.0,
+        "y": 3.0
+      }
+    },
+    {
+      "name": "polyline_split",
+      "op": "split_t",
+      "geom": {
+        "type": "Polyline",
+        "pts": [
+          {
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "x": 10.0,
+            "y": 0.0
+          },
+          {
+            "x": 10.0,
+            "y": 10.0
+          }
+        ],
+        "closed": false
+      },
+      "t": 0.6
+    }
+  ]
+}

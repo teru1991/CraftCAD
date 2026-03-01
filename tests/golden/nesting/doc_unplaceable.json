@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "00000000-0000-4000-8000-000000000102",
+  "units": "mm",
+  "layers": [],
+  "entities": [],
+  "parts": [
+    {
+      "id": "00000000-0000-4000-8000-000000000203",
+      "name": "BIG",
+      "outline": {"outer":[{"x":0,"y":0},{"x":400,"y":0},{"x":400,"y":400},{"x":0,"y":400}],"holes":[]},
+      "thickness": 3.0,
+      "quantity": 1,
+      "material_id": "00000000-0000-4000-8000-000000000301",
+      "grain_dir": null,
+      "allow_rotate": true,
+      "margin": 0.0,
+      "kerf": 0.0
+    }
+  ],
+  "jobs": [],
+  "materials": [{"id":"00000000-0000-4000-8000-000000000301","name":"ply","category":"wood","thickness_mm":3.0,"sheet_default":null,"notes":""}],
+  "settings": {}
+}

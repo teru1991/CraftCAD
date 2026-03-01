@@ -12,3 +12,8 @@ craftcad_serialize = { path = "../../serialize" }
 
 [dev-dependencies]
 rand = "0.8"
+criterion = "0.5"
+
+[[bench]]
+name = "geom_bench"
+harness = false

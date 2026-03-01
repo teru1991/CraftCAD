@@ -1,15 +1,24 @@
-# Mobile (Flutter)
+# CraftCAD Mobile (Flutter)
 
-`apps/mobile` は CraftCAD のモバイル向け **軽量ビューア** の最小プロジェクトです。
+## Architecture choice (locked)
 
-- 現時点の対象は閲覧（Viewer）中心です。
-- 編集機能は後続 Issue で追加します。
-- `.diycad` 読み込みや Rust FFI 連携も後続 Issue で対応します。
+**Option B** is used for v1:
+- Flutter parses `.diycad` package JSON directly for viewing (`Line`/`Polyline`/`Circle`/`Arc` + nesting placements when present).
+- Mobile does not mutate `data/document.json`.
+- Annotation data is stored in a separate `.diycad-note` zip package to keep desktop backward compatibility.
+- Share/export uses pre-generated export artifacts (`.pdf`/`.svg`) found inside `.diycad` package files.
 
-## 実行手順（flutter run）
+This keeps mobile viewer-safe and avoids any risk of corrupting source-of-truth `.diycad` files.
 
-1. Flutter SDK をインストールし、`flutter doctor` で環境を確認する。
-2. このディレクトリへ移動する。
+## Supported v1 features
+
+- Open `.diycad` and render supported drawing entities deterministically.
+- Render nesting placement bounding boxes when `jobs[].result.placements[].bbox` is present.
+- Add tap-based annotation points in a mobile-only layer.
+- Save annotations as `<doc_id>.diycad-note` zip package.
+- Share first available embedded `.pdf` or `.svg` export.
+
+## Run
 
 ```bash
 cd apps/mobile
@@ -17,4 +26,10 @@ flutter pub get
 flutter run
 ```
 
-初期画面には `DIY CAD Viewer` のテキストのみを表示します。
+## Annotation compatibility
+
+`.diycad-note` contains:
+- `manifest.json`
+- `data/annotations.json`
+
+and never modifies the original `.diycad` document.
