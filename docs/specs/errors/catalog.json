@@ -1921,6 +1921,238 @@
         "index:104"
       ],
       "retryable": true
+    },
+    {
+      "code": "IO_CURVE_APPROX_APPLIED",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "曲線を近似に変換しました",
+      "detail": "複雑な曲線（楕円、スプライン等）を線分で近似しました。精度が必要な場合は精度設定を確認してください。",
+      "user_actions": [
+        "精度設定を確認してください",
+        "必要に応じて精度を上げて再度実行してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "format:io",
+        "category:approx",
+        "entity:curve"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_UNSUPPORTED_DIMENSION",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "寸法はサポートされていません",
+      "detail": "DXF/SVGの寸法要素はスキップされます。図形データのみが読み込まれます。",
+      "user_actions": [
+        "寸法が必要な場合は別途管理してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "format:io",
+        "entity:dimension",
+        "mode:skip"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_BLOCK_EXPLODED",
+      "domain": "IO",
+      "severity": "INFO",
+      "summary": "ブロック参照を展開しました",
+      "detail": "DXFのBLOCK参照が、個別の図形として展開されました。",
+      "user_actions": [
+        "必要に応じて図形を再グループ化してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "format:dxf",
+        "entity:block",
+        "mode:explode"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_HATCH_SIMPLIFIED",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "ハッチングを簡略化しました",
+      "detail": "DXFのハッチング要素は塗りつぶしまたはスキップされます。複雑なパターンは保持されません。",
+      "user_actions": [
+        "ハッチングが必要な場合は手動で追加してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "format:io",
+        "entity:hatch",
+        "mode:simplify"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_IMAGE_REFERENCE_DROPPED",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "画像参照が削除されました",
+      "detail": "DXFやJSONの画像参照はこのアプリでは保持されません。",
+      "user_actions": [
+        "必要な画像は別途管理してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "format:io",
+        "entity:image",
+        "mode:drop"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_TEXT_FALLBACK_FONT",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "テキストのフォントをフォールバックしました",
+      "detail": "DXFのテキストに指定されたフォントが利用できないため、デフォルトフォントを使用しました。",
+      "user_actions": [
+        "テキストの表示を確認してください",
+        "必要に応じてフォントを再指定してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "format:dxf",
+        "entity:text",
+        "mode:fallback"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_LINETYPE_FALLBACK",
+      "domain": "IO",
+      "severity": "INFO",
+      "summary": "線種をフォールバックしました",
+      "detail": "DXFで指定された線種がサポートされていないため、標準線種に変更されました。",
+      "user_actions": [
+        "線種を確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "format:io",
+        "entity:linetype",
+        "mode:fallback"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_LAYER_NAME_NORMALIZED",
+      "domain": "IO",
+      "severity": "INFO",
+      "summary": "レイヤー名を正規化しました",
+      "detail": "SVGのレイヤー名が規則に合わせて正規化されました。",
+      "user_actions": [
+        "レイヤー名を確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "format:svg",
+        "entity:layer",
+        "mode:normalize"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_UNITS_ASSUMED_MM",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "単位がmmと仮定されました",
+      "detail": "SVGで単位が明記されていないため、mmと仮定されました。",
+      "user_actions": [
+        "単位設定を確認してください",
+        "必要に応じて単位を手動で指定してください"
+      ],
+      "doc_link": "docs/specs/io/mapping_rules.md",
+      "telemetry_tags": [
+        "format:svg",
+        "entity:units",
+        "mode:assume"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SALVAGE_DOCUMENT_MALFORMED",
+      "domain": "SALVAGE",
+      "severity": "ERROR",
+      "summary": "プロジェクトドキュメントが破損しています",
+      "detail": "document.jsonのスキーマがアプリの要件に合致しません。自動修復を試みましたが失敗しました。",
+      "user_actions": [
+        "ファイルの履歴バージョンから復旧を試みてください",
+        "サポートにお問い合わせください"
+      ],
+      "doc_link": "docs/specs/diycad/salvage_recovery.md",
+      "telemetry_tags": [
+        "domain:salvage",
+        "category:document",
+        "target:document"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "SALVAGE_PART_RECOVERABLE",
+      "domain": "SALVAGE",
+      "severity": "WARN",
+      "summary": "部品が部分的に破損しています",
+      "detail": "プロジェクト内の一部の部品ファイルが読み込めません。その他の部品は通常通り読み込まれました。",
+      "user_actions": [
+        "ファイルの履歴バージョンから復旧を試みてください",
+        "プロジェクトを他のフォーマットで再エクスポートしてください"
+      ],
+      "doc_link": "docs/specs/diycad/salvage_recovery.md",
+      "telemetry_tags": [
+        "domain:salvage",
+        "category:part",
+        "target:part"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SALVAGE_PARTIAL_LOSS",
+      "domain": "SALVAGE",
+      "severity": "WARN",
+      "summary": "プロジェクトデータの一部が失われました",
+      "detail": "部品またはネスティングジョブの一部が読み込めませんでしたが、復旧可能な部分で続行しました。",
+      "user_actions": [
+        "プロジェクトを読み取り専用で確認してください",
+        "復旧できなかった部品を再度追加してください"
+      ],
+      "doc_link": "docs/specs/diycad/salvage_recovery.md",
+      "telemetry_tags": [
+        "domain:salvage",
+        "category:partial",
+        "mode:partial"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SALVAGE_TOO_MUCH_DAMAGE",
+      "domain": "SALVAGE",
+      "severity": "ERROR",
+      "summary": "プロジェクトが復旧不可能です",
+      "detail": "全ての部品またはドキュメントが破損しており、復旧できません。",
+      "user_actions": [
+        "ファイルの履歴バージョンを探してください",
+        "バックアップから復旧してください"
+      ],
+      "doc_link": "docs/specs/diycad/salvage_recovery.md",
+      "telemetry_tags": [
+        "domain:salvage",
+        "category:fatal",
+        "severity:fatal"
+      ],
+      "retryable": false
     }
   ]
 }
+
+
+
+

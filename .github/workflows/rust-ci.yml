@@ -31,6 +31,12 @@ jobs:
       - name: Clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
 
+      - name: Lint - ReasonCatalog integrity
+        run: cargo test -p craftcad_errors --test reason_catalog_lint
+
+      - name: Lint - IO support matrix
+        run: cargo test -p craftcad_io_support --test io_contract_lint
+
       - name: Test
         run: cargo test --all
 
