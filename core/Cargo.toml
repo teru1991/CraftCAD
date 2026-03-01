@@ -7,6 +7,10 @@ members = [
   "crates/diycad_ffi",
   "serialize",
   "commands",
+  "edit_ops",
+  "faces",
+  "part_ops",
+  "bom",
   "ffi_desktop",
 ]
 resolver = "2"

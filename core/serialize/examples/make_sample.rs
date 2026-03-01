@@ -32,6 +32,8 @@ fn main() {
         }],
         parts: vec![],
         jobs: vec![],
+        materials: vec![],
+        settings: craftcad_serialize::ProjectSettings::default(),
     };
     let manifest = create_manifest("CraftCAD", "0.1.0");
     save_diycad(Path::new(&out), &manifest, &doc).expect("save sample");
