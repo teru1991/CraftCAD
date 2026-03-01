@@ -14,6 +14,7 @@ use craftcad_commands::commands::transform_selection::{
 use craftcad_commands::commands::trim_entity::{TrimEntityCommand, TrimEntityInput};
 use craftcad_commands::{Command, CommandContext, History};
 use craftcad_faces::{extract_faces, Face};
+use craftcad_export::{export_drawing_pdf, export_svg, export_tiled_pdf, DrawingPdfOptions, SvgExportOptions, TiledPdfOptions};
 use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
 use diycad_nesting::RunLimits;
@@ -375,6 +376,90 @@ pub unsafe extern "C" fn craftcad_history_apply_edit_placement(
         h.push(delta);
         Ok(())
     })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_export_tiled_pdf(
+    doc_json: *const c_char,
+    options_json: *const c_char,
+) -> *mut c_char {
+    let doc: Document = match parse_cstr(doc_json, "doc_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::ExportIoParseFailed))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let opts: TiledPdfOptions = match parse_cstr(options_json, "options_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::ExportIoParseFailed))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    match export_tiled_pdf(&doc, &opts) {
+        Ok(bytes) => {
+            use base64::Engine;
+            encode_ok(
+                serde_json::json!({"bytes_base64": base64::engine::general_purpose::STANDARD.encode(bytes), "filename":"tiled.pdf", "mime":"application/pdf"}),
+            )
+        }
+        Err(r) => encode_err(r),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_export_drawing_pdf(
+    doc_json: *const c_char,
+    options_json: *const c_char,
+) -> *mut c_char {
+    let doc: Document = match parse_cstr(doc_json, "doc_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::ExportIoParseFailed))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let opts: DrawingPdfOptions = match parse_cstr(options_json, "options_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::ExportIoParseFailed))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    match export_drawing_pdf(&doc, &opts) {
+        Ok(bytes) => {
+            use base64::Engine;
+            encode_ok(
+                serde_json::json!({"bytes_base64": base64::engine::general_purpose::STANDARD.encode(bytes), "filename":"drawing.pdf", "mime":"application/pdf"}),
+            )
+        }
+        Err(r) => encode_err(r),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_export_svg(
+    doc_json: *const c_char,
+    options_json: *const c_char,
+) -> *mut c_char {
+    let doc: Document = match parse_cstr(doc_json, "doc_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::ExportIoParseFailed))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let opts: SvgExportOptions = match parse_cstr(options_json, "options_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::ExportIoParseFailed))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    match export_svg(&doc, &opts) {
+        Ok(text) => {
+            use base64::Engine;
+            encode_ok(
+                serde_json::json!({"bytes_base64": base64::engine::general_purpose::STANDARD.encode(text.as_bytes()), "filename":"drawing.svg", "mime":"image/svg+xml"}),
+            )
+        }
+        Err(r) => encode_err(r),
+    }
 }
 
 #[no_mangle]

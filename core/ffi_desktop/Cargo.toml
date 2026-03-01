@@ -14,6 +14,7 @@ craftcad_commands = { path = "../commands" }
 craftcad_part_ops = { path = "../part_ops" }
 craftcad_faces = { path = "../faces" }
 craftcad_bom = { path = "../bom" }
+craftcad_export = { path = "../export" }
 diycad_geom = { path = "../crates/diycad_geom" }
 diycad_nesting = { path = "../crates/diycad_nesting" }
 serde = { version = "1", features = ["derive"] }

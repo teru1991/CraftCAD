@@ -30,3 +30,10 @@ Transform editing and desktop tools use these edit-specific reason codes:
 - `NEST_STOPPED_BY_TIME_LIMIT`: optimization stopped due to time limit; best-so-far returned.
 - `NEST_STOPPED_BY_ITERATION_LIMIT`: optimization stopped due to iteration limit; best-so-far returned.
 - `NEST_INTERNAL_INFEASIBLE`: internal consistency detected infeasible state (debug-heavy).
+
+
+- `EXPORT_PDF_FAILED`: PDF generation failed for current document/options.
+- `EXPORT_UNSUPPORTED_ENTITY`: export encountered a geometry/entity type not supported by v1 exporter.
+- `EXPORT_UNSUPPORTED_FEATURE`: export option/feature not supported in v1.
+- `EXPORT_IO_PARSE_FAILED`: export input/options JSON parse failed.
+- `EXPORT_IO_WRITE_FAILED`: file write failed in host UI/export flow.

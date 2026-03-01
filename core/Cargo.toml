@@ -11,6 +11,7 @@ members = [
   "faces",
   "part_ops",
   "bom",
+  "export",
   "ffi_desktop",
 ]
 resolver = "2"
