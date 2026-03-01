@@ -1,0 +1,10 @@
+[package]
+name = "craftcad_constraints"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+craftcad_geom2d = { path = "../geom2d" }
+craftcad_sketch = { path = "../sketch" }
+craftcad_errors = { path = "../errors", package = "craftcad_errors" }

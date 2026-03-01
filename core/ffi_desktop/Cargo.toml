@@ -19,6 +19,7 @@ diycad_geom = { path = "../crates/diycad_geom" }
 diycad_nesting = { path = "../crates/diycad_nesting" }
 craftcad_i18n = { path = "../i18n" }
 craftcad_diag = { path = "../diag" }
+craftcad_editor = { path = "../crates/editor" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 uuid = { version = "1", features = ["serde"] }

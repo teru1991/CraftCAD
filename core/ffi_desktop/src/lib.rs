@@ -1,3 +1,4 @@
+mod editor_bridge;
 use craftcad_bom::{generate_bom, write_bom_csv, CsvOptions, RoundingPolicy, UnitPolicy};
 use craftcad_commands::commands::advanced_edit::{
     ChamferCommand, ChamferInput, FilletCommand, FilletInput, MirrorCommand, MirrorInput,
@@ -637,7 +638,6 @@ fn histories() -> &'static Mutex<HashMap<u64, History>> {
     HISTORIES.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-
 #[no_mangle]
 pub unsafe extern "C" fn craftcad_i18n_resolve_message(
     user_msg_key_utf8: *const c_char,
@@ -653,7 +653,8 @@ pub unsafe extern "C" fn craftcad_i18n_resolve_message(
         Err(r) => return encode_err(r),
     };
     let locale = parse_cstr(locale_utf8, "locale").unwrap_or_else(|_| "ja-JP".to_string());
-    let params: serde_json::Map<String, serde_json::Value> = serde_json::from_str(&params_src).unwrap_or_default();
+    let params: serde_json::Map<String, serde_json::Value> =
+        serde_json::from_str(&params_src).unwrap_or_default();
     let message = resolve_user_message(&key, &params, &locale);
     encode_ok(serde_json::json!({"message": message}))
 }

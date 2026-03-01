@@ -1,5 +1,10 @@
 [workspace]
 members = [
+  "crates/geom2d",
+  "crates/sketch",
+  "crates/snapping",
+  "crates/constraints",
+  "crates/editor",
   "crates/diycad_common",
   "crates/diycad_project",
   "crates/diycad_geom",
