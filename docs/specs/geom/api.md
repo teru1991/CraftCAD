@@ -38,3 +38,12 @@ Part/Face and BOM FFI:
   - `{ "mode": "Center", "c": {"x":num,"y":num}, "r": num, "start_angle": num, "end_angle": num, "ccw": bool }`
 - PolylineParams:
   - `{ "pts": [{"x":num,"y":num}, ...], "closed": bool }`
+
+## Advanced edit FFI payloads (v1)
+
+- Fillet: `{"e1":"<entity_uuid>","e2":"<entity_uuid>","radius":num}`
+- Chamfer: `{"e1":"<entity_uuid>","e2":"<entity_uuid>","distance":num}`
+- Mirror: `{"selection_ids":["<uuid>",...],"axis_a":{"x":num,"y":num},"axis_b":{"x":num,"y":num}}`
+- Pattern:
+  - Linear: `{"selection_ids":[...],"params":{"type":"Linear","dx":num,"dy":num,"count":int>=2}}`
+  - Circular: `{"selection_ids":[...],"params":{"type":"Circular","cx":num,"cy":num,"step_deg":num,"count":int>=2}}`

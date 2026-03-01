@@ -2,7 +2,7 @@
 #include "../camera.h"
 #include "../doc_store.h"
 #include "tool_base.h"
-#include <QJsonArray>
+#include "ambiguity_controller.h"
 
 class TrimTool : public ToolBase {
 public:
@@ -25,6 +25,5 @@ private:
     QString targetId_;
     QString cutterId_;
     QPointF lastScreen_;
-    QJsonArray candidates_;
-    int candidateIndex_{0};
+    AmbiguityController ambiguity_;
 };

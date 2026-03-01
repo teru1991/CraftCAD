@@ -30,6 +30,11 @@ add_executable(craftcad_desktop
   src/tools/arc_tool.cpp
   src/tools/circle_tool.cpp
   src/tools/rect_tool.cpp
+  src/tools/pattern_tool.cpp
+  src/tools/mirror_tool.cpp
+  src/tools/chamfer_tool.cpp
+  src/tools/fillet_tool.cpp
+  src/tools/ambiguity_controller.cpp
   src/ffi/craftcad_ffi.cpp
 )
 

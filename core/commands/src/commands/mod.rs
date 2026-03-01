@@ -1,3 +1,4 @@
+pub mod advanced_edit;
 pub mod create_line;
 pub mod create_part;
 pub mod create_shapes;

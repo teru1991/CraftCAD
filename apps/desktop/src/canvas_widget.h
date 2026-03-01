@@ -11,6 +11,10 @@
 #include "tools/arc_tool.h"
 #include "tools/circle_tool.h"
 #include "tools/rect_tool.h"
+#include "tools/pattern_tool.h"
+#include "tools/mirror_tool.h"
+#include "tools/chamfer_tool.h"
+#include "tools/fillet_tool.h"
 #include <QWidget>
 #include <QJsonObject>
 
@@ -30,7 +34,7 @@ protected:
 private:
     DocStore* store_;
     Camera camera_;
-    enum class ActiveTool { Line, Move, Rotate, Scale, Offset, Trim, Rect, Circle, Arc, Polyline };
+    enum class ActiveTool { Line, Move, Rotate, Scale, Offset, Trim, Rect, Circle, Arc, Polyline, Fillet, Chamfer, Mirror, Pattern };
     ActiveTool activeTool_{ActiveTool::Line};
     LineTool lineTool_;
     MoveTool moveTool_;
@@ -42,6 +46,10 @@ private:
     CircleTool circleTool_;
     ArcTool arcTool_;
     PolylineTool polylineTool_;
+    FilletTool filletTool_;
+    ChamferTool chamferTool_;
+    MirrorTool mirrorTool_;
+    PatternTool patternTool_;
     ToolBase* currentTool();
     QJsonObject highlightedFace_;
 };

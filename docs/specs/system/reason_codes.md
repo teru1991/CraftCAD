@@ -42,3 +42,11 @@ Transform editing and desktop tools use these edit-specific reason codes:
 - `DRAW_INVALID_NUMERIC`: drawing tool numeric input is invalid (NaN/Inf/<=0 where forbidden).
 - `DRAW_CONSTRAINT_CONFLICT`: active drawing constraints conflict and no unique solution exists.
 - `DRAW_INSUFFICIENT_INPUT`: drawing commit attempted before required points/parameters were provided.
+
+
+- `EDIT_FILLET_RADIUS_TOO_LARGE`: requested fillet radius cannot be realized for selected segments.
+- `EDIT_CHAMFER_DISTANCE_TOO_LARGE`: chamfer distance exceeds feasible trim on selected segments.
+- `EDIT_MIRROR_AXIS_INVALID`: mirror axis is invalid (degenerate or non-finite).
+- `EDIT_PATTERN_INVALID_PARAMS`: pattern parameters are invalid (count/step/etc).
+- `EDIT_AMBIGUOUS_CANDIDATE`: operation has multiple valid candidates and user selection is required.
+- `EDIT_CANDIDATE_NOT_FOUND`: selected candidate index/reference no longer exists.

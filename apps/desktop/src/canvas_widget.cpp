@@ -10,7 +10,7 @@
 #endif
 
 CanvasWidget::CanvasWidget(DocStore* store, QWidget* parent)
-    : QWidget(parent), store_(store), lineTool_(store, &camera_), moveTool_(store, &camera_), rotateTool_(store, &camera_), scaleTool_(store, &camera_), offsetTool_(store, &camera_), trimTool_(store, &camera_), rectTool_(store,&camera_), circleTool_(store,&camera_), arcTool_(store,&camera_), polylineTool_(store,&camera_) {
+    : QWidget(parent), store_(store), lineTool_(store, &camera_), moveTool_(store, &camera_), rotateTool_(store, &camera_), scaleTool_(store, &camera_), offsetTool_(store, &camera_), trimTool_(store, &camera_), rectTool_(store,&camera_), circleTool_(store,&camera_), arcTool_(store,&camera_), polylineTool_(store,&camera_), filletTool_(store,&camera_), chamferTool_(store,&camera_), mirrorTool_(store,&camera_), patternTool_(store,&camera_) {
     setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -32,6 +32,10 @@ ToolBase* CanvasWidget::currentTool() {
         case ActiveTool::Circle: return &circleTool_;
         case ActiveTool::Arc: return &arcTool_;
         case ActiveTool::Polyline: return &polylineTool_;
+        case ActiveTool::Fillet: return &filletTool_;
+        case ActiveTool::Chamfer: return &chamferTool_;
+        case ActiveTool::Mirror: return &mirrorTool_;
+        case ActiveTool::Pattern: return &patternTool_;
     }
     return &lineTool_;
 }
@@ -120,6 +124,10 @@ void CanvasWidget::keyPressEvent(QKeyEvent* e) {
     if (e->key() == Qt::Key_8) activeTool_ = ActiveTool::Circle;
     if (e->key() == Qt::Key_9) activeTool_ = ActiveTool::Arc;
     if (e->key() == Qt::Key_0) activeTool_ = ActiveTool::Polyline;
+    if (e->key() == Qt::Key_F) activeTool_ = ActiveTool::Fillet;
+    if (e->key() == Qt::Key_G) activeTool_ = ActiveTool::Chamfer;
+    if (e->key() == Qt::Key_M) activeTool_ = ActiveTool::Mirror;
+    if (e->key() == Qt::Key_P) activeTool_ = ActiveTool::Pattern;
     currentTool()->onKeyPress(e);
     update();
 }

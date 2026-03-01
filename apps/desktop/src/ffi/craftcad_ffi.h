@@ -20,6 +20,11 @@ char* craftcad_history_apply_create_rect(uint64_t h,const char* doc_json,const c
 char* craftcad_history_apply_create_circle(uint64_t h,const char* doc_json,const char* layer_id_uuid,const char* circle_params_json,const char* eps_json);
 char* craftcad_history_apply_create_arc(uint64_t h,const char* doc_json,const char* layer_id_uuid,const char* arc_params_json,const char* eps_json);
 char* craftcad_history_apply_create_polyline(uint64_t h,const char* doc_json,const char* layer_id_uuid,const char* polyline_params_json,const char* eps_json);
+char* craftcad_history_apply_fillet(uint64_t h,const char* doc_json,const char* fillet_json,const char* eps_json);
+char* craftcad_history_apply_chamfer(uint64_t h,const char* doc_json,const char* chamfer_json,const char* eps_json);
+char* craftcad_history_apply_mirror(uint64_t h,const char* doc_json,const char* mirror_json,const char* eps_json);
+char* craftcad_history_apply_pattern(uint64_t h,const char* doc_json,const char* pattern_json,const char* eps_json);
+char* craftcad_geom_candidates_for_operation(const char* op_json);
 char* craftcad_history_apply_transform_selection(uint64_t h,const char* doc_json,const char* selection_json,const char* transform_json,const char* eps_json);
 char* craftcad_history_apply_offset_entity(uint64_t h,const char* doc_json,const char* entity_id_uuid,double dist,const char* eps_json);
 char* craftcad_history_apply_trim_entity(uint64_t h,const char* doc_json,const char* target_id_uuid,const char* cutter_id_uuid,const char* pick_point_json,const char* eps_json);

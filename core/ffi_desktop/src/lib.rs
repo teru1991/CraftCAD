@@ -1,4 +1,8 @@
 use craftcad_bom::{generate_bom, write_bom_csv, CsvOptions, RoundingPolicy, UnitPolicy};
+use craftcad_commands::commands::advanced_edit::{
+    ChamferCommand, ChamferInput, FilletCommand, FilletInput, MirrorCommand, MirrorInput,
+    PatternCommand, PatternInput, PatternParams,
+};
 use craftcad_commands::commands::create_line::{CreateLineCommand, CreateLineInput};
 use craftcad_commands::commands::create_part::{
     CreatePartCommand, CreatePartFromFaceCommand, CreatePartFromFaceInput, CreatePartInput,
@@ -626,6 +630,186 @@ where
         Ok(()) => encode_ok(serde_json::json!({"document": doc})),
         Err(r) => encode_err(r),
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_fillet(
+    handle: u64,
+    doc_json: *const c_char,
+    fillet_json: *const c_char,
+    _eps_json: *const c_char,
+) -> *mut c_char {
+    #[derive(serde::Deserialize)]
+    struct In {
+        e1: String,
+        e2: String,
+        radius: f64,
+    }
+    let i: In = match parse_cstr(fillet_json, "fillet_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::DrawInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let e1 = match Uuid::parse_str(&i.e1) {
+        Ok(v) => v,
+        Err(_) => return encode_err(Reason::from_code(ReasonCode::ModelReferenceNotFound)),
+    };
+    let e2 = match Uuid::parse_str(&i.e2) {
+        Ok(v) => v,
+        Err(_) => return encode_err(Reason::from_code(ReasonCode::ModelReferenceNotFound)),
+    };
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut c = FilletCommand::new();
+        c.begin(&CommandContext::default())?;
+        c.update(FilletInput {
+            e1,
+            e2,
+            radius: i.radius,
+        })?;
+        let d = c.commit()?;
+        d.apply(doc)?;
+        h.push(d);
+        Ok(())
+    })
+}
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_chamfer(
+    handle: u64,
+    doc_json: *const c_char,
+    chamfer_json: *const c_char,
+    _eps_json: *const c_char,
+) -> *mut c_char {
+    #[derive(serde::Deserialize)]
+    struct In {
+        e1: String,
+        e2: String,
+        distance: f64,
+    }
+    let i: In = match parse_cstr(chamfer_json, "chamfer_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::DrawInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let e1 = match Uuid::parse_str(&i.e1) {
+        Ok(v) => v,
+        Err(_) => return encode_err(Reason::from_code(ReasonCode::ModelReferenceNotFound)),
+    };
+    let e2 = match Uuid::parse_str(&i.e2) {
+        Ok(v) => v,
+        Err(_) => return encode_err(Reason::from_code(ReasonCode::ModelReferenceNotFound)),
+    };
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut c = ChamferCommand::new();
+        c.begin(&CommandContext::default())?;
+        c.update(ChamferInput {
+            e1,
+            e2,
+            distance: i.distance,
+        })?;
+        let d = c.commit()?;
+        d.apply(doc)?;
+        h.push(d);
+        Ok(())
+    })
+}
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_mirror(
+    handle: u64,
+    doc_json: *const c_char,
+    mirror_json: *const c_char,
+    _eps_json: *const c_char,
+) -> *mut c_char {
+    #[derive(serde::Deserialize)]
+    struct In {
+        selection_ids: Vec<String>,
+        axis_a: Vec2,
+        axis_b: Vec2,
+    }
+    let i: In = match parse_cstr(mirror_json, "mirror_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::EditMirrorAxisInvalid))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let mut ids = Vec::new();
+    for sid in i.selection_ids {
+        let id = match Uuid::parse_str(&sid) {
+            Ok(v) => v,
+            Err(_) => return encode_err(Reason::from_code(ReasonCode::ModelReferenceNotFound)),
+        };
+        ids.push(id);
+    }
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut c = MirrorCommand::new();
+        c.begin(&CommandContext::default())?;
+        c.update(MirrorInput {
+            selection_ids: ids,
+            axis_a: i.axis_a,
+            axis_b: i.axis_b,
+        })?;
+        let d = c.commit()?;
+        d.apply(doc)?;
+        h.push(d);
+        Ok(())
+    })
+}
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_pattern(
+    handle: u64,
+    doc_json: *const c_char,
+    pattern_json: *const c_char,
+    _eps_json: *const c_char,
+) -> *mut c_char {
+    #[derive(serde::Deserialize)]
+    struct In {
+        selection_ids: Vec<String>,
+        params: PatternParams,
+    }
+    let i: In = match parse_cstr(pattern_json, "pattern_json").and_then(|s| {
+        serde_json::from_str(&s)
+            .map_err(|_| Reason::from_code(ReasonCode::EditPatternInvalidParams))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let mut ids = Vec::new();
+    for sid in i.selection_ids {
+        let id = match Uuid::parse_str(&sid) {
+            Ok(v) => v,
+            Err(_) => return encode_err(Reason::from_code(ReasonCode::ModelReferenceNotFound)),
+        };
+        ids.push(id);
+    }
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut c = PatternCommand::new();
+        c.begin(&CommandContext::default())?;
+        c.update(PatternInput {
+            selection_ids: ids,
+            params: i.params,
+        })?;
+        let d = c.commit()?;
+        d.apply(doc)?;
+        h.push(d);
+        Ok(())
+    })
+}
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_geom_candidates_for_operation(
+    op_json: *const c_char,
+) -> *mut c_char {
+    let v: serde_json::Value = match parse_cstr(op_json, "op_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::EditAmbiguousCandidate))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let cands = v
+        .get("candidates")
+        .cloned()
+        .unwrap_or_else(|| serde_json::json!([]));
+    encode_ok(serde_json::json!({"candidates": cands}))
 }
 
 #[no_mangle]

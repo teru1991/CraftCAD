@@ -5,9 +5,9 @@
 #include <cmath>
 static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 PolylineTool::PolylineTool(DocStore* store, Camera* camera):store_(store),camera_(camera){}
-void PolylineTool::onPointerDown(const QPointF& s){ WVec2 w=camera_->screenToWorld(s); snap_=computeSnap(*store_,w,pts_.isEmpty()?std::nullopt:std::optional<WVec2>(pts_.last())); WVec2 p=snap_.best?snap_.best->point:w; if(!pts_.isEmpty()){ if(lockH) p.y=pts_.last().y; if(lockV) p.x=pts_.last().x; if(auto n=numeric_.value()){ double dx=p.x-pts_.last().x, dy=p.y-pts_.last().y; double d=std::sqrt(dx*dx+dy*dy); if(d>0){ p={pts_.last().x+dx/d*(*n),pts_.last().y+dy/d*(*n)}; } } }
+void PolylineTool::onPointerDown(const QPointF& s){ WVec2 w=camera_->screenToWorld(s); snap_=computeSnap(*store_,w,pts_.isEmpty()?std::nullopt:std::optional<WVec2>(pts_.last())); WVec2 p=snap_.best?snap_.best->point:w; if(!pts_.isEmpty()){ if(lockH_) p.y=pts_.last().y; if(lockV_) p.x=pts_.last().x; if(auto n=numeric_.value()){ double dx=p.x-pts_.last().x, dy=p.y-pts_.last().y; double d=std::sqrt(dx*dx+dy*dy); if(d>0){ p={pts_.last().x+dx/d*(*n),pts_.last().y+dy/d*(*n)}; } } }
 pts_.push_back(p); hover_.reset(); numeric_.clear(); }
-void PolylineTool::onPointerMove(const QPointF& s){ if(pts_.isEmpty()) return; WVec2 w=camera_->screenToWorld(s); snap_=computeSnap(*store_,w,pts_.last()); hover_=snap_.best?snap_.best->point:w; if(lockH) hover_->y=pts_.last().y; if(lockV) hover_->x=pts_.last().x; }
+void PolylineTool::onPointerMove(const QPointF& s){ if(pts_.isEmpty()) return; WVec2 w=camera_->screenToWorld(s); snap_=computeSnap(*store_,w,pts_.last()); hover_=snap_.best?snap_.best->point:w; if(lockH_) hover_->y=pts_.last().y; if(lockV_) hover_->x=pts_.last().x; }
 void PolylineTool::commit(bool closed){ if(pts_.size()<2){ QMessageBox::warning(nullptr,"Polyline","DRAW_INSUFFICIENT_INPUT"); pts_.clear(); hover_.reset(); return; }
     QByteArray doc=store_->documentJson().toUtf8(); auto d=QJsonDocument::fromJson(doc).object(); QString layer=d.value("layers").toArray().first().toObject().value("id").toString();
     QJsonArray arr; for(const auto& p: pts_) arr.append(QJsonObject{{"x",p.x},{"y",p.y}});
@@ -18,7 +18,7 @@ void PolylineTool::commit(bool closed){ if(pts_.size()<2){ QMessageBox::warning(
     else store_->setDocumentJson(QString::fromUtf8(QJsonDocument(root.value("data").toObject().value("document").toObject()).toJson(QJsonDocument::Compact)));
     pts_.clear(); hover_.reset(); numeric_.clear();
 }
-void PolylineTool::onKeyPress(QKeyEvent* e){ if(e->key()==Qt::Key_H) lockH=!lockH; if(e->key()==Qt::Key_V) lockV=!lockV; if(e->key()==Qt::Key_Escape){ pts_.clear(); hover_.reset(); numeric_.clear(); }
+void PolylineTool::onKeyPress(QKeyEvent* e){ if(e->key()==Qt::Key_H) lockH_=!lockH_; if(e->key()==Qt::Key_V) lockV_=!lockV_; if(e->key()==Qt::Key_Escape){ pts_.clear(); hover_.reset(); numeric_.clear(); }
     if(e->key()==Qt::Key_Return||e->key()==Qt::Key_Enter) commit(false);
     if(e->key()==Qt::Key_C) commit(true);
     if(e->key()==Qt::Key_Backspace && !pts_.isEmpty()) pts_.removeLast();

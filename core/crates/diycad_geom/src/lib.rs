@@ -1,6 +1,7 @@
 pub mod ops;
 mod util;
 
+pub use ops::edit::{chamfer_lines, fillet_lines, mirror_geom};
 pub use ops::intersect::intersect;
 pub use ops::offset::offset;
 pub use ops::project::project_point;

@@ -47,8 +47,7 @@ bool TrimTool::runTrim(QString* reason, bool commit, int candidateIndex) {
     if (!root.value("ok").toBool()) {
         QJsonObject r = root.value("reason").toObject();
         if (r.value("code").toString() == "EDIT_TRIM_AMBIGUOUS_CANDIDATE") {
-            candidates_ = r.value("debug").toObject().value("candidates").toArray();
-            candidateIndex_ = 0;
+            ambiguity_.setCandidates(r.value("debug").toObject().value("candidates").toArray());
             step_ = Step::PreviewOrAmbiguous;
         }
         if (reason) *reason = QString::fromUtf8(QJsonDocument(r).toJson());
@@ -59,7 +58,7 @@ bool TrimTool::runTrim(QString* reason, bool commit, int candidateIndex) {
     step_ = Step::PickTarget;
     targetId_.clear();
     cutterId_.clear();
-    candidates_ = QJsonArray{};
+    ambiguity_.clear();
     return true;
 }
 
@@ -68,34 +67,26 @@ void TrimTool::onPointerUp(const QPointF&) {
 }
 
 void TrimTool::cycleCandidate(int delta) {
-    if (candidates_.isEmpty()) return;
-    candidateIndex_ = (candidateIndex_ + delta) % candidates_.size();
-    if (candidateIndex_ < 0) candidateIndex_ += candidates_.size();
+    ambiguity_.onTab(delta);
 }
 
 void TrimTool::onKeyPress(QKeyEvent* e) {
-    if (e->key() == Qt::Key_Escape) { step_ = Step::PickTarget; targetId_.clear(); cutterId_.clear(); candidates_ = QJsonArray{}; return; }
+    if (e->key() == Qt::Key_Escape) { step_ = Step::PickTarget; targetId_.clear(); cutterId_.clear(); ambiguity_.clear(); return; }
     if (step_ == Step::PreviewOrAmbiguous) {
         if (e->key() == Qt::Key_Tab) cycleCandidate(1);
         if (e->key() == Qt::Key_Backtab) cycleCandidate(-1);
         if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
             QString reason;
-            if (!runTrim(&reason, true, candidateIndex_)) QMessageBox::warning(nullptr, "Trim failed", reason);
+            if (!runTrim(&reason, true, ambiguity_.currentIndex())) QMessageBox::warning(nullptr, "Trim failed", reason);
         }
     }
 }
 
 void TrimTool::renderOverlay(QPainter& p) {
-    if (candidates_.isEmpty()) return;
-    for (int i = 0; i < candidates_.size(); ++i) {
-        auto c = candidates_[i].toObject();
-        QPointF s = camera_->worldToScreen({c.value("x").toDouble(), c.value("y").toDouble()});
-        p.setPen(QPen(i == candidateIndex_ ? QColor(255,255,0) : QColor(255,120,120), 1.0));
-        p.drawEllipse(s, i == candidateIndex_ ? 6 : 4, i == candidateIndex_ ? 6 : 4);
-    }
+    ambiguity_.render(p, *camera_);
 }
 
 void TrimTool::onWheel(QWheelEvent* e) {
-    if (step_ != Step::PreviewOrAmbiguous || candidates_.isEmpty()) return;
-    cycleCandidate(e->angleDelta().y() >= 0 ? 1 : -1);
+    if (step_ != Step::PreviewOrAmbiguous || !ambiguity_.active()) return;
+    ambiguity_.onWheel(e);
 }
