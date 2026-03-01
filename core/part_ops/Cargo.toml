@@ -1,0 +1,11 @@
+[package]
+name = "craftcad_part_ops"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+craftcad_serialize = { path = "../serialize" }
+craftcad_faces = { path = "../faces" }
+uuid = { version = "1", features = ["v4"] }
