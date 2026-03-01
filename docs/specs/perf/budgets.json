@@ -1,0 +1,29 @@
+{
+  "units": {
+    "time": "ms",
+    "memory": "mb",
+    "input_bytes": "bytes"
+  },
+  "categories": [
+    "io_import",
+    "io_export",
+    "nesting",
+    "render",
+    "open",
+    "save",
+    "migrate"
+  ],
+  "datasets": {
+    "sample_board_hole_chamfer_v1": {
+      "open_p95_ms": 150,
+      "save_p95_ms": 200,
+      "io_roundtrip_p95_ms": 250,
+      "max_input_bytes": 52428800
+    },
+    "heavy_sample_v1": {
+      "render_frame_p95_ms": 16,
+      "max_rss_mb": 800,
+      "max_input_bytes": 52428800
+    }
+  }
+}

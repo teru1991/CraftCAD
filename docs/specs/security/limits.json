@@ -1,0 +1,7 @@
+{
+  "max_import_bytes": 52428800,
+  "max_entities": 200000,
+  "max_zip_entries": 20000,
+  "max_json_depth": 200,
+  "max_string_len": 100000
+}

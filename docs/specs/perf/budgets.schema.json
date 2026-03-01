@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.dev/specs/perf/budgets.schema.json",
+  "title": "CraftCAD Perf Budgets",
+  "type": "object",
+  "required": ["units", "categories", "datasets"],
+  "properties": {
+    "units": {
+      "type": "object",
+      "required": ["time", "memory", "input_bytes"],
+      "properties": {
+        "time": {"const": "ms"},
+        "memory": {"const": "mb"},
+        "input_bytes": {"const": "bytes"}
+      }
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "enum": ["io_import", "io_export", "nesting", "render", "open", "save", "migrate"]
+      }
+    },
+    "datasets": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "open_p95_ms": {"type": "number", "minimum": 0},
+          "save_p95_ms": {"type": "number", "minimum": 0},
+          "io_roundtrip_p95_ms": {"type": "number", "minimum": 0},
+          "render_frame_p95_ms": {"type": "number", "minimum": 0},
+          "max_rss_mb": {"type": "number", "minimum": 1},
+          "max_input_bytes": {"type": "integer", "minimum": 1}
+        }
+      }
+    }
+  }
+}

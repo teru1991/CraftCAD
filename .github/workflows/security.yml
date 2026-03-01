@@ -1,0 +1,18 @@
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  cargo-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: Audit
+        run: cargo audit --deny warnings
+        working-directory: core
