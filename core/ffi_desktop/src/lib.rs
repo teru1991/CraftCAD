@@ -1,11 +1,13 @@
 use craftcad_commands::commands::create_line::{CreateLineCommand, CreateLineInput};
+use craftcad_commands::commands::create_part::{CreatePartCommand, CreatePartInput};
 use craftcad_commands::commands::offset_entity::{OffsetEntityCommand, OffsetEntityInput};
 use craftcad_commands::commands::transform_selection::{
     Transform, TransformSelectionCommand, TransformSelectionInput,
 };
 use craftcad_commands::commands::trim_entity::{TrimEntityCommand, TrimEntityInput};
 use craftcad_commands::{Command, CommandContext, History};
-use craftcad_serialize::{load_diycad, Document, Reason, ReasonCode, Vec2};
+use craftcad_faces::extract_faces;
+use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -96,6 +98,65 @@ pub unsafe extern "C" fn craftcad_load_diycad_json(path_utf8: *const c_char) -> 
     }
 }
 
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_extract_faces(
+    doc_json: *const c_char,
+    eps_json: *const c_char,
+) -> *mut c_char {
+    let doc: Document = match parse_cstr(doc_json, "doc_json").and_then(|s| {
+        serde_json::from_str(&s)
+            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let eps: EpsilonPolicy = match parse_cstr(eps_json, "eps").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::GeomInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let geoms: Vec<_> = doc.entities.iter().map(|e| e.geom.clone()).collect();
+    match extract_faces(&geoms, &eps) {
+        Ok(fs) => {
+            let faces = fs
+                .faces
+                .into_iter()
+                .map(|f| {
+                    serde_json::json!({
+                        "outer": f.outer.pts,
+                        "holes": f.holes.into_iter().map(|h| h.pts).collect::<Vec<_>>()
+                    })
+                })
+                .collect::<Vec<_>>();
+            encode_ok(serde_json::json!({"faces": faces}))
+        }
+        Err(r) => encode_err(r),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_create_part(
+    handle: u64,
+    doc_json: *const c_char,
+    part_json: *const c_char,
+) -> *mut c_char {
+    let part: Part = match parse_cstr(part_json, "part_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::PartInvalidOutline))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut cmd = CreatePartCommand::new();
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(CreatePartInput { part })?;
+        let delta = cmd.commit()?;
+        delta.apply(doc)?;
+        h.push(delta);
+        Ok(())
+    })
+}
 #[no_mangle]
 pub unsafe extern "C" fn craftcad_geom_project_point(
     geom_json: *const c_char,

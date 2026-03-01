@@ -10,6 +10,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 add_executable(craftcad_desktop
   src/main.cpp
   src/doc_store.cpp
+  src/face_part_panel.cpp
   src/canvas_widget.cpp
   src/camera.cpp
   src/selection_state.cpp

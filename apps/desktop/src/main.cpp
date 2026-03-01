@@ -1,8 +1,10 @@
 #include "canvas_widget.h"
 #include "doc_store.h"
+#include "face_part_panel.h"
 #include <QApplication>
 #include <QFileDialog>
 #include <QMainWindow>
+#include <QDockWidget>
 #include <QMessageBox>
 
 int main(int argc, char* argv[]) {
@@ -21,8 +23,12 @@ int main(int argc, char* argv[]) {
     }
 
     QMainWindow w;
-    w.setWindowTitle("CraftCAD Desktop (line/move/rotate/scale/offset/trim)");
-    w.setCentralWidget(new CanvasWidget(&store));
+    w.setWindowTitle("CraftCAD Desktop (line/move/rotate/scale/offset/trim/faces)");
+    auto* canvas = new CanvasWidget(&store);
+    w.setCentralWidget(canvas);
+    auto* dock = new QDockWidget("Faces/Parts", &w);
+    dock->setWidget(new FacePartPanel(&store, canvas));
+    w.addDockWidget(Qt::RightDockWidgetArea, dock);
     w.resize(1200, 800);
     w.show();
     return app.exec();

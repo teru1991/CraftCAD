@@ -11,6 +11,11 @@ CanvasWidget::CanvasWidget(DocStore* store, QWidget* parent)
     setFocusPolicy(Qt::StrongFocus);
 }
 
+void CanvasWidget::setHighlightedFace(const QJsonObject& face) {
+    highlightedFace_ = face;
+    update();
+}
+
 ToolBase* CanvasWidget::currentTool() {
     switch (activeTool_) {
         case ActiveTool::Line: return &lineTool_;
@@ -34,6 +39,19 @@ void CanvasWidget::paintEvent(QPaintEvent*) {
         WVec2 wb{b.value("x").toDouble(), b.value("y").toDouble()};
         p.setPen(QPen(store_->selection().isSelected(e.id) ? QColor(255,200,0) : QColor(0,220,255), 0));
         p.drawLine(camera_.worldToScreen(wa), camera_.worldToScreen(wb));
+    }
+
+    if (!highlightedFace_.isEmpty()) {
+        auto outer = highlightedFace_.value("outer").toArray();
+        QPolygonF poly;
+        for (const auto& v : outer) {
+            auto pnt = v.toObject();
+            poly << camera_.worldToScreen({pnt.value("x").toDouble(), pnt.value("y").toDouble()});
+        }
+        if (!poly.isEmpty()) {
+            p.setPen(QPen(QColor(255, 255, 0), 1.5));
+            p.drawPolygon(poly);
+        }
     }
     currentTool()->renderOverlay(p);
 }

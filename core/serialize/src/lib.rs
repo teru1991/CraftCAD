@@ -53,6 +53,10 @@ pub enum ReasonCode {
     EditTargetLockedOrHidden,
     EditInvalidNumeric,
     EditTransformWouldDegenerate,
+    FaceNoClosedLoop,
+    FaceSelfIntersection,
+    FaceAmbiguousLoop,
+    PartInvalidOutline,
 }
 
 impl ReasonCode {
@@ -77,6 +81,10 @@ impl ReasonCode {
             Self::EditTargetLockedOrHidden => "EDIT_TARGET_LOCKED_OR_HIDDEN",
             Self::EditInvalidNumeric => "EDIT_INVALID_NUMERIC",
             Self::EditTransformWouldDegenerate => "EDIT_TRANSFORM_WOULD_DEGENERATE",
+            Self::FaceNoClosedLoop => "FACE_NO_CLOSED_LOOP",
+            Self::FaceSelfIntersection => "FACE_SELF_INTERSECTION",
+            Self::FaceAmbiguousLoop => "FACE_AMBIGUOUS_LOOP",
+            Self::PartInvalidOutline => "PART_INVALID_OUTLINE",
         }
     }
 }

@@ -8,6 +8,8 @@ members = [
   "serialize",
   "commands",
   "edit_ops",
+  "faces",
+  "part_ops",
   "ffi_desktop",
 ]
 resolver = "2"
