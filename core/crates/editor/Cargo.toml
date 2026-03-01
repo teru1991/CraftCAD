@@ -1,0 +1,10 @@
+[package]
+name = "craftcad_editor"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+craftcad_geom2d = { path = "../geom2d" }
+craftcad_sketch = { path = "../sketch" }
+craftcad_snapping = { path = "../snapping" }

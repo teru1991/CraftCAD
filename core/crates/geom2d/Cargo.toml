@@ -1,0 +1,9 @@
+[package]
+name = "craftcad_geom2d"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+craftcad_errors = { path = "../errors", package = "craftcad_errors" }
+serde = { version = "1", features = ["derive"] }
