@@ -1,12 +1,16 @@
+use craftcad_bom::{generate_bom, write_bom_csv, CsvOptions, RoundingPolicy, UnitPolicy};
 use craftcad_commands::commands::create_line::{CreateLineCommand, CreateLineInput};
-use craftcad_commands::commands::create_part::{CreatePartCommand, CreatePartInput};
+use craftcad_commands::commands::create_part::{
+    CreatePartCommand, CreatePartFromFaceCommand, CreatePartFromFaceInput, CreatePartInput,
+    DeletePartCommand, PartProps, UpdatePartCommand, UpdatePartInput,
+};
 use craftcad_commands::commands::offset_entity::{OffsetEntityCommand, OffsetEntityInput};
 use craftcad_commands::commands::transform_selection::{
     Transform, TransformSelectionCommand, TransformSelectionInput,
 };
 use craftcad_commands::commands::trim_entity::{TrimEntityCommand, TrimEntityInput};
 use craftcad_commands::{Command, CommandContext, History};
-use craftcad_faces::extract_faces;
+use craftcad_faces::{extract_faces, Face};
 use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
 use serde::Serialize;
@@ -156,6 +160,159 @@ pub unsafe extern "C" fn craftcad_history_apply_create_part(
         h.push(delta);
         Ok(())
     })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_create_part_from_face(
+    handle: u64,
+    doc_json: *const c_char,
+    face_json: *const c_char,
+    part_props_json: *const c_char,
+) -> *mut c_char {
+    let face: Face = match parse_cstr(face_json, "face_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::PartInvalidOutline))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let props: PartProps = match parse_cstr(part_props_json, "part_props_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::PartInvalidFields))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut cmd = CreatePartFromFaceCommand::new();
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(CreatePartFromFaceInput {
+            face,
+            part_props: props,
+        })?;
+        let delta = cmd.commit()?;
+        delta.apply(doc)?;
+        h.push(delta);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_update_part(
+    handle: u64,
+    doc_json: *const c_char,
+    part_id_uuid: *const c_char,
+    patch_json: *const c_char,
+) -> *mut c_char {
+    let part_id = match parse_cstr(part_id_uuid, "part_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let patch: serde_json::Value = match parse_cstr(patch_json, "patch_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::PartInvalidFields))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+
+    with_history_doc(handle, doc_json, |h, doc| {
+        let before = doc
+            .parts
+            .iter()
+            .find(|p| p.id == part_id)
+            .ok_or_else(|| Reason::from_code(ReasonCode::ModelReferenceNotFound))?
+            .clone();
+        let mut after_v = serde_json::to_value(&before)
+            .map_err(|_| Reason::from_code(ReasonCode::CoreInvariantViolation))?;
+        merge_patch(&mut after_v, &patch);
+        let after: Part = serde_json::from_value(after_v)
+            .map_err(|_| Reason::from_code(ReasonCode::PartInvalidFields))?;
+        let mut cmd = UpdatePartCommand::new();
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(UpdatePartInput { before, after })?;
+        let delta = cmd.commit()?;
+        delta.apply(doc)?;
+        h.push(delta);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_delete_part(
+    handle: u64,
+    doc_json: *const c_char,
+    part_id_uuid: *const c_char,
+) -> *mut c_char {
+    let part_id = match parse_cstr(part_id_uuid, "part_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+
+    with_history_doc(handle, doc_json, |h, doc| {
+        let before = doc
+            .parts
+            .iter()
+            .find(|p| p.id == part_id)
+            .ok_or_else(|| Reason::from_code(ReasonCode::ModelReferenceNotFound))?
+            .clone();
+        let mut cmd = DeletePartCommand::new();
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(before)?;
+        let delta = cmd.commit()?;
+        delta.apply(doc)?;
+        h.push(delta);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_export_bom_csv_bytes(
+    doc_json: *const c_char,
+    bom_options_json: *const c_char,
+) -> *mut c_char {
+    let doc: Document = match parse_cstr(doc_json, "doc_json").and_then(|s| {
+        serde_json::from_str(&s)
+            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let opts: CsvOptions = match parse_cstr(bom_options_json, "bom_options_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::BomExportFailed))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    match generate_bom(&doc, UnitPolicy, RoundingPolicy).and_then(|t| write_bom_csv(&t, opts)) {
+        Ok(bytes) => {
+            use base64::Engine;
+            let b64 = base64::engine::general_purpose::STANDARD.encode(bytes);
+            encode_ok(serde_json::json!({
+                "bytes_base64": b64,
+                "filename": "bom.csv",
+                "mime": "text/csv"
+            }))
+        }
+        Err(r) => encode_err(r),
+    }
+}
+
+fn merge_patch(target: &mut serde_json::Value, patch: &serde_json::Value) {
+    match (target, patch) {
+        (serde_json::Value::Object(t), serde_json::Value::Object(p)) => {
+            for (k, v) in p {
+                if v.is_null() {
+                    t.remove(k);
+                } else {
+                    merge_patch(t.entry(k.clone()).or_insert(serde_json::Value::Null), v);
+                }
+            }
+        }
+        (t, p) => *t = p.clone(),
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn craftcad_geom_project_point(

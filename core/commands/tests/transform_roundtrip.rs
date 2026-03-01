@@ -34,6 +34,8 @@ fn sample_doc() -> (Document, Uuid) {
             }],
             parts: vec![],
             jobs: vec![],
+            materials: vec![],
+            settings: craftcad_serialize::ProjectSettings::default(),
         },
         entity_id,
     )

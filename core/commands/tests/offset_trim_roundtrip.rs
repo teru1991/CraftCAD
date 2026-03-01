@@ -48,6 +48,8 @@ fn base_doc() -> (Document, Uuid, Uuid) {
             ],
             parts: vec![],
             jobs: vec![],
+            materials: vec![],
+            settings: craftcad_serialize::ProjectSettings::default(),
         },
         target_id,
         cutter_id,

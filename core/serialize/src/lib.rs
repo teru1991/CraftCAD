@@ -57,6 +57,9 @@ pub enum ReasonCode {
     FaceSelfIntersection,
     FaceAmbiguousLoop,
     PartInvalidOutline,
+    PartInvalidFields,
+    MaterialNotFound,
+    BomExportFailed,
 }
 
 impl ReasonCode {
@@ -85,6 +88,9 @@ impl ReasonCode {
             Self::FaceSelfIntersection => "FACE_SELF_INTERSECTION",
             Self::FaceAmbiguousLoop => "FACE_AMBIGUOUS_LOOP",
             Self::PartInvalidOutline => "PART_INVALID_OUTLINE",
+            Self::PartInvalidFields => "PART_INVALID_FIELDS",
+            Self::MaterialNotFound => "MATERIAL_NOT_FOUND",
+            Self::BomExportFailed => "BOM_EXPORT_FAILED",
         }
     }
 }
@@ -107,6 +113,39 @@ pub struct Manifest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum MaterialCategory {
+    Wood,
+    Leather,
+    Other,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SheetDefault {
+    pub width: f64,
+    pub height: f64,
+    pub quantity: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Material {
+    pub id: Uuid,
+    pub name: String,
+    pub category: MaterialCategory,
+    pub thickness_mm: Option<f64>,
+    #[serde(default)]
+    pub sheet_default: Option<SheetDefault>,
+    #[serde(default)]
+    pub notes: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ProjectSettings {
+    #[serde(default)]
+    pub bom_delimiter: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Document {
     pub schema_version: u32,
     pub id: Uuid,
@@ -115,6 +154,10 @@ pub struct Document {
     pub entities: Vec<Entity>,
     pub parts: Vec<Part>,
     pub jobs: Vec<NestJob>,
+    #[serde(default)]
+    pub materials: Vec<Material>,
+    #[serde(default)]
+    pub settings: ProjectSettings,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Layer {
@@ -243,11 +286,24 @@ pub fn validate_manifest_json_str(s: &str) -> Result<serde_json::Value> {
     Ok(val)
 }
 
+fn normalize_document_value(mut val: serde_json::Value) -> serde_json::Value {
+    if let serde_json::Value::Object(ref mut m) = val {
+        if !m.contains_key("materials") {
+            m.insert("materials".to_string(), serde_json::json!([]));
+        }
+        if !m.contains_key("settings") {
+            m.insert("settings".to_string(), serde_json::json!({}));
+        }
+    }
+    val
+}
+
 pub fn validate_document_json_str(s: &str) -> Result<serde_json::Value> {
     let val: serde_json::Value = serde_json::from_str(s).map_err(|e| {
         Reason::from_code(ReasonCode::SerializeSchemaValidationFailed)
             .with_debug("document_json_parse_error", e.to_string())
     })?;
+    let val = normalize_document_value(val);
     let schema = compile_schema(include_str!("../schemas/document.schema.json"))?;
     validate_value(&schema, &val)?;
     Ok(val)

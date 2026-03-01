@@ -17,3 +17,7 @@ Transform editing and desktop tools use these edit-specific reason codes:
 - `FACE_SELF_INTERSECTION`: closed loop self-intersects and cannot form a valid face.
 - `FACE_AMBIGUOUS_LOOP`: loop containment is ambiguous (touching boundaries/epsilon ambiguity).
 - `PART_INVALID_OUTLINE`: provided face/outline is invalid for part creation.
+
+- `PART_INVALID_FIELDS`: part properties are invalid (quantity/thickness/margin/kerf/grain policy).
+- `MATERIAL_NOT_FOUND`: part references missing material id in project catalog.
+- `BOM_EXPORT_FAILED`: BOM serialization/export failed.

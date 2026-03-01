@@ -37,3 +37,10 @@
 ## Note
 - UI表示: Reason.user_msg_key + params
 - ログ: Reason.debug（errors配列、path、値、schema id など）
+
+
+## v1 Add-only compatibility fields
+- `Document.materials` (default `[]` when missing in legacy files)
+- `Document.settings` (default `{}` when missing in legacy files)
+
+These are loader-normalized to keep `schema_version = 1` backward-compatible.

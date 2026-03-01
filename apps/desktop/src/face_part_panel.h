@@ -13,10 +13,15 @@ public:
 private:
     void detectFaces();
     void onFaceSelectionChanged();
-    void createPart();
+    void createPartFromFace();
+    void refreshParts();
+    void editSelectedPart();
+    void deleteSelectedPart();
+    void exportBom();
 
     DocStore* store_;
     CanvasWidget* canvas_;
-    QListWidget* list_;
+    QListWidget* facesList_;
+    QListWidget* partsList_;
     QJsonArray faces_;
 };

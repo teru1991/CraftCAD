@@ -19,6 +19,8 @@ fn sample_doc() -> Document {
         entities: vec![],
         parts: vec![],
         jobs: vec![],
+        materials: vec![],
+        settings: craftcad_serialize::ProjectSettings::default(),
     }
 }
 
@@ -58,4 +60,33 @@ fn create_part_undo_redo_json_roundtrip() {
     assert_eq!(serde_json::to_value(&doc).unwrap(), before);
     history.redo(&mut doc).unwrap();
     assert_eq!(doc.parts.len(), 1);
+}
+
+#[test]
+fn rejects_invalid_outline() {
+    let mut cmd = CreatePartCommand::new();
+    cmd.begin(&CommandContext::default()).unwrap();
+    let bad = Part {
+        id: Uuid::new_v4(),
+        name: "Bad".into(),
+        outline: Polygon2D {
+            outer: vec![
+                craftcad_serialize::Vec2 { x: 0.0, y: 0.0 },
+                craftcad_serialize::Vec2 { x: 1.0, y: 0.0 },
+                craftcad_serialize::Vec2 { x: 2.0, y: 0.0 },
+            ],
+            holes: vec![],
+        },
+        thickness: 1.0,
+        quantity: 1,
+        material_id: Uuid::new_v4(),
+        grain_dir: None,
+        allow_rotate: true,
+        margin: 0.0,
+        kerf: 0.0,
+    };
+    let err = cmd
+        .update(CreatePartInput { part: bad })
+        .expect_err("invalid");
+    assert_eq!(err.code, "PART_INVALID_OUTLINE");
 }

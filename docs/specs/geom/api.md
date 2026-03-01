@@ -19,3 +19,11 @@ Desktop FFI edit operations:
 
 - `craftcad_extract_faces(doc_json, eps_json)` -> `{faces:[{outer:[{x,y}...], holes:[[{x,y}...], ...]}...]}`
 - `craftcad_history_apply_create_part(h, doc_json, part_json)`
+
+
+Part/Face and BOM FFI:
+
+- `craftcad_history_apply_create_part_from_face(h, doc_json, face_json, part_props_json)`
+- `craftcad_history_apply_update_part(h, doc_json, part_id_uuid, patch_json)` using JSON Merge Patch (RFC7396)
+- `craftcad_history_apply_delete_part(h, doc_json, part_id_uuid)`
+- `craftcad_export_bom_csv_bytes(doc_json, bom_options_json)` -> `{bytes_base64, filename, mime}`

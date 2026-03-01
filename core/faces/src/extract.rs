@@ -97,12 +97,15 @@ fn point_in_poly(p: &Vec2, pts: &[Vec2], eps: &EpsilonPolicy) -> Pip {
         if on_segment(a, b, p, eps) {
             return Pip::Boundary;
         }
-        let denom = (b.y - a.y).abs().max(eps.eq_dist);
-        let ysign = if b.y >= a.y { 1.0 } else { -1.0 };
-        let x_at_y = (b.x - a.x) * (p.y - a.y) / (denom * ysign) + a.x;
-        let intersect = ((a.y > p.y) != (b.y > p.y)) && (p.x < x_at_y);
-        if intersect {
-            inside = !inside;
+        if (a.y > p.y) != (b.y > p.y) {
+            let denom = b.y - a.y;
+            if denom.abs() <= eps.eq_dist {
+                continue;
+            }
+            let x_at_y = (b.x - a.x) * (p.y - a.y) / denom + a.x;
+            if p.x < x_at_y {
+                inside = !inside;
+            }
         }
     }
     if inside {
