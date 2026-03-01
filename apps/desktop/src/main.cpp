@@ -47,6 +47,42 @@ static bool runExportAction(
     return true;
 }
 
+static bool runExportAction(
+    QWidget* parent,
+    DocStore& store,
+    char* (*ffi_fn)(const char*, const char*),
+    const QJsonObject& options,
+    const QString& filter,
+    const QString& defaultName
+) {
+    auto docJson = QJsonDocument(store.document).toJson(QJsonDocument::Compact);
+    auto opts = QJsonDocument(options).toJson(QJsonDocument::Compact);
+    char* out = ffi_fn(docJson.constData(), opts.constData());
+    if (!out) {
+        QMessageBox::warning(parent, "Export failed", "EXPORT_PDF_FAILED");
+        return false;
+    }
+    QByteArray env(out);
+    craftcad_free_string(out);
+    auto root = QJsonDocument::fromJson(env).object();
+    if (!root.value("ok").toBool()) {
+        QMessageBox::warning(parent, "Export failed", QString::fromUtf8(QJsonDocument(root.value("reason").toObject()).toJson()));
+        return false;
+    }
+    auto data = root.value("data").toObject();
+    auto bytes = QByteArray::fromBase64(data.value("bytes_base64").toString().toUtf8());
+    auto path = QFileDialog::getSaveFileName(parent, "Save Export", defaultName, filter);
+    if (path.isEmpty()) return false;
+    QFile f(path);
+    if (!f.open(QIODevice::WriteOnly)) {
+        QMessageBox::warning(parent, "Export failed", "EXPORT_IO_WRITE_FAILED");
+        return false;
+    }
+    f.write(bytes);
+    QMessageBox::information(parent, "Export", "Export completed.");
+    return true;
+}
+
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
