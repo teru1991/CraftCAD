@@ -10,6 +10,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 add_executable(craftcad_desktop
   src/main.cpp
   src/doc_store.cpp
+  src/face_part_panel.cpp
   src/canvas_widget.cpp
   src/camera.cpp
   src/selection_state.cpp
@@ -20,6 +21,15 @@ add_executable(craftcad_desktop
   src/input/shortcut_map.cpp
   src/tools/tool_base.cpp
   src/tools/line_tool.cpp
+  src/tools/scale_tool.cpp
+  src/tools/rotate_tool.cpp
+  src/tools/move_tool.cpp
+  src/tools/trim_tool.cpp
+  src/tools/offset_tool.cpp
+  src/tools/polyline_tool.cpp
+  src/tools/arc_tool.cpp
+  src/tools/circle_tool.cpp
+  src/tools/rect_tool.cpp
   src/ffi/craftcad_ffi.cpp
 )
 
