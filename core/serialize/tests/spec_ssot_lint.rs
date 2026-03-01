@@ -56,3 +56,48 @@ fn dataset_manifest_references_existing_files() {
         }
     }
 }
+
+#[test]
+fn drawing_style_ssot_is_valid_and_named_consistently() {
+    let schema_raw = std::fs::read_to_string("../../docs/specs/drawing/style_ssot.schema.json")
+        .expect("style schema read");
+    let style_raw =
+        std::fs::read_to_string("../../docs/specs/drawing/style_ssot.json").expect("style read");
+
+    let schema: serde_json::Value = serde_json::from_str(&schema_raw).expect("style schema json");
+    let style: serde_json::Value = serde_json::from_str(&style_raw).expect("style json");
+
+    let compiled = jsonschema::JSONSchema::compile(&schema).expect("compile style schema");
+    if let Err(errors) = compiled.validate(&style) {
+        let issues: Vec<String> = errors.map(|e| e.to_string()).collect();
+        panic!("style_ssot validation failed: {}", issues.join("; "));
+    }
+
+    let mut style_names = BTreeSet::new();
+    for line_style in style["line_styles"].as_array().expect("line_styles") {
+        let name = line_style["name"].as_str().expect("line_style.name");
+        assert!(
+            name.chars()
+                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_'),
+            "invalid line style name: {name}"
+        );
+        assert!(
+            style_names.insert(name.to_string()),
+            "duplicate line style: {name}"
+        );
+    }
+
+    let weights = style["line_weights"].as_object().expect("line_weights");
+    let mut weight_names = BTreeSet::new();
+    for name in weights.keys() {
+        assert!(
+            name.chars()
+                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_'),
+            "invalid line weight name: {name}"
+        );
+        assert!(
+            weight_names.insert(name.to_string()),
+            "duplicate line weight: {name}"
+        );
+    }
+}

@@ -1,0 +1,13 @@
+[package]
+name = "craftcad_drawing_style"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+craftcad_errors = { path = "../errors" }
+craftcad_diycad_format = { path = "../diycad_format" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+jsonschema = "0.17"

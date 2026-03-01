@@ -1,0 +1,48 @@
+{
+  "version": "v1",
+  "line_styles": [
+    { "name": "solid", "pattern": [] },
+    { "name": "dashed", "pattern": [4.0, 2.0] },
+    { "name": "center", "pattern": [8.0, 2.0, 1.0, 2.0] }
+  ],
+  "line_weights": {
+    "thin": 0.18,
+    "normal": 0.25,
+    "thick": 0.35
+  },
+  "color_policy": {
+    "mode": "mono",
+    "rgb": {
+      "default": "#000000",
+      "hidden": "#4D4D4D",
+      "center": "#000000"
+    }
+  },
+  "fonts": {
+    "family": "Noto Sans JP",
+    "fallback": ["Noto Sans", "Arial", "sans-serif"]
+  },
+  "text": {
+    "size_mm": 3.5
+  },
+  "arrow": {
+    "style": "closed_filled",
+    "size_mm": 2.5
+  },
+  "rounding": {
+    "metric_decimals": 2,
+    "imperial_decimals": 3,
+    "mode": "half_up",
+    "epsilon": 0.000001
+  },
+  "units_display": {
+    "metric_suffix": "mm",
+    "imperial_suffix": "in"
+  },
+  "dimension_rules": {
+    "extension_mm": 2.0,
+    "offset_mm": 8.0,
+    "text_gap_mm": 1.5,
+    "collision_step_mm": 2.0
+  }
+}

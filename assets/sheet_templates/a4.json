@@ -1,0 +1,11 @@
+{
+  "id": "a4_portrait_v1",
+  "sheet": { "size": "A4", "width_mm": 210, "height_mm": 297, "margin_mm": 10 },
+  "title_block": {
+    "project_title": "${project_title}",
+    "schema_version": "${schema_version}",
+    "app_version": "${app_version}",
+    "unit": "${unit}",
+    "scale": "${scale}"
+  }
+}

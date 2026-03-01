@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CraftCAD Drawing Style SSOT",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "line_styles",
+    "line_weights",
+    "color_policy",
+    "fonts",
+    "text",
+    "arrow",
+    "rounding",
+    "units_display",
+    "dimension_rules"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^v[0-9]+$"
+    },
+    "line_styles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "pattern"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "pattern": {
+            "type": "array",
+            "items": { "type": "number", "minimum": 0.0 }
+          }
+        }
+      }
+    },
+    "line_weights": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "number",
+        "exclusiveMinimum": 0
+      }
+    },
+    "color_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "rgb"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["mono", "palette"]
+        },
+        "rgb": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          }
+        }
+      }
+    },
+    "fonts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "fallback"],
+      "properties": {
+        "family": { "type": "string", "minLength": 1 },
+        "fallback": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "text": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size_mm"],
+      "properties": {
+        "size_mm": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "arrow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["style", "size_mm"],
+      "properties": {
+        "style": {
+          "type": "string",
+          "enum": ["closed_filled", "open", "dot"]
+        },
+        "size_mm": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "rounding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric_decimals", "imperial_decimals", "mode", "epsilon"],
+      "properties": {
+        "metric_decimals": { "type": "integer", "minimum": 0, "maximum": 6 },
+        "imperial_decimals": { "type": "integer", "minimum": 0, "maximum": 6 },
+        "mode": { "type": "string", "enum": ["half_up", "bankers"] },
+        "epsilon": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "units_display": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric_suffix", "imperial_suffix"],
+      "properties": {
+        "metric_suffix": { "type": "string" },
+        "imperial_suffix": { "type": "string" }
+      }
+    },
+    "dimension_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["extension_mm", "offset_mm", "text_gap_mm", "collision_step_mm"],
+      "properties": {
+        "extension_mm": { "type": "number", "minimum": 0 },
+        "offset_mm": { "type": "number", "minimum": 0 },
+        "text_gap_mm": { "type": "number", "minimum": 0 },
+        "collision_step_mm": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}
