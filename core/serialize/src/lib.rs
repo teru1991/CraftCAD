@@ -60,10 +60,17 @@ pub enum ReasonCode {
     PartInvalidFields,
     MaterialNotFound,
     BomExportFailed,
+    NestPartTooLargeForAnySheet,
+    NestGrainConstraintBlocksFit,
+    NestNoFeasiblePositionWithMarginAndKerf,
+    NestNoGoZoneBlocksFit,
+    NestStoppedByTimeLimit,
+    NestStoppedByIterationLimit,
+    NestInternalInfeasible,
 }
 
 impl ReasonCode {
-    fn as_str(self) -> &'static str {
+    pub fn as_str(self) -> &'static str {
         match self {
             Self::SerializeSchemaValidationFailed => "SERIALIZE_SCHEMA_VALIDATION_FAILED",
             Self::SerializePackageCorrupted => "SERIALIZE_PACKAGE_CORRUPTED",
@@ -235,6 +242,29 @@ pub struct NestConstraints {
     pub global_margin: f64,
     pub global_kerf: f64,
     pub allow_rotate_default: bool,
+    #[serde(default)]
+    pub no_go_zones: Vec<NoGoZone>,
+    #[serde(default)]
+    pub grain_policy: GrainPolicy,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "PascalCase")]
+pub enum GrainPolicy {
+    Strict,
+    Prefer,
+    #[default]
+    Ignore,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum NoGoZone {
+    Rect {
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    },
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NestObjective {
@@ -242,16 +272,124 @@ pub struct NestObjective {
     pub w_sheet_count: f64,
     pub w_cut_count: f64,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PartRef {
+    pub part_id: Uuid,
+    #[serde(default)]
+    pub quantity_override: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Placement {
+    pub part_id: Uuid,
+    pub sheet_instance_index: u32,
+    pub x: f64,
+    pub y: f64,
+    pub rotation_deg: f64,
+    pub bbox: BBox,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BBox {
+    pub min_x: f64,
+    pub min_y: f64,
+    pub max_x: f64,
+    pub max_y: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NestMetrics {
+    pub utilization_per_sheet: Vec<f64>,
+    pub sheet_count_used: u32,
+    pub cut_count_estimate: u32,
+    pub score: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum PartPlacementStatusKind {
+    Placed,
+    Unplaced,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PartPlacementStatus {
+    pub part_id: Uuid,
+    pub status: PartPlacementStatusKind,
+    #[serde(default)]
+    pub reason: Option<Reason>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NestResultV1 {
+    pub placements: Vec<Placement>,
+    pub metrics: NestMetrics,
+    pub per_part_status: Vec<PartPlacementStatus>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TraceBestUpdate {
+    pub iter: u32,
+    pub score: f64,
+    pub sheet_used: u32,
+    pub utilization: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NestTraceV1 {
+    pub seed: u64,
+    pub iterations: u32,
+    pub time_ms: u64,
+    pub stop_reason: String,
+    pub best_updates: Vec<TraceBestUpdate>,
+    pub failure_stats: BTreeMap<String, u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+enum PartRefCompat {
+    Legacy(Uuid),
+    Structured(PartRef),
+}
+
+fn deserialize_parts_ref<'de, D>(deserializer: D) -> std::result::Result<Vec<PartRef>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let raw = Vec::<PartRefCompat>::deserialize(deserializer)?;
+    Ok(raw
+        .into_iter()
+        .map(|r| match r {
+            PartRefCompat::Legacy(id) => PartRef {
+                part_id: id,
+                quantity_override: None,
+            },
+            PartRefCompat::Structured(v) => v,
+        })
+        .collect())
+}
+
+fn serialize_parts_ref<S>(v: &[PartRef], serializer: S) -> std::result::Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    v.serialize(serializer)
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NestJob {
     pub id: Uuid,
     pub sheet_defs: Vec<SheetDef>,
-    pub parts_ref: Vec<Uuid>,
+    #[serde(
+        deserialize_with = "deserialize_parts_ref",
+        serialize_with = "serialize_parts_ref"
+    )]
+    pub parts_ref: Vec<PartRef>,
     pub constraints: NestConstraints,
     pub objective: NestObjective,
     pub seed: u64,
-    pub result: Option<serde_json::Value>,
-    pub trace: Option<serde_json::Value>,
+    pub result: Option<NestResultV1>,
+    pub trace: Option<NestTraceV1>,
 }
 
 fn compile_schema(raw: &str) -> Result<JSONSchema> {

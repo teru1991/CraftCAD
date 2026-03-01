@@ -4,6 +4,9 @@ use craftcad_commands::commands::create_part::{
     CreatePartCommand, CreatePartFromFaceCommand, CreatePartFromFaceInput, CreatePartInput,
     DeletePartCommand, PartProps, UpdatePartCommand, UpdatePartInput,
 };
+use craftcad_commands::commands::nesting::{
+    EditPlacementCommand, EditPlacementInput, PlacementPose, RunNestingCommand, RunNestingInput,
+};
 use craftcad_commands::commands::offset_entity::{OffsetEntityCommand, OffsetEntityInput};
 use craftcad_commands::commands::transform_selection::{
     Transform, TransformSelectionCommand, TransformSelectionInput,
@@ -13,6 +16,7 @@ use craftcad_commands::{Command, CommandContext, History};
 use craftcad_faces::{extract_faces, Face};
 use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
+use diycad_nesting::RunLimits;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::ffi::{c_char, CStr, CString};
@@ -261,6 +265,111 @@ pub unsafe extern "C" fn craftcad_history_apply_delete_part(
         let mut cmd = DeletePartCommand::new();
         cmd.begin(&CommandContext::default())?;
         cmd.update(before)?;
+        let delta = cmd.commit()?;
+        delta.apply(doc)?;
+        h.push(delta);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_run_nesting(
+    handle: u64,
+    doc_json: *const c_char,
+    job_id_uuid: *const c_char,
+    eps_json: *const c_char,
+    limits_json: *const c_char,
+) -> *mut c_char {
+    let job_id = match parse_cstr(job_id_uuid, "job_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let eps: EpsilonPolicy = match parse_cstr(eps_json, "eps_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::GeomInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let limits: RunLimits = match parse_cstr(limits_json, "limits_json").and_then(|s| {
+        serde_json::from_str(&s)
+            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    with_history_doc(handle, doc_json, |h, doc| {
+        let snapshot = doc.clone();
+        let mut cmd = RunNestingCommand::new();
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(RunNestingInput {
+            job_id,
+            eps,
+            limits,
+            doc_snapshot: snapshot,
+        })?;
+        let delta = cmd.commit()?;
+        delta.apply(doc)?;
+        h.push(delta);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_edit_placement(
+    handle: u64,
+    doc_json: *const c_char,
+    job_id_uuid: *const c_char,
+    part_id_uuid: *const c_char,
+    sheet_index: i32,
+    new_pose_json: *const c_char,
+) -> *mut c_char {
+    let job_id = match parse_cstr(job_id_uuid, "job_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let part_id = match parse_cstr(part_id_uuid, "part_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let new_pose: PlacementPose = match parse_cstr(new_pose_json, "new_pose_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::EditInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    with_history_doc(handle, doc_json, |h, doc| {
+        let old = doc
+            .jobs
+            .iter()
+            .find(|j| j.id == job_id)
+            .and_then(|j| j.result.as_ref())
+            .and_then(|r| {
+                r.placements
+                    .iter()
+                    .find(|p| p.part_id == part_id && p.sheet_instance_index == sheet_index as u32)
+            })
+            .ok_or_else(|| Reason::from_code(ReasonCode::ModelReferenceNotFound))?;
+        let old_pose = PlacementPose {
+            x: old.x,
+            y: old.y,
+            rotation_deg: old.rotation_deg,
+        };
+
+        let mut cmd = EditPlacementCommand::new();
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(EditPlacementInput {
+            job_id,
+            part_id,
+            sheet_index,
+            old_pose,
+            new_pose,
+        })?;
         let delta = cmd.commit()?;
         delta.apply(doc)?;
         h.push(delta);

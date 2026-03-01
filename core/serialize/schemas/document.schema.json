@@ -401,7 +401,36 @@
         },
         "allow_rotate_default": {
           "type": "boolean"
+        },
+        "no_go_zones": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/NoGoZone"}
+        },
+        "grain_policy": {
+          "type": "string",
+          "enum": ["Strict","Prefer","Ignore"]
         }
+      }
+    },
+    "PartRef": {
+      "type": "object",
+      "required": ["part_id"],
+      "additionalProperties": false,
+      "properties": {
+        "part_id": {"$ref": "#/$defs/Uuid"},
+        "quantity_override": {"type": ["integer","null"], "minimum": 1}
+      }
+    },
+    "NoGoZone": {
+      "type": "object",
+      "required": ["type","x","y","width","height"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "Rect"},
+        "x": {"type": "number"},
+        "y": {"type": "number"},
+        "width": {"type": "number", "exclusiveMinimum": 0},
+        "height": {"type": "number", "exclusiveMinimum": 0}
       }
     },
     "NestObjective": {
@@ -460,7 +489,10 @@
         "parts_ref": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/Uuid"
+            "anyOf": [
+              {"$ref": "#/$defs/Uuid"},
+              {"$ref": "#/$defs/PartRef"}
+            ]
           }
         },
         "constraints": {

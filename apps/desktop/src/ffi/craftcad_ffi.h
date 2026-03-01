@@ -25,4 +25,6 @@ char* craftcad_history_undo(uint64_t h,const char* doc_json);
 char* craftcad_history_redo(uint64_t h,const char* doc_json);
 char* craftcad_history_begin_group(uint64_t h,const char* name_utf8);
 char* craftcad_history_end_group(uint64_t h);
+char* craftcad_history_apply_run_nesting(uint64_t h,const char* doc_json,const char* job_id_uuid,const char* eps_json,const char* limits_json);
+char* craftcad_history_apply_edit_placement(uint64_t h,const char* doc_json,const char* job_id_uuid,const char* part_id_uuid,int sheet_index,const char* new_pose_json);
 }
