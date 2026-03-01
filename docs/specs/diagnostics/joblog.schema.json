@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["app_version", "schema_version", "os", "locale", "steps", "reasons"],
+  "properties": {
+    "app_version": {"type": "string"},
+    "schema_version": {"type": "string"},
+    "os": {"type": "string"},
+    "locale": {"type": "string"},
+    "dataset_id": {"type": ["string", "null"]},
+    "seed": {"type": ["integer", "null"]},
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "id", "sha256", "size"],
+        "properties": {
+          "kind": {"type": "string"},
+          "id": {"type": "string"},
+          "sha256": {"type": "string"},
+          "size": {"type": "integer"}
+        }
+      }
+    }
+  }
+}

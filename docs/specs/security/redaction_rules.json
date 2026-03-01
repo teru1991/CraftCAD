@@ -1,0 +1,10 @@
+{
+  "rules": [
+    "mask_home_path",
+    "mask_email",
+    "mask_phone",
+    "mask_url",
+    "mask_token_like",
+    "hash_user_free_text"
+  ]
+}

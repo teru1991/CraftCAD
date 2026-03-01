@@ -1,6 +1,12 @@
 use once_cell::sync::Lazy;
 use serde_json::{Map, Value};
 use std::collections::HashMap;
+use std::path::Path;
+
+pub mod format;
+pub mod loader;
+
+pub use format::{format_unit, UnitSystem};
 
 static JA: &str = include_str!("../locales/ja-JP.json");
 static EN: &str = include_str!("../locales/en-US.json");
@@ -14,6 +20,31 @@ static DICTS: Lazy<HashMap<&'static str, HashMap<String, String>>> = Lazy::new(|
 
 fn parse_dict(src: &str) -> HashMap<String, String> {
     serde_json::from_str(src).unwrap_or_default()
+}
+
+pub struct I18n {
+    dicts: HashMap<String, HashMap<String, String>>,
+}
+
+impl I18n {
+    pub fn load(dir: impl AsRef<Path>) -> Result<Self, String> {
+        let dicts = loader::load_dir(dir.as_ref())?;
+        Ok(Self { dicts })
+    }
+
+    pub fn t(&self, locale: &str, key: &str, args: &[(&str, &str)]) -> String {
+        let mut msg = self
+            .dicts
+            .get(locale)
+            .or_else(|| self.dicts.get("en"))
+            .and_then(|d| d.get(key))
+            .cloned()
+            .unwrap_or_else(|| key.to_string());
+        for (k, v) in args {
+            msg = msg.replace(&format!("{{{k}}}"), v);
+        }
+        msg
+    }
 }
 
 pub fn resolve_user_message(
@@ -56,5 +87,10 @@ mod tests {
         p.insert("id".into(), Value::String("abc".into()));
         let msg = resolve_user_message("model_reference_not_found", &p, "ja-JP");
         assert!(msg.contains("abc"));
+    }
+
+    #[test]
+    fn formats_units() {
+        assert_eq!(format_unit(25.4, UnitSystem::Inch), "1.0000 in");
     }
 }
