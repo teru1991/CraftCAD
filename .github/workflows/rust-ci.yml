@@ -1,4 +1,4 @@
-name: Rust CI
+name: Rust + Desktop CI
 
 on:
   pull_request:
@@ -41,3 +41,27 @@ jobs:
       - name: Validate generated sample_v0.diycad
         working-directory: ${{ github.workspace }}
         run: cargo run --manifest-path tools/diycad-cli/Cargo.toml -- validate /tmp/sample_v0.diycad
+
+  desktop-build:
+    runs-on: ubuntu-latest
+    needs: core-rust-ci
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build qt6-base-dev
+
+      - name: Build desktop
+        run: |
+          ./scripts/build_desktop.sh
+
+      - name: Upload desktop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: craftcad-desktop-linux
+          path: |
+            build/desktop/**/craftcad_desktop*
+            build/desktop/craftcad_desktop*

@@ -1,9 +1,51 @@
 #include "canvas_widget.h"
 #include "doc_store.h"
+#include "face_part_panel.h"
+#include "ffi/craftcad_ffi.h"
 #include <QApplication>
+#include <QFile>
 #include <QFileDialog>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QMainWindow>
+#include <QDockWidget>
+#include <QMenuBar>
 #include <QMessageBox>
+#include <QStandardPaths>
+#include <QTimer>
+
+static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
+
+static bool runExportAction(
+    QWidget* parent,
+    DocStore& store,
+    char* (*ffi_fn)(const char*, const char*),
+    const QJsonObject& options,
+    const QString& filter,
+    const QString& defaultName
+) {
+    auto docJson = store.documentJson().toUtf8();
+    auto opts = QJsonDocument(options).toJson(QJsonDocument::Compact);
+    QString env = take(ffi_fn(docJson.constData(), opts.constData()));
+    auto root = QJsonDocument::fromJson(env.toUtf8()).object();
+    if (!root.value("ok").toBool()) {
+        QMessageBox::warning(parent, "Export failed", QString::fromUtf8(QJsonDocument(root.value("reason").toObject()).toJson()));
+        return false;
+    }
+    auto data = root.value("data").toObject();
+    auto bytes = QByteArray::fromBase64(data.value("bytes_base64").toString().toUtf8());
+    auto path = QFileDialog::getSaveFileName(parent, "Save Export", defaultName, filter);
+    if (path.isEmpty()) return false;
+    QFile f(path);
+    if (!f.open(QIODevice::WriteOnly)) {
+        QMessageBox::warning(parent, "Export failed", "EXPORT_IO_WRITE_FAILED");
+        return false;
+    }
+    f.write(bytes);
+    QMessageBox::information(parent, "Export", "Export completed.");
+    return true;
+}
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
@@ -20,9 +62,65 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    if (store.hasRecoverySnapshot()) {
+        auto answer = QMessageBox::question(nullptr, "Recovery found", "A crash-recovery autosave exists. Restore it?");
+        if (answer == QMessageBox::Yes) {
+            if (!store.loadRecoverySnapshot(&err)) {
+                QMessageBox::warning(nullptr, "Recovery failed", err);
+            }
+        }
+    }
+
     QMainWindow w;
-    w.setWindowTitle("CraftCAD Desktop (read-only + line tool)");
-    w.setCentralWidget(new CanvasWidget(&store));
+    w.setWindowTitle("CraftCAD Desktop");
+    auto* canvas = new CanvasWidget(&store);
+    w.setCentralWidget(canvas);
+    auto* dock = new QDockWidget("Faces/Parts", &w);
+    dock->setWidget(new FacePartPanel(&store, canvas));
+    w.addDockWidget(Qt::RightDockWidgetArea, dock);
+
+    auto* exportMenu = w.menuBar()->addMenu("&Export");
+    auto* tiledAction = exportMenu->addAction("Tiled PDF (1:1)");
+    auto* drawingAction = exportMenu->addAction("Drawing PDF");
+    auto* svgAction = exportMenu->addAction("SVG");
+    auto* diagAction = exportMenu->addAction("Diagnostic Pack");
+
+    QObject::connect(tiledAction, &QAction::triggered, [&]() {
+        QJsonObject opts{{"page_size", "A4"}, {"orientation", "Portrait"}, {"margin_mm", 10.0},
+                         {"include_crop_marks", true}, {"include_scale_gauge", true},
+                         {"title", "CraftCAD Tiled"}, {"include_metadata", true}};
+        runExportAction(&w, store, craftcad_export_tiled_pdf, opts, "PDF Files (*.pdf)", "tiled.pdf");
+    });
+    QObject::connect(drawingAction, &QAction::triggered, [&]() {
+        QJsonObject opts{{"title", "CraftCAD Drawing"}};
+        runExportAction(&w, store, craftcad_export_drawing_pdf, opts, "PDF Files (*.pdf)", "drawing.pdf");
+    });
+    QObject::connect(svgAction, &QAction::triggered, [&]() {
+        QJsonObject opts{{"precision", 3}, {"include_parts", true}, {"include_entities", true}};
+        runExportAction(&w, store, craftcad_export_svg, opts, "SVG Files (*.svg)", "drawing.svg");
+    });
+    QObject::connect(diagAction, &QAction::triggered, [&]() {
+        const bool includeDoc = QMessageBox::question(&w, "Include snapshot", "Include current .diycad document snapshot?\n(Contains project data)") == QMessageBox::Yes;
+        QJsonArray logs;
+        for (const auto& line : store.latestReasonLogs(100)) logs.append(line);
+        QJsonObject opts{{"latest_n", 100}, {"include_doc_snapshot", includeDoc}, {"reason_logs", logs},
+                         {"eps", QJsonDocument::fromJson(store.epsPolicyJson().toUtf8()).object()}};
+        runExportAction(&w, store, craftcad_export_diagnostic_pack, opts, "ZIP Files (*.zip)", "diagnostic_pack.zip");
+    });
+
+    QTimer autosave;
+    autosave.setInterval(5000);
+    QObject::connect(&autosave, &QTimer::timeout, [&]() {
+        QString r;
+        store.autosaveNow(&r);
+    });
+    autosave.start();
+
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, [&]() {
+        QString r;
+        store.autosaveNow(&r);
+    });
+
     w.resize(1200, 800);
     w.show();
     return app.exec();

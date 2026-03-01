@@ -1,0 +1,62 @@
+# Geometry API (Transform)
+
+Transform JSON payloads used by Desktop->FFI command invocation:
+
+- Translate: `{ "type": "Translate", "dx": number, "dy": number }`
+- Rotate: `{ "type": "Rotate", "cx": number, "cy": number, "angle_rad": number }`
+- Scale: `{ "type": "Scale", "cx": number, "cy": number, "sx": number, "sy": number }`
+
+Selection payload:
+
+- `{ "ids": ["<uuid>", ...] }`
+
+
+Desktop FFI edit operations:
+
+- `craftcad_history_apply_offset_entity(h, doc_json, entity_id_uuid, dist, eps_json)`
+- `craftcad_history_apply_trim_entity(h, doc_json, target_id_uuid, cutter_id_uuid, pick_point_json, eps_json)`
+- `craftcad_history_apply_trim_entity_with_candidate_index(h, doc_json, target_id_uuid, cutter_id_uuid, pick_point_json, eps_json, candidate_index)`
+
+- `craftcad_extract_faces(doc_json, eps_json)` -> `{faces:[{outer:[{x,y}...], holes:[[{x,y}...], ...]}...]}`
+- `craftcad_history_apply_create_part(h, doc_json, part_json)`
+
+
+Part/Face and BOM FFI:
+
+- `craftcad_history_apply_create_part_from_face(h, doc_json, face_json, part_props_json)`
+- `craftcad_history_apply_update_part(h, doc_json, part_id_uuid, patch_json)` using JSON Merge Patch (RFC7396)
+- `craftcad_history_apply_delete_part(h, doc_json, part_id_uuid)`
+- `craftcad_export_bom_csv_bytes(doc_json, bom_options_json)` -> `{bytes_base64, filename, mime}`
+
+## Drawing command JSON params (v1)
+
+- RectParams (fixed mode in v1):
+  - `{ "mode": "TwoPoint", "p0": {"x":num,"y":num}, "p1": {"x":num,"y":num}, "corner": "Sharp" }`
+- CircleParams (fixed mode in v1):
+  - `{ "mode": "CenterRadius", "c": {"x":num,"y":num}, "r": num }`
+- ArcParams (fixed mode in v1):
+  - `{ "mode": "Center", "c": {"x":num,"y":num}, "r": num, "start_angle": num, "end_angle": num, "ccw": bool }`
+- PolylineParams:
+  - `{ "pts": [{"x":num,"y":num}, ...], "closed": bool }`
+
+## Advanced edit FFI payloads (v1)
+
+- Fillet: `{"e1":"<entity_uuid>","e2":"<entity_uuid>","radius":num}`
+- Chamfer: `{"e1":"<entity_uuid>","e2":"<entity_uuid>","distance":num}`
+- Mirror: `{"selection_ids":["<uuid>",...],"axis_a":{"x":num,"y":num},"axis_b":{"x":num,"y":num}}`
+- Pattern:
+  - Linear: `{"selection_ids":[...],"params":{"type":"Linear","dx":num,"dy":num,"count":int>=2}}`
+  - Circular: `{"selection_ids":[...],"params":{"type":"Circular","cx":num,"cy":num,"step_deg":num,"count":int>=2}}`
+
+
+## Circle/Arc numeric safety (v1)
+
+- `intersect` supports `Line×Circle`, `Line×Arc`/`Arc×Line`, and `Circle×Circle` with deterministic ordering and epsilon-based dedupe.
+- Intersection classification is explicit in `IntersectionSet.debug.classification`:
+  - `"tangent_or_single"` for a single hit
+  - `"secant"` for two hits
+- Arc intersections are filtered by angular range (`start_angle`, `end_angle`, `ccw`) with epsilon tolerance.
+- Numeric stability uses staged fallback (`intersect_tol` relaxed deterministically). When fallback is used and converges, debug trail includes `GEOM_NUMERIC_UNSTABLE_FALLBACK_USED`.
+- If fallback stages are exhausted without stable result, return `GEOM_FALLBACK_LIMIT_REACHED`.
+- `project_point` supports `Circle`/`Arc` and returns deterministic `t_global` in `[0,1]` for arc span.
+- `split_at` supports `Arc` and rejects endpoint splits within epsilon with `GEOM_SPLIT_POINT_NOT_ON_GEOM`.
