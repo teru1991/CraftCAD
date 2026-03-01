@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "styles": [
+    {
+      "id": "default_v1",
+      "label": { "ja": "標準", "en": "Default" },
+      "units": { "internal": "mm", "display": "mm" },
+      "rounding": {
+        "length_step": 0.1,
+        "angle_deg_step": 0.5
+      },
+      "fonts": {
+        "primary_family": "Noto Sans",
+        "fallback_families": ["Arial", "Helvetica", "sans-serif"],
+        "size_mm": 3.0
+      },
+      "line_weights": {
+        "thin_mm": 0.18,
+        "normal_mm": 0.25,
+        "bold_mm": 0.35,
+        "scale_with_print": false,
+        "min_line_weight_mm": 0.12
+      },
+      "dimension": {
+        "arrow": { "type": "open", "size_mm": 2.5 },
+        "ext_line_gap_mm": 1.0,
+        "ext_line_overhang_mm": 1.5,
+        "dim_line_offset_mm": 7.0,
+        "dim_line_step_mm": 5.0,
+        "text_gap_mm": 1.0,
+        "text_box_padding_mm": 0.7,
+        "leader": { "default_angle_deg": 30.0 }
+      },
+      "linetypes": {
+        "solid": { "pattern_mm": [] },
+        "dashed": { "pattern_mm": [6.0, 3.0] },
+        "center": { "pattern_mm": [12.0, 3.0, 3.0, 3.0] },
+        "hidden": { "pattern_mm": [3.0, 2.0] }
+      },
+      "colors": {
+        "by_layer": true,
+        "default_stroke_hex": "#000000",
+        "default_fill_hex": "#ffffff"
+      }
+    }
+  ]
+}

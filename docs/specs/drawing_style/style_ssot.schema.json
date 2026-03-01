@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/specs/drawing_style/style_ssot.schema.json",
+  "title": "CraftCAD Drawing Style SSOT",
+  "type": "object",
+  "required": ["schema_version", "styles"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "styles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/style_preset" }
+    }
+  },
+  "$defs": {
+    "id_v": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*_v[0-9]+$"
+    },
+    "label_i18n": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "ja": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "en": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    "units": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["internal", "display"],
+      "properties": {
+        "internal": { "const": "mm" },
+        "display": { "enum": ["mm", "inch"] }
+      }
+    },
+    "rounding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["length_step", "angle_deg_step"],
+      "properties": {
+        "length_step": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 10.0 },
+        "angle_deg_step": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 45.0 }
+      }
+    },
+    "fonts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary_family", "fallback_families", "size_mm"],
+      "properties": {
+        "primary_family": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "fallback_families": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+        },
+        "size_mm": { "type": "number", "minimum": 1.5, "maximum": 10.0 }
+      }
+    },
+    "line_weights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["thin_mm", "normal_mm", "bold_mm", "scale_with_print", "min_line_weight_mm"],
+      "properties": {
+        "thin_mm": { "type": "number", "minimum": 0.05, "maximum": 2.0 },
+        "normal_mm": { "type": "number", "minimum": 0.05, "maximum": 2.0 },
+        "bold_mm": { "type": "number", "minimum": 0.05, "maximum": 3.0 },
+        "scale_with_print": { "type": "boolean" },
+        "min_line_weight_mm": { "type": "number", "minimum": 0.03, "maximum": 0.5 }
+      }
+    },
+    "dash_pattern": {
+      "type": "array",
+      "items": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 200.0 }
+    },
+    "linetype_def": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pattern_mm"],
+      "properties": {
+        "pattern_mm": { "$ref": "#/$defs/dash_pattern" }
+      }
+    },
+    "linetypes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["solid", "dashed", "center", "hidden"],
+      "properties": {
+        "solid": { "$ref": "#/$defs/linetype_def" },
+        "dashed": { "$ref": "#/$defs/linetype_def" },
+        "center": { "$ref": "#/$defs/linetype_def" },
+        "hidden": { "$ref": "#/$defs/linetype_def" }
+      }
+    },
+    "arrow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "size_mm"],
+      "properties": {
+        "type": { "enum": ["open", "filled"] },
+        "size_mm": { "type": "number", "minimum": 0.8, "maximum": 10.0 }
+      }
+    },
+    "leader": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_angle_deg"],
+      "properties": {
+        "default_angle_deg": { "type": "number", "minimum": 0.0, "maximum": 89.0 }
+      }
+    },
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "arrow",
+        "ext_line_gap_mm",
+        "ext_line_overhang_mm",
+        "dim_line_offset_mm",
+        "dim_line_step_mm",
+        "text_gap_mm",
+        "text_box_padding_mm",
+        "leader"
+      ],
+      "properties": {
+        "arrow": { "$ref": "#/$defs/arrow" },
+        "ext_line_gap_mm": { "type": "number", "minimum": 0.0, "maximum": 20.0 },
+        "ext_line_overhang_mm": { "type": "number", "minimum": 0.0, "maximum": 30.0 },
+        "dim_line_offset_mm": { "type": "number", "minimum": 0.0, "maximum": 50.0 },
+        "dim_line_step_mm": { "type": "number", "minimum": 0.1, "maximum": 50.0 },
+        "text_gap_mm": { "type": "number", "minimum": 0.0, "maximum": 10.0 },
+        "text_box_padding_mm": { "type": "number", "minimum": 0.0, "maximum": 10.0 },
+        "leader": { "$ref": "#/$defs/leader" }
+      }
+    },
+    "colors": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["by_layer", "default_stroke_hex", "default_fill_hex"],
+      "properties": {
+        "by_layer": { "type": "boolean" },
+        "default_stroke_hex": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        "default_fill_hex": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" }
+      }
+    },
+    "style_preset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "units",
+        "rounding",
+        "fonts",
+        "line_weights",
+        "dimension",
+        "linetypes",
+        "colors"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id_v" },
+        "label": { "$ref": "#/$defs/label_i18n" },
+        "units": { "$ref": "#/$defs/units" },
+        "rounding": { "$ref": "#/$defs/rounding" },
+        "fonts": { "$ref": "#/$defs/fonts" },
+        "line_weights": { "$ref": "#/$defs/line_weights" },
+        "dimension": { "$ref": "#/$defs/dimension" },
+        "linetypes": { "$ref": "#/$defs/linetypes" },
+        "colors": { "$ref": "#/$defs/colors" }
+      }
+    }
+  }
+}
