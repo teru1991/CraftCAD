@@ -1,0 +1,23 @@
+{
+  "tasks": {
+    "UCEL-TRANSPORT-STABILITY-005": {
+      "branch": "feature/ucel-transport-stability-005",
+      "artifacts": [
+        "crates/ucel-transport/tests/ws_chaos_suite.rs",
+        "docs/runbooks/transport/ws_health_support_bundle.md",
+        "docs/status/trace-index.json",
+        "docs/verification/UCEL-TRANSPORT-STABILITY-005.md",
+        "scripts/collect_support_bundle.ps1",
+        "scripts/collect_support_bundle.sh",
+        "services/marketdata-rs/ucel-ws-subscriber/Cargo.toml",
+        "services/marketdata-rs/ucel-ws-subscriber/src/http.rs",
+        "services/marketdata-rs/ucel-ws-subscriber/src/main.rs",
+        "services/marketdata-rs/ucel-ws-subscriber/src/metrics.rs",
+        "services/marketdata-rs/ucel-ws-subscriber/src/state.rs"
+      ],
+      "verification_evidence": [
+        "docs/verification/UCEL-TRANSPORT-STABILITY-005.md"
+      ]
+    }
+  }
+}

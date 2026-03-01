@@ -1,0 +1,12 @@
+[package]
+name = "ucel-ws-subscriber"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+axum = "0.7"
+parking_lot = "0.12"
+prometheus = "0.13"
+serde_json = "1"
+ucel-transport = { path = "../../../crates/ucel-transport" }
