@@ -43,11 +43,51 @@ pub enum ReasonCode {
     GeomIntersectionAmbiguous,
     GeomDegenerate,
     GeomSplitPointNotOnGeom,
+    GeomArcRangeInvalid,
+    GeomCircleRadiusInvalid,
+    GeomFallbackLimitReached,
     CoreInvariantViolation,
+    GeomOffsetSelfIntersection,
+    GeomOffsetNotSupported,
+    GeomTrimNoIntersection,
+    EditAmbiguousTarget,
+    EditTrimAmbiguousCandidate,
+    EditNoSelection,
+    EditTargetLockedOrHidden,
+    EditInvalidNumeric,
+    EditTransformWouldDegenerate,
+    DrawInvalidNumeric,
+    DrawConstraintConflict,
+    DrawInsufficientInput,
+    EditFilletRadiusTooLarge,
+    EditChamferDistanceTooLarge,
+    EditMirrorAxisInvalid,
+    EditPatternInvalidParams,
+    EditAmbiguousCandidate,
+    EditCandidateNotFound,
+    FaceNoClosedLoop,
+    FaceSelfIntersection,
+    FaceAmbiguousLoop,
+    PartInvalidOutline,
+    PartInvalidFields,
+    MaterialNotFound,
+    BomExportFailed,
+    ExportPdfFailed,
+    ExportUnsupportedEntity,
+    ExportUnsupportedFeature,
+    ExportIoParseFailed,
+    ExportIoWriteFailed,
+    NestPartTooLargeForAnySheet,
+    NestGrainConstraintBlocksFit,
+    NestNoFeasiblePositionWithMarginAndKerf,
+    NestNoGoZoneBlocksFit,
+    NestStoppedByTimeLimit,
+    NestStoppedByIterationLimit,
+    NestInternalInfeasible,
 }
 
 impl ReasonCode {
-    fn as_str(self) -> &'static str {
+    pub fn as_str(self) -> &'static str {
         match self {
             Self::SerializeSchemaValidationFailed => "SERIALIZE_SCHEMA_VALIDATION_FAILED",
             Self::SerializePackageCorrupted => "SERIALIZE_PACKAGE_CORRUPTED",
@@ -58,7 +98,49 @@ impl ReasonCode {
             Self::GeomIntersectionAmbiguous => "GEOM_INTERSECTION_AMBIGUOUS",
             Self::GeomDegenerate => "GEOM_DEGENERATE",
             Self::GeomSplitPointNotOnGeom => "GEOM_SPLIT_POINT_NOT_ON_GEOM",
+            Self::GeomArcRangeInvalid => "GEOM_ARC_RANGE_INVALID",
+            Self::GeomCircleRadiusInvalid => "GEOM_CIRCLE_RADIUS_INVALID",
+            Self::GeomFallbackLimitReached => "GEOM_FALLBACK_LIMIT_REACHED",
             Self::CoreInvariantViolation => "CORE_INVARIANT_VIOLATION",
+            Self::GeomOffsetSelfIntersection => "GEOM_OFFSET_SELF_INTERSECTION",
+            Self::GeomOffsetNotSupported => "GEOM_OFFSET_NOT_SUPPORTED",
+            Self::GeomTrimNoIntersection => "GEOM_TRIM_NO_INTERSECTION",
+            Self::EditAmbiguousTarget => "EDIT_AMBIGUOUS_TARGET",
+            Self::EditTrimAmbiguousCandidate => "EDIT_TRIM_AMBIGUOUS_CANDIDATE",
+            Self::EditNoSelection => "EDIT_NO_SELECTION",
+            Self::EditTargetLockedOrHidden => "EDIT_TARGET_LOCKED_OR_HIDDEN",
+            Self::EditInvalidNumeric => "EDIT_INVALID_NUMERIC",
+            Self::EditTransformWouldDegenerate => "EDIT_TRANSFORM_WOULD_DEGENERATE",
+            Self::DrawInvalidNumeric => "DRAW_INVALID_NUMERIC",
+            Self::DrawConstraintConflict => "DRAW_CONSTRAINT_CONFLICT",
+            Self::DrawInsufficientInput => "DRAW_INSUFFICIENT_INPUT",
+            Self::EditFilletRadiusTooLarge => "EDIT_FILLET_RADIUS_TOO_LARGE",
+            Self::EditChamferDistanceTooLarge => "EDIT_CHAMFER_DISTANCE_TOO_LARGE",
+            Self::EditMirrorAxisInvalid => "EDIT_MIRROR_AXIS_INVALID",
+            Self::EditPatternInvalidParams => "EDIT_PATTERN_INVALID_PARAMS",
+            Self::EditAmbiguousCandidate => "EDIT_AMBIGUOUS_CANDIDATE",
+            Self::EditCandidateNotFound => "EDIT_CANDIDATE_NOT_FOUND",
+            Self::FaceNoClosedLoop => "FACE_NO_CLOSED_LOOP",
+            Self::FaceSelfIntersection => "FACE_SELF_INTERSECTION",
+            Self::FaceAmbiguousLoop => "FACE_AMBIGUOUS_LOOP",
+            Self::PartInvalidOutline => "PART_INVALID_OUTLINE",
+            Self::PartInvalidFields => "PART_INVALID_FIELDS",
+            Self::MaterialNotFound => "MATERIAL_NOT_FOUND",
+            Self::BomExportFailed => "BOM_EXPORT_FAILED",
+            Self::ExportPdfFailed => "EXPORT_PDF_FAILED",
+            Self::ExportUnsupportedEntity => "EXPORT_UNSUPPORTED_ENTITY",
+            Self::ExportUnsupportedFeature => "EXPORT_UNSUPPORTED_FEATURE",
+            Self::ExportIoParseFailed => "EXPORT_IO_PARSE_FAILED",
+            Self::ExportIoWriteFailed => "EXPORT_IO_WRITE_FAILED",
+            Self::NestPartTooLargeForAnySheet => "NEST_PART_TOO_LARGE_FOR_ANY_SHEET",
+            Self::NestGrainConstraintBlocksFit => "NEST_GRAIN_CONSTRAINT_BLOCKS_FIT",
+            Self::NestNoFeasiblePositionWithMarginAndKerf => {
+                "NEST_NO_FEASIBLE_POSITION_WITH_MARGIN_AND_KERF"
+            }
+            Self::NestNoGoZoneBlocksFit => "NEST_NO_GO_ZONE_BLOCKS_FIT",
+            Self::NestStoppedByTimeLimit => "NEST_STOPPED_BY_TIME_LIMIT",
+            Self::NestStoppedByIterationLimit => "NEST_STOPPED_BY_ITERATION_LIMIT",
+            Self::NestInternalInfeasible => "NEST_INTERNAL_INFEASIBLE",
         }
     }
 }
@@ -81,6 +163,39 @@ pub struct Manifest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum MaterialCategory {
+    Wood,
+    Leather,
+    Other,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SheetDefault {
+    pub width: f64,
+    pub height: f64,
+    pub quantity: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Material {
+    pub id: Uuid,
+    pub name: String,
+    pub category: MaterialCategory,
+    pub thickness_mm: Option<f64>,
+    #[serde(default)]
+    pub sheet_default: Option<SheetDefault>,
+    #[serde(default)]
+    pub notes: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct ProjectSettings {
+    #[serde(default)]
+    pub bom_delimiter: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Document {
     pub schema_version: u32,
     pub id: Uuid,
@@ -89,6 +204,10 @@ pub struct Document {
     pub entities: Vec<Entity>,
     pub parts: Vec<Part>,
     pub jobs: Vec<NestJob>,
+    #[serde(default)]
+    pub materials: Vec<Material>,
+    #[serde(default)]
+    pub settings: ProjectSettings,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Layer {
@@ -166,6 +285,29 @@ pub struct NestConstraints {
     pub global_margin: f64,
     pub global_kerf: f64,
     pub allow_rotate_default: bool,
+    #[serde(default)]
+    pub no_go_zones: Vec<NoGoZone>,
+    #[serde(default)]
+    pub grain_policy: GrainPolicy,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "PascalCase")]
+pub enum GrainPolicy {
+    Strict,
+    Prefer,
+    #[default]
+    Ignore,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum NoGoZone {
+    Rect {
+        x: f64,
+        y: f64,
+        width: f64,
+        height: f64,
+    },
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NestObjective {
@@ -173,16 +315,124 @@ pub struct NestObjective {
     pub w_sheet_count: f64,
     pub w_cut_count: f64,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PartRef {
+    pub part_id: Uuid,
+    #[serde(default)]
+    pub quantity_override: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Placement {
+    pub part_id: Uuid,
+    pub sheet_instance_index: u32,
+    pub x: f64,
+    pub y: f64,
+    pub rotation_deg: f64,
+    pub bbox: BBox,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BBox {
+    pub min_x: f64,
+    pub min_y: f64,
+    pub max_x: f64,
+    pub max_y: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NestMetrics {
+    pub utilization_per_sheet: Vec<f64>,
+    pub sheet_count_used: u32,
+    pub cut_count_estimate: u32,
+    pub score: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum PartPlacementStatusKind {
+    Placed,
+    Unplaced,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PartPlacementStatus {
+    pub part_id: Uuid,
+    pub status: PartPlacementStatusKind,
+    #[serde(default)]
+    pub reason: Option<Reason>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NestResultV1 {
+    pub placements: Vec<Placement>,
+    pub metrics: NestMetrics,
+    pub per_part_status: Vec<PartPlacementStatus>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TraceBestUpdate {
+    pub iter: u32,
+    pub score: f64,
+    pub sheet_used: u32,
+    pub utilization: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NestTraceV1 {
+    pub seed: u64,
+    pub iterations: u32,
+    pub time_ms: u64,
+    pub stop_reason: String,
+    pub best_updates: Vec<TraceBestUpdate>,
+    pub failure_stats: BTreeMap<String, u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+enum PartRefCompat {
+    Legacy(Uuid),
+    Structured(PartRef),
+}
+
+fn deserialize_parts_ref<'de, D>(deserializer: D) -> std::result::Result<Vec<PartRef>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let raw = Vec::<PartRefCompat>::deserialize(deserializer)?;
+    Ok(raw
+        .into_iter()
+        .map(|r| match r {
+            PartRefCompat::Legacy(id) => PartRef {
+                part_id: id,
+                quantity_override: None,
+            },
+            PartRefCompat::Structured(v) => v,
+        })
+        .collect())
+}
+
+fn serialize_parts_ref<S>(v: &[PartRef], serializer: S) -> std::result::Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    v.serialize(serializer)
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NestJob {
     pub id: Uuid,
     pub sheet_defs: Vec<SheetDef>,
-    pub parts_ref: Vec<Uuid>,
+    #[serde(
+        deserialize_with = "deserialize_parts_ref",
+        serialize_with = "serialize_parts_ref"
+    )]
+    pub parts_ref: Vec<PartRef>,
     pub constraints: NestConstraints,
     pub objective: NestObjective,
     pub seed: u64,
-    pub result: Option<serde_json::Value>,
-    pub trace: Option<serde_json::Value>,
+    pub result: Option<NestResultV1>,
+    pub trace: Option<NestTraceV1>,
 }
 
 fn compile_schema(raw: &str) -> Result<JSONSchema> {
@@ -217,11 +467,24 @@ pub fn validate_manifest_json_str(s: &str) -> Result<serde_json::Value> {
     Ok(val)
 }
 
+pub fn normalize_document_json(mut val: serde_json::Value) -> serde_json::Value {
+    if let serde_json::Value::Object(ref mut m) = val {
+        if !m.contains_key("materials") {
+            m.insert("materials".to_string(), serde_json::json!([]));
+        }
+        if !m.contains_key("settings") {
+            m.insert("settings".to_string(), serde_json::json!({}));
+        }
+    }
+    val
+}
+
 pub fn validate_document_json_str(s: &str) -> Result<serde_json::Value> {
     let val: serde_json::Value = serde_json::from_str(s).map_err(|e| {
         Reason::from_code(ReasonCode::SerializeSchemaValidationFailed)
             .with_debug("document_json_parse_error", e.to_string())
     })?;
+    let val = normalize_document_json(val);
     let schema = compile_schema(include_str!("../schemas/document.schema.json"))?;
     validate_value(&schema, &val)?;
     Ok(val)
