@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/specs/drawing_style/print_presets.schema.json",
+  "title": "CraftCAD Print Presets SSOT",
+  "type": "object",
+  "required": ["schema_version", "presets"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "presets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/print_preset" }
+    }
+  },
+  "$defs": {
+    "id_v": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*_v[0-9]+$"
+    },
+    "label_i18n": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "ja": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "en": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    "margins_mm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["top", "right", "bottom", "left"],
+      "properties": {
+        "top": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "right": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "bottom": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "left": { "type": "number", "minimum": 0.0, "maximum": 100.0 }
+      }
+    },
+    "scale_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["fixed", "fit_to_page"] },
+        "fixed_scale": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 100.0 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "mode": { "const": "fixed" } } },
+          "then": { "required": ["fixed_scale"] }
+        }
+      ]
+    },
+    "text_hinting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prefer_outlines", "kerning"],
+      "properties": {
+        "prefer_outlines": { "type": "boolean" },
+        "kerning": { "type": "boolean" }
+      }
+    },
+    "export": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["svg_precision", "pdf_embed_fonts", "pdf_page_rotation_deg"],
+      "properties": {
+        "svg_precision": { "type": "integer", "minimum": 0, "maximum": 8 },
+        "pdf_embed_fonts": { "type": "boolean" },
+        "pdf_page_rotation_deg": { "type": "integer", "enum": [0, 90, 180, 270] }
+      }
+    },
+    "print_preset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "target_template_id",
+        "margins_mm",
+        "scale_policy",
+        "min_readable_text_height_mm",
+        "line_weight_scale",
+        "color_mode",
+        "text_hinting",
+        "export"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id_v" },
+        "label": { "$ref": "#/$defs/label_i18n" },
+        "target_template_id": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "margins_mm": { "$ref": "#/$defs/margins_mm" },
+        "scale_policy": { "$ref": "#/$defs/scale_policy" },
+        "min_readable_text_height_mm": { "type": "number", "minimum": 1.5, "maximum": 10.0 },
+        "line_weight_scale": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 10.0 },
+        "color_mode": { "enum": ["color", "grayscale", "bw"] },
+        "text_hinting": { "$ref": "#/$defs/text_hinting" },
+        "export": { "$ref": "#/$defs/export" }
+      }
+    }
+  }
+}
