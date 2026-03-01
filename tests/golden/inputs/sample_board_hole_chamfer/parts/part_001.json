@@ -1,0 +1,1 @@
+{"id":"22222222-2222-2222-2222-222222222222","schema_version":1,"name":"part_001","geometry":{"kind":"2d_profile","paths":[{"closed":true,"points":[{"x":0,"y":0},{"x":10,"y":0},{"x":10,"y":10}]}]},"material":{"preset_id":"plywood_12"}}

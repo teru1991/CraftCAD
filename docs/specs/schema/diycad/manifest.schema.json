@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schemas/diycad_manifest.schema.json",
+  "type": "object",
+  "required": ["schema_version", "app_version", "created_at", "unit", "entrypoints"],
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "app_version": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "unit": { "type": "string", "enum": ["mm", "inch"] },
+    "checksum": { "type": "string" },
+    "entrypoints": {
+      "type": "object",
+      "required": ["document"],
+      "properties": {
+        "document": { "type": "string", "pattern": "^document\\.json$" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

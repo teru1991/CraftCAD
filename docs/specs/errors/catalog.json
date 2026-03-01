@@ -1,0 +1,1926 @@
+{
+  "version": "1.0.0",
+  "items": [
+    {
+      "code": "IO_UNSUPPORTED_ENTITY_DXF_SPLINE",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "DXFのSPLINEは完全対応していません",
+      "detail": "SPLINEはポリライン近似に変換します。曲率が高い場合、形状がわずかに変化する可能性があります。",
+      "user_actions": [
+        "精度設定（ε）を小さくして再エクスポートしてください",
+        "必要ならSVG/JSON形式での共有を検討してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "format:dxf",
+        "entity:spline",
+        "mode:approx"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_SCHEMA_VERSION_TOO_NEW",
+      "domain": "SAVE",
+      "severity": "ERROR",
+      "summary": "このプロジェクトは新しいバージョンで作成されています",
+      "detail": "現在のアプリでは読み取り専用で開きます。上位バージョンへの更新、または移行ツールの利用が必要です。",
+      "user_actions": [
+        "アプリを最新版へ更新してください",
+        "移行ツール（diycad-migrate）で変換できるか確認してください"
+      ],
+      "doc_link": "docs/specs/schema/diycad/migration_policy.md",
+      "telemetry_tags": [
+        "schema:forward_incompatible"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "CAD_LIMIT_003",
+      "domain": "CAD",
+      "severity": "WARN",
+      "summary": "CAD領域でlimitイベントが発生しました",
+      "detail": "CADの処理でlimit状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:limit",
+        "index:003"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "CAD_MIGRATION_004",
+      "domain": "CAD",
+      "severity": "FATAL",
+      "summary": "CAD領域でmigrationイベントが発生しました",
+      "detail": "CADの処理でmigration状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:migration",
+        "index:004"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "CAD_ROUNDING_005",
+      "domain": "CAD",
+      "severity": "WARN",
+      "summary": "CAD領域でroundingイベントが発生しました",
+      "detail": "CADの処理でrounding状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:rounding",
+        "index:005"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "CAD_TIMEOUT_006",
+      "domain": "CAD",
+      "severity": "FATAL",
+      "summary": "CAD領域でtimeoutイベントが発生しました",
+      "detail": "CADの処理でtimeout状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:timeout",
+        "index:006"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "CAD_CORRUPT_007",
+      "domain": "CAD",
+      "severity": "WARN",
+      "summary": "CAD領域でcorruptイベントが発生しました",
+      "detail": "CADの処理でcorrupt状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:corrupt",
+        "index:007"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "CAD_INCOMPAT_008",
+      "domain": "CAD",
+      "severity": "FATAL",
+      "summary": "CAD領域でincompatイベントが発生しました",
+      "detail": "CADの処理でincompat状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:incompat",
+        "index:008"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "CAD_APPROX_009",
+      "domain": "CAD",
+      "severity": "WARN",
+      "summary": "CAD領域でapproxイベントが発生しました",
+      "detail": "CADの処理でapprox状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:approx",
+        "index:009"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "CAD_MISSING_010",
+      "domain": "CAD",
+      "severity": "FATAL",
+      "summary": "CAD領域でmissingイベントが発生しました",
+      "detail": "CADの処理でmissing状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:missing",
+        "index:010"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "CAD_FALLBACK_011",
+      "domain": "CAD",
+      "severity": "WARN",
+      "summary": "CAD領域でfallbackイベントが発生しました",
+      "detail": "CADの処理でfallback状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:fallback",
+        "index:011"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "CAD_RECOVERED_012",
+      "domain": "CAD",
+      "severity": "FATAL",
+      "summary": "CAD領域でrecoveredイベントが発生しました",
+      "detail": "CADの処理でrecovered状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:recovered",
+        "index:012"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "CAD_ABORTED_013",
+      "domain": "CAD",
+      "severity": "WARN",
+      "summary": "CAD領域でabortedイベントが発生しました",
+      "detail": "CADの処理でaborted状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:cad",
+        "category:aborted",
+        "index:013"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_UNSUPPORTED_014",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "IO領域でunsupportedイベントが発生しました",
+      "detail": "IOの処理でunsupported状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:unsupported",
+        "index:014"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_INVALID_015",
+      "domain": "IO",
+      "severity": "INFO",
+      "summary": "IO領域でinvalidイベントが発生しました",
+      "detail": "IOの処理でinvalid状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:invalid",
+        "index:015"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_LIMIT_016",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "IO領域でlimitイベントが発生しました",
+      "detail": "IOの処理でlimit状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:limit",
+        "index:016"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_MIGRATION_017",
+      "domain": "IO",
+      "severity": "INFO",
+      "summary": "IO領域でmigrationイベントが発生しました",
+      "detail": "IOの処理でmigration状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:migration",
+        "index:017"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_ROUNDING_018",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "IO領域でroundingイベントが発生しました",
+      "detail": "IOの処理でrounding状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:rounding",
+        "index:018"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_TIMEOUT_019",
+      "domain": "IO",
+      "severity": "INFO",
+      "summary": "IO領域でtimeoutイベントが発生しました",
+      "detail": "IOの処理でtimeout状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:timeout",
+        "index:019"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_CORRUPT_020",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "IO領域でcorruptイベントが発生しました",
+      "detail": "IOの処理でcorrupt状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:corrupt",
+        "index:020"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_INCOMPAT_021",
+      "domain": "IO",
+      "severity": "INFO",
+      "summary": "IO領域でincompatイベントが発生しました",
+      "detail": "IOの処理でincompat状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:incompat",
+        "index:021"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_APPROX_022",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "IO領域でapproxイベントが発生しました",
+      "detail": "IOの処理でapprox状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:approx",
+        "index:022"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_MISSING_023",
+      "domain": "IO",
+      "severity": "INFO",
+      "summary": "IO領域でmissingイベントが発生しました",
+      "detail": "IOの処理でmissing状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:missing",
+        "index:023"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_FALLBACK_024",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "IO領域でfallbackイベントが発生しました",
+      "detail": "IOの処理でfallback状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:fallback",
+        "index:024"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_RECOVERED_025",
+      "domain": "IO",
+      "severity": "INFO",
+      "summary": "IO領域でrecoveredイベントが発生しました",
+      "detail": "IOの処理でrecovered状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:recovered",
+        "index:025"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_ABORTED_026",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "IO領域でabortedイベントが発生しました",
+      "detail": "IOの処理でaborted状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io",
+        "category:aborted",
+        "index:026"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "NEST_UNSUPPORTED_027",
+      "domain": "NEST",
+      "severity": "FATAL",
+      "summary": "NEST領域でunsupportedイベントが発生しました",
+      "detail": "NESTの処理でunsupported状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:unsupported",
+        "index:027"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "NEST_INVALID_028",
+      "domain": "NEST",
+      "severity": "WARN",
+      "summary": "NEST領域でinvalidイベントが発生しました",
+      "detail": "NESTの処理でinvalid状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:invalid",
+        "index:028"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "NEST_LIMIT_029",
+      "domain": "NEST",
+      "severity": "FATAL",
+      "summary": "NEST領域でlimitイベントが発生しました",
+      "detail": "NESTの処理でlimit状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:limit",
+        "index:029"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "NEST_MIGRATION_030",
+      "domain": "NEST",
+      "severity": "WARN",
+      "summary": "NEST領域でmigrationイベントが発生しました",
+      "detail": "NESTの処理でmigration状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:migration",
+        "index:030"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "NEST_ROUNDING_031",
+      "domain": "NEST",
+      "severity": "FATAL",
+      "summary": "NEST領域でroundingイベントが発生しました",
+      "detail": "NESTの処理でrounding状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:rounding",
+        "index:031"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "NEST_TIMEOUT_032",
+      "domain": "NEST",
+      "severity": "WARN",
+      "summary": "NEST領域でtimeoutイベントが発生しました",
+      "detail": "NESTの処理でtimeout状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:timeout",
+        "index:032"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "NEST_CORRUPT_033",
+      "domain": "NEST",
+      "severity": "FATAL",
+      "summary": "NEST領域でcorruptイベントが発生しました",
+      "detail": "NESTの処理でcorrupt状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:corrupt",
+        "index:033"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "NEST_INCOMPAT_034",
+      "domain": "NEST",
+      "severity": "WARN",
+      "summary": "NEST領域でincompatイベントが発生しました",
+      "detail": "NESTの処理でincompat状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:incompat",
+        "index:034"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "NEST_APPROX_035",
+      "domain": "NEST",
+      "severity": "FATAL",
+      "summary": "NEST領域でapproxイベントが発生しました",
+      "detail": "NESTの処理でapprox状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:approx",
+        "index:035"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "NEST_MISSING_036",
+      "domain": "NEST",
+      "severity": "WARN",
+      "summary": "NEST領域でmissingイベントが発生しました",
+      "detail": "NESTの処理でmissing状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:missing",
+        "index:036"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "NEST_FALLBACK_037",
+      "domain": "NEST",
+      "severity": "FATAL",
+      "summary": "NEST領域でfallbackイベントが発生しました",
+      "detail": "NESTの処理でfallback状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:fallback",
+        "index:037"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "NEST_RECOVERED_038",
+      "domain": "NEST",
+      "severity": "WARN",
+      "summary": "NEST領域でrecoveredイベントが発生しました",
+      "detail": "NESTの処理でrecovered状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:recovered",
+        "index:038"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "NEST_ABORTED_039",
+      "domain": "NEST",
+      "severity": "FATAL",
+      "summary": "NEST領域でabortedイベントが発生しました",
+      "detail": "NESTの処理でaborted状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:nest",
+        "category:aborted",
+        "index:039"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "SAVE_UNSUPPORTED_040",
+      "domain": "SAVE",
+      "severity": "INFO",
+      "summary": "SAVE領域でunsupportedイベントが発生しました",
+      "detail": "SAVEの処理でunsupported状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:unsupported",
+        "index:040"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_INVALID_041",
+      "domain": "SAVE",
+      "severity": "ERROR",
+      "summary": "SAVE領域でinvalidイベントが発生しました",
+      "detail": "SAVEの処理でinvalid状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:invalid",
+        "index:041"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_LIMIT_042",
+      "domain": "SAVE",
+      "severity": "INFO",
+      "summary": "SAVE領域でlimitイベントが発生しました",
+      "detail": "SAVEの処理でlimit状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:limit",
+        "index:042"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_MIGRATION_043",
+      "domain": "SAVE",
+      "severity": "ERROR",
+      "summary": "SAVE領域でmigrationイベントが発生しました",
+      "detail": "SAVEの処理でmigration状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:migration",
+        "index:043"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_ROUNDING_044",
+      "domain": "SAVE",
+      "severity": "INFO",
+      "summary": "SAVE領域でroundingイベントが発生しました",
+      "detail": "SAVEの処理でrounding状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:rounding",
+        "index:044"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_TIMEOUT_045",
+      "domain": "SAVE",
+      "severity": "ERROR",
+      "summary": "SAVE領域でtimeoutイベントが発生しました",
+      "detail": "SAVEの処理でtimeout状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:timeout",
+        "index:045"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_CORRUPT_046",
+      "domain": "SAVE",
+      "severity": "INFO",
+      "summary": "SAVE領域でcorruptイベントが発生しました",
+      "detail": "SAVEの処理でcorrupt状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:corrupt",
+        "index:046"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_INCOMPAT_047",
+      "domain": "SAVE",
+      "severity": "ERROR",
+      "summary": "SAVE領域でincompatイベントが発生しました",
+      "detail": "SAVEの処理でincompat状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:incompat",
+        "index:047"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_APPROX_048",
+      "domain": "SAVE",
+      "severity": "INFO",
+      "summary": "SAVE領域でapproxイベントが発生しました",
+      "detail": "SAVEの処理でapprox状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:approx",
+        "index:048"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_MISSING_049",
+      "domain": "SAVE",
+      "severity": "ERROR",
+      "summary": "SAVE領域でmissingイベントが発生しました",
+      "detail": "SAVEの処理でmissing状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:missing",
+        "index:049"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_FALLBACK_050",
+      "domain": "SAVE",
+      "severity": "INFO",
+      "summary": "SAVE領域でfallbackイベントが発生しました",
+      "detail": "SAVEの処理でfallback状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:fallback",
+        "index:050"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_RECOVERED_051",
+      "domain": "SAVE",
+      "severity": "ERROR",
+      "summary": "SAVE領域でrecoveredイベントが発生しました",
+      "detail": "SAVEの処理でrecovered状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:recovered",
+        "index:051"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_ABORTED_052",
+      "domain": "SAVE",
+      "severity": "INFO",
+      "summary": "SAVE領域でabortedイベントが発生しました",
+      "detail": "SAVEの処理でaborted状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:save",
+        "category:aborted",
+        "index:052"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "DIAG_UNSUPPORTED_053",
+      "domain": "DIAG",
+      "severity": "WARN",
+      "summary": "DIAG領域でunsupportedイベントが発生しました",
+      "detail": "DIAGの処理でunsupported状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:unsupported",
+        "index:053"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "DIAG_INVALID_054",
+      "domain": "DIAG",
+      "severity": "FATAL",
+      "summary": "DIAG領域でinvalidイベントが発生しました",
+      "detail": "DIAGの処理でinvalid状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:invalid",
+        "index:054"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "DIAG_LIMIT_055",
+      "domain": "DIAG",
+      "severity": "WARN",
+      "summary": "DIAG領域でlimitイベントが発生しました",
+      "detail": "DIAGの処理でlimit状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:limit",
+        "index:055"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "DIAG_MIGRATION_056",
+      "domain": "DIAG",
+      "severity": "FATAL",
+      "summary": "DIAG領域でmigrationイベントが発生しました",
+      "detail": "DIAGの処理でmigration状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:migration",
+        "index:056"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "DIAG_ROUNDING_057",
+      "domain": "DIAG",
+      "severity": "WARN",
+      "summary": "DIAG領域でroundingイベントが発生しました",
+      "detail": "DIAGの処理でrounding状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:rounding",
+        "index:057"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "DIAG_TIMEOUT_058",
+      "domain": "DIAG",
+      "severity": "FATAL",
+      "summary": "DIAG領域でtimeoutイベントが発生しました",
+      "detail": "DIAGの処理でtimeout状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:timeout",
+        "index:058"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "DIAG_CORRUPT_059",
+      "domain": "DIAG",
+      "severity": "WARN",
+      "summary": "DIAG領域でcorruptイベントが発生しました",
+      "detail": "DIAGの処理でcorrupt状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:corrupt",
+        "index:059"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "DIAG_INCOMPAT_060",
+      "domain": "DIAG",
+      "severity": "FATAL",
+      "summary": "DIAG領域でincompatイベントが発生しました",
+      "detail": "DIAGの処理でincompat状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:incompat",
+        "index:060"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "DIAG_APPROX_061",
+      "domain": "DIAG",
+      "severity": "WARN",
+      "summary": "DIAG領域でapproxイベントが発生しました",
+      "detail": "DIAGの処理でapprox状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:approx",
+        "index:061"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "DIAG_MISSING_062",
+      "domain": "DIAG",
+      "severity": "FATAL",
+      "summary": "DIAG領域でmissingイベントが発生しました",
+      "detail": "DIAGの処理でmissing状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:missing",
+        "index:062"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "DIAG_FALLBACK_063",
+      "domain": "DIAG",
+      "severity": "WARN",
+      "summary": "DIAG領域でfallbackイベントが発生しました",
+      "detail": "DIAGの処理でfallback状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:fallback",
+        "index:063"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "DIAG_RECOVERED_064",
+      "domain": "DIAG",
+      "severity": "FATAL",
+      "summary": "DIAG領域でrecoveredイベントが発生しました",
+      "detail": "DIAGの処理でrecovered状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:recovered",
+        "index:064"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "DIAG_ABORTED_065",
+      "domain": "DIAG",
+      "severity": "WARN",
+      "summary": "DIAG領域でabortedイベントが発生しました",
+      "detail": "DIAGの処理でaborted状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:diag",
+        "category:aborted",
+        "index:065"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_UNSUPPORTED_066",
+      "domain": "SECURITY",
+      "severity": "ERROR",
+      "summary": "SECURITY領域でunsupportedイベントが発生しました",
+      "detail": "SECURITYの処理でunsupported状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:unsupported",
+        "index:066"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_INVALID_067",
+      "domain": "SECURITY",
+      "severity": "INFO",
+      "summary": "SECURITY領域でinvalidイベントが発生しました",
+      "detail": "SECURITYの処理でinvalid状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:invalid",
+        "index:067"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_LIMIT_068",
+      "domain": "SECURITY",
+      "severity": "ERROR",
+      "summary": "SECURITY領域でlimitイベントが発生しました",
+      "detail": "SECURITYの処理でlimit状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:limit",
+        "index:068"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_MIGRATION_069",
+      "domain": "SECURITY",
+      "severity": "INFO",
+      "summary": "SECURITY領域でmigrationイベントが発生しました",
+      "detail": "SECURITYの処理でmigration状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:migration",
+        "index:069"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_ROUNDING_070",
+      "domain": "SECURITY",
+      "severity": "ERROR",
+      "summary": "SECURITY領域でroundingイベントが発生しました",
+      "detail": "SECURITYの処理でrounding状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:rounding",
+        "index:070"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_TIMEOUT_071",
+      "domain": "SECURITY",
+      "severity": "INFO",
+      "summary": "SECURITY領域でtimeoutイベントが発生しました",
+      "detail": "SECURITYの処理でtimeout状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:timeout",
+        "index:071"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_CORRUPT_072",
+      "domain": "SECURITY",
+      "severity": "ERROR",
+      "summary": "SECURITY領域でcorruptイベントが発生しました",
+      "detail": "SECURITYの処理でcorrupt状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:corrupt",
+        "index:072"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_INCOMPAT_073",
+      "domain": "SECURITY",
+      "severity": "INFO",
+      "summary": "SECURITY領域でincompatイベントが発生しました",
+      "detail": "SECURITYの処理でincompat状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:incompat",
+        "index:073"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_APPROX_074",
+      "domain": "SECURITY",
+      "severity": "ERROR",
+      "summary": "SECURITY領域でapproxイベントが発生しました",
+      "detail": "SECURITYの処理でapprox状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:approx",
+        "index:074"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_MISSING_075",
+      "domain": "SECURITY",
+      "severity": "INFO",
+      "summary": "SECURITY領域でmissingイベントが発生しました",
+      "detail": "SECURITYの処理でmissing状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:missing",
+        "index:075"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_FALLBACK_076",
+      "domain": "SECURITY",
+      "severity": "ERROR",
+      "summary": "SECURITY領域でfallbackイベントが発生しました",
+      "detail": "SECURITYの処理でfallback状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:fallback",
+        "index:076"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_RECOVERED_077",
+      "domain": "SECURITY",
+      "severity": "INFO",
+      "summary": "SECURITY領域でrecoveredイベントが発生しました",
+      "detail": "SECURITYの処理でrecovered状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:recovered",
+        "index:077"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SECURITY_ABORTED_078",
+      "domain": "SECURITY",
+      "severity": "ERROR",
+      "summary": "SECURITY領域でabortedイベントが発生しました",
+      "detail": "SECURITYの処理でaborted状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:security",
+        "category:aborted",
+        "index:078"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "PERF_UNSUPPORTED_079",
+      "domain": "PERF",
+      "severity": "FATAL",
+      "summary": "PERF領域でunsupportedイベントが発生しました",
+      "detail": "PERFの処理でunsupported状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:unsupported",
+        "index:079"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "PERF_INVALID_080",
+      "domain": "PERF",
+      "severity": "WARN",
+      "summary": "PERF領域でinvalidイベントが発生しました",
+      "detail": "PERFの処理でinvalid状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:invalid",
+        "index:080"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "PERF_LIMIT_081",
+      "domain": "PERF",
+      "severity": "FATAL",
+      "summary": "PERF領域でlimitイベントが発生しました",
+      "detail": "PERFの処理でlimit状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:limit",
+        "index:081"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "PERF_MIGRATION_082",
+      "domain": "PERF",
+      "severity": "WARN",
+      "summary": "PERF領域でmigrationイベントが発生しました",
+      "detail": "PERFの処理でmigration状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:migration",
+        "index:082"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "PERF_ROUNDING_083",
+      "domain": "PERF",
+      "severity": "FATAL",
+      "summary": "PERF領域でroundingイベントが発生しました",
+      "detail": "PERFの処理でrounding状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:rounding",
+        "index:083"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "PERF_TIMEOUT_084",
+      "domain": "PERF",
+      "severity": "WARN",
+      "summary": "PERF領域でtimeoutイベントが発生しました",
+      "detail": "PERFの処理でtimeout状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:timeout",
+        "index:084"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "PERF_CORRUPT_085",
+      "domain": "PERF",
+      "severity": "FATAL",
+      "summary": "PERF領域でcorruptイベントが発生しました",
+      "detail": "PERFの処理でcorrupt状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:corrupt",
+        "index:085"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "PERF_INCOMPAT_086",
+      "domain": "PERF",
+      "severity": "WARN",
+      "summary": "PERF領域でincompatイベントが発生しました",
+      "detail": "PERFの処理でincompat状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:incompat",
+        "index:086"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "PERF_APPROX_087",
+      "domain": "PERF",
+      "severity": "FATAL",
+      "summary": "PERF領域でapproxイベントが発生しました",
+      "detail": "PERFの処理でapprox状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:approx",
+        "index:087"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "PERF_MISSING_088",
+      "domain": "PERF",
+      "severity": "WARN",
+      "summary": "PERF領域でmissingイベントが発生しました",
+      "detail": "PERFの処理でmissing状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:missing",
+        "index:088"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "PERF_FALLBACK_089",
+      "domain": "PERF",
+      "severity": "FATAL",
+      "summary": "PERF領域でfallbackイベントが発生しました",
+      "detail": "PERFの処理でfallback状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:fallback",
+        "index:089"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "PERF_RECOVERED_090",
+      "domain": "PERF",
+      "severity": "WARN",
+      "summary": "PERF領域でrecoveredイベントが発生しました",
+      "detail": "PERFの処理でrecovered状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:recovered",
+        "index:090"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "PERF_ABORTED_091",
+      "domain": "PERF",
+      "severity": "FATAL",
+      "summary": "PERF領域でabortedイベントが発生しました",
+      "detail": "PERFの処理でaborted状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:perf",
+        "category:aborted",
+        "index:091"
+      ],
+      "retryable": false
+    },
+    {
+      "code": "UI_UNSUPPORTED_092",
+      "domain": "UI",
+      "severity": "INFO",
+      "summary": "UI領域でunsupportedイベントが発生しました",
+      "detail": "UIの処理でunsupported状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:unsupported",
+        "index:092"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_INVALID_093",
+      "domain": "UI",
+      "severity": "ERROR",
+      "summary": "UI領域でinvalidイベントが発生しました",
+      "detail": "UIの処理でinvalid状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:invalid",
+        "index:093"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_LIMIT_094",
+      "domain": "UI",
+      "severity": "INFO",
+      "summary": "UI領域でlimitイベントが発生しました",
+      "detail": "UIの処理でlimit状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:limit",
+        "index:094"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_MIGRATION_095",
+      "domain": "UI",
+      "severity": "ERROR",
+      "summary": "UI領域でmigrationイベントが発生しました",
+      "detail": "UIの処理でmigration状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:migration",
+        "index:095"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_ROUNDING_096",
+      "domain": "UI",
+      "severity": "INFO",
+      "summary": "UI領域でroundingイベントが発生しました",
+      "detail": "UIの処理でrounding状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:rounding",
+        "index:096"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_TIMEOUT_097",
+      "domain": "UI",
+      "severity": "ERROR",
+      "summary": "UI領域でtimeoutイベントが発生しました",
+      "detail": "UIの処理でtimeout状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:timeout",
+        "index:097"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_CORRUPT_098",
+      "domain": "UI",
+      "severity": "INFO",
+      "summary": "UI領域でcorruptイベントが発生しました",
+      "detail": "UIの処理でcorrupt状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:corrupt",
+        "index:098"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_INCOMPAT_099",
+      "domain": "UI",
+      "severity": "ERROR",
+      "summary": "UI領域でincompatイベントが発生しました",
+      "detail": "UIの処理でincompat状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:incompat",
+        "index:099"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_APPROX_100",
+      "domain": "UI",
+      "severity": "INFO",
+      "summary": "UI領域でapproxイベントが発生しました",
+      "detail": "UIの処理でapprox状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:approx",
+        "index:100"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_MISSING_101",
+      "domain": "UI",
+      "severity": "ERROR",
+      "summary": "UI領域でmissingイベントが発生しました",
+      "detail": "UIの処理でmissing状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:missing",
+        "index:101"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_FALLBACK_102",
+      "domain": "UI",
+      "severity": "INFO",
+      "summary": "UI領域でfallbackイベントが発生しました",
+      "detail": "UIの処理でfallback状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:fallback",
+        "index:102"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_RECOVERED_103",
+      "domain": "UI",
+      "severity": "ERROR",
+      "summary": "UI領域でrecoveredイベントが発生しました",
+      "detail": "UIの処理でrecovered状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください",
+        "必要に応じて再実行してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:recovered",
+        "index:103"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "UI_ABORTED_104",
+      "domain": "UI",
+      "severity": "INFO",
+      "summary": "UI領域でabortedイベントが発生しました",
+      "detail": "UIの処理でaborted状態を検出しました。クラッシュはせずReasonCodeで処理継続/中断を制御します。",
+      "user_actions": [
+        "ログを確認してください",
+        "入力データを見直してください"
+      ],
+      "doc_link": "docs/specs/system/reason_codes.md",
+      "telemetry_tags": [
+        "domain:ui",
+        "category:aborted",
+        "index:104"
+      ],
+      "retryable": true
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schemas/diycad_document.schema.json",
+  "type": "object",
+  "required": ["id", "schema_version", "created_by", "updated_at", "title", "parts", "nest_jobs", "settings"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "created_by": { "type": "string" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "title": { "type": "string" },
+    "parts": { "type": "array", "items": { "type": "string", "pattern": "^parts/.+\\.json$" } },
+    "nest_jobs": { "type": "array", "items": { "type": "string", "pattern": "^nest_jobs/.+\\.json$" } },
+    "settings": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

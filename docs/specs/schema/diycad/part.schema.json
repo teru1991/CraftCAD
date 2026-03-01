@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schemas/diycad_part.schema.json",
+  "type": "object",
+  "required": ["id", "schema_version", "created_by", "updated_at", "name", "geometry", "material"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "created_by": { "type": "string" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "name": { "type": "string" },
+    "geometry": {
+      "type": "object",
+      "required": ["kind", "paths"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["2d_profile"] },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["closed", "points"],
+            "properties": {
+              "closed": { "type": "boolean" },
+              "points": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "type": "object",
+                  "required": ["x", "y"],
+                  "properties": {
+                    "x": { "type": "number" },
+                    "y": { "type": "number" }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "material": {
+      "type": "object",
+      "required": ["preset_id"],
+      "properties": {
+        "preset_id": { "type": "string" },
+        "thickness": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "layer_rules": {
+    "normalize_case": true,
+    "max_length": 64,
+    "invalid_char_replacement": "_"
+  },
+  "linetype_rules": {
+    "fallback": "continuous",
+    "supported": ["continuous", "dashed", "dotted", "center"]
+  },
+  "unit_rules": {
+    "default_import_unit": "mm",
+    "conversions": {
+      "inch_to_mm": 25.4,
+      "mm_to_inch": 0.0393700787
+    },
+    "reason_code_on_assume": "IO_UNITS_ASSUMED_MM"
+  }
+}
