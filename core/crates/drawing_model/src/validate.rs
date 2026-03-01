@@ -35,8 +35,8 @@ fn is_valid_core_id(s: &str) -> bool {
 }
 
 fn is_valid_preset_id(s: &str) -> bool {
-    Regex::new(r"^[a-z][a-z0-9_]*_v[0-9]+$")
-        .unwrap()
+    static RE: std::sync::OnceLock<Regex> = std::sync::OnceLock::new();
+    RE.get_or_init(|| Regex::new(r"^[a-z][a-z0-9_]*_v[0-9]+$").unwrap())
         .is_match(s)
 }
 
