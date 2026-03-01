@@ -1,0 +1,13 @@
+[package]
+name = "craftcad_diycad_format"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+craftcad_errors = { path = "../errors" }
+anyhow = "1"
+serde_json = "1"
+jsonschema = "0.17"
+zip = { version = "0.6", default-features = false, features = ["deflate"] }

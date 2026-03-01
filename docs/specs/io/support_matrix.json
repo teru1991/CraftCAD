@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0",
+  "formats": {
+    "dxf": {
+      "line": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "polyline": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "arc_circle": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "ellipse": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_CURVE_APPROX_APPLIED"] },
+      "spline": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_UNSUPPORTED_ENTITY_DXF_SPLINE", "IO_CURVE_APPROX_APPLIED"] },
+      "text": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_TEXT_FALLBACK_FONT"] },
+      "dimension": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_UNSUPPORTED_DIMENSION"] },
+      "hatch": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_HATCH_SIMPLIFIED"] },
+      "block": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_BLOCK_EXPLODED"] },
+      "image": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_IMAGE_REFERENCE_DROPPED"] },
+      "units": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "layers": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "linetypes": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_LINETYPE_FALLBACK"] }
+    },
+    "svg": {
+      "line": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "polyline": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "arc_circle": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_CURVE_APPROX_APPLIED"] },
+      "ellipse": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_CURVE_APPROX_APPLIED"] },
+      "spline": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_CURVE_APPROX_APPLIED"] },
+      "text": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "dimension": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_UNSUPPORTED_DIMENSION"] },
+      "hatch": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_HATCH_SIMPLIFIED"] },
+      "block": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_BLOCK_EXPLODED"] },
+      "image": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "units": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_UNITS_ASSUMED_MM"] },
+      "layers": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_LAYER_NAME_NORMALIZED"] },
+      "linetypes": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_LINETYPE_FALLBACK"] }
+    },
+    "json": {
+      "line": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "polyline": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "arc_circle": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "ellipse": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "spline": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "text": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "dimension": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "hatch": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "block": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "image": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_IMAGE_REFERENCE_DROPPED"] },
+      "units": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "layers": { "import": "supported", "export": "supported", "reason_codes": [] },
+      "linetypes": { "import": "supported", "export": "supported", "reason_codes": [] }
+    }
+  }
+}

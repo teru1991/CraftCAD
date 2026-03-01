@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "datasets": [
+    {
+      "id": "sample_board_hole_chamfer_v1",
+      "description": "板1枚＋穴＋面取り。図面/木取り/I/Oのゴールデン用",
+      "seed": 12345,
+      "inputs": [
+        "tests/golden/inputs/sample_board_hole_chamfer/document.json",
+        "tests/golden/inputs/sample_board_hole_chamfer/parts/part_001.json"
+      ],
+      "expected_outputs": [
+        "tests/golden/expected/sample_board_hole_chamfer/nesting/result.json",
+        "tests/golden/expected/sample_board_hole_chamfer/drawing/output.svg"
+      ],
+      "perf_budget": {
+        "nesting_ms_p95": 200,
+        "io_roundtrip_ms_p95": 150
+      }
+    }
+  ]
+}
