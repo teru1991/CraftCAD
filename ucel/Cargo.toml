@@ -1,0 +1,19 @@
+[workspace]
+members = [
+  "crates/ucel-symbol-core",
+  "crates/ucel-symbol-store",
+  "crates/ucel-symbol-adapter",
+  "crates/ucel-sdk",
+]
+resolver = "2"
+
+[workspace.dependencies]
+rust_decimal = { version = "1", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+dashmap = "6"
+async-trait = "0.1"
+tokio = { version = "1", features = ["rt", "time", "macros"] }
+tracing = "0.1"

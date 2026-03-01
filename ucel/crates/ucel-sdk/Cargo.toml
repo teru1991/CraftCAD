@@ -1,0 +1,12 @@
+[package]
+name = "ucel-sdk"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+ucel-symbol-core = { path = "../ucel-symbol-core" }
+ucel-symbol-store = { path = "../ucel-symbol-store" }
+ucel-symbol-adapter = { path = "../ucel-symbol-adapter" }
