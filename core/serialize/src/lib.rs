@@ -98,15 +98,6 @@ impl ReasonCode {
             Self::PartInvalidFields => "PART_INVALID_FIELDS",
             Self::MaterialNotFound => "MATERIAL_NOT_FOUND",
             Self::BomExportFailed => "BOM_EXPORT_FAILED",
-            Self::NestPartTooLargeForAnySheet => "NEST_PART_TOO_LARGE_FOR_ANY_SHEET",
-            Self::NestGrainConstraintBlocksFit => "NEST_GRAIN_CONSTRAINT_BLOCKS_FIT",
-            Self::NestNoFeasiblePositionWithMarginAndKerf => {
-                "NEST_NO_FEASIBLE_POSITION_WITH_MARGIN_AND_KERF"
-            }
-            Self::NestNoGoZoneBlocksFit => "NEST_NO_GO_ZONE_BLOCKS_FIT",
-            Self::NestStoppedByTimeLimit => "NEST_STOPPED_BY_TIME_LIMIT",
-            Self::NestStoppedByIterationLimit => "NEST_STOPPED_BY_ITERATION_LIMIT",
-            Self::NestInternalInfeasible => "NEST_INTERNAL_INFEASIBLE",
         }
     }
 }
