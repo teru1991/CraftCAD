@@ -2,8 +2,10 @@ pub mod ops;
 mod util;
 
 pub use ops::intersect::intersect;
+pub use ops::offset::offset;
 pub use ops::project::project_point;
 pub use ops::split::split_at;
+pub use ops::trim::{trim_line_to_intersection, trim_polyline_to_intersection};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
