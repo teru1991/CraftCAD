@@ -38,3 +38,12 @@ fn document_schema_rejects_bad_geom_type() {
     let err = validate_document_json_str(&s).expect_err("should fail");
     assert_eq!(err.code, "SERIALIZE_SCHEMA_VALIDATION_FAILED");
 }
+
+#[test]
+fn old_doc_without_materials_is_normalized() {
+    let json =
+        std::fs::read_to_string("../../tests/fixtures/sample_project_v1.json").expect("fixture");
+    let val = craftcad_serialize::validate_document_json_str(&json).expect("valid");
+    assert!(val.get("materials").is_some());
+    assert_eq!(val.get("materials").unwrap().as_array().unwrap().len(), 0);
+}
