@@ -18,6 +18,7 @@ char *craftcad_geom_project_point(const char *geom_json, const char *point_json,
 char *craftcad_geom_intersect(const char *a_json, const char *b_json, const char *eps_json);
 char *craftcad_geom_split_at_t(const char *geom_json, double t, const char *eps_json);
 void craftcad_free_string(char *ptr);
+char *craftcad_i18n_resolve_message(const char *user_msg_key_utf8, const char *params_json, const char *locale_utf8);
 
 uint64_t craftcad_history_new(void);
 void craftcad_history_free(uint64_t h);

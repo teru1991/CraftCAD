@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/schemas/export_options.schema.json",
+  "type": "object",
+  "properties": {
+    "tiled_pdf": {
+      "type": "object",
+      "properties": {
+        "page_size": {"enum": ["A4", "Letter"]},
+        "orientation": {"enum": ["Portrait", "Landscape"]},
+        "margin_mm": {"type": "number"},
+        "include_crop_marks": {"type": "boolean"},
+        "include_scale_gauge": {"type": "boolean"},
+        "title": {"type": "string"},
+        "include_metadata": {"type": "boolean"}
+      }
+    },
+    "svg": {
+      "type": "object",
+      "properties": {
+        "precision": {"type": "integer"},
+        "include_parts": {"type": "boolean"},
+        "include_entities": {"type": "boolean"}
+      }
+    }
+  },
+  "additionalProperties": true
+}

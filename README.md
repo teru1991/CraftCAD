@@ -65,3 +65,15 @@ flutter test
 
 - clone 直後に上記ディレクトリが揃っていること。
 - リポジトリ方針（DB 不使用、`.diycad` 正本、技術スタック）が README で把握できること。
+
+
+## v1.0 契約仕様（SSOT）
+
+- `docs/specs/system/versioning.md`
+- `docs/specs/system/ffi_contract.md`
+- `docs/specs/system/schema_contract.md`
+- `docs/specs/geom/edge_cases.md`
+- `docs/specs/nesting/edge_cases.md`
+- `docs/specs/part_bom/rounding_units.md`
+- `docs/specs/export/contracts.md`
+

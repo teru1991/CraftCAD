@@ -467,7 +467,7 @@ pub fn validate_manifest_json_str(s: &str) -> Result<serde_json::Value> {
     Ok(val)
 }
 
-fn normalize_document_value(mut val: serde_json::Value) -> serde_json::Value {
+pub fn normalize_document_json(mut val: serde_json::Value) -> serde_json::Value {
     if let serde_json::Value::Object(ref mut m) = val {
         if !m.contains_key("materials") {
             m.insert("materials".to_string(), serde_json::json!([]));
@@ -484,7 +484,7 @@ pub fn validate_document_json_str(s: &str) -> Result<serde_json::Value> {
         Reason::from_code(ReasonCode::SerializeSchemaValidationFailed)
             .with_debug("document_json_parse_error", e.to_string())
     })?;
-    let val = normalize_document_value(val);
+    let val = normalize_document_json(val);
     let schema = compile_schema(include_str!("../schemas/document.schema.json"))?;
     validate_value(&schema, &val)?;
     Ok(val)

@@ -27,6 +27,7 @@ use craftcad_export::{
     TiledPdfOptions,
 };
 use craftcad_faces::{extract_faces, Face};
+use craftcad_i18n::resolve_user_message;
 use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
 use diycad_nesting::RunLimits;
@@ -47,6 +48,47 @@ struct Envelope<T: Serialize> {
     data: Option<T>,
     reason: Option<serde_json::Value>,
 }
+
+pub const EXPORTED_SYMBOLS: &[&str] = &[
+    "craftcad_free_string",
+    "craftcad_load_diycad_json",
+    "craftcad_extract_faces",
+    "craftcad_history_apply_create_part",
+    "craftcad_history_apply_create_part_from_face",
+    "craftcad_history_apply_update_part",
+    "craftcad_history_apply_delete_part",
+    "craftcad_history_apply_run_nesting",
+    "craftcad_history_apply_edit_placement",
+    "craftcad_export_tiled_pdf",
+    "craftcad_export_drawing_pdf",
+    "craftcad_export_svg",
+    "craftcad_export_bom_csv_bytes",
+    "craftcad_geom_project_point",
+    "craftcad_geom_intersect",
+    "craftcad_geom_split_at_t",
+    "craftcad_i18n_resolve_message",
+    "craftcad_history_new",
+    "craftcad_history_free",
+    "craftcad_history_apply_fillet",
+    "craftcad_history_apply_chamfer",
+    "craftcad_history_apply_mirror",
+    "craftcad_history_apply_pattern",
+    "craftcad_geom_candidates_for_operation",
+    "craftcad_history_apply_create_rect",
+    "craftcad_history_apply_create_circle",
+    "craftcad_history_apply_create_arc",
+    "craftcad_history_apply_create_polyline",
+    "craftcad_history_apply_create_line",
+    "craftcad_history_apply_transform_selection",
+    "craftcad_history_apply_offset_entity",
+    "craftcad_history_apply_trim_entity",
+    "craftcad_history_apply_trim_entity_with_candidate_index",
+    "craftcad_history_undo",
+    "craftcad_history_redo",
+    "craftcad_history_begin_group",
+    "craftcad_history_end_group",
+    "craftcad_export_diagnostic_pack",
+];
 
 fn reason_json(reason: &Reason) -> serde_json::Value {
     serde_json::json!({
@@ -592,6 +634,27 @@ static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 
 fn histories() -> &'static Mutex<HashMap<u64, History>> {
     HISTORIES.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_i18n_resolve_message(
+    user_msg_key_utf8: *const c_char,
+    params_json: *const c_char,
+    locale_utf8: *const c_char,
+) -> *mut c_char {
+    let key = match parse_cstr(user_msg_key_utf8, "user_msg_key") {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let params_src = match parse_cstr(params_json, "params_json") {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let locale = parse_cstr(locale_utf8, "locale").unwrap_or_else(|_| "ja-JP".to_string());
+    let params: serde_json::Map<String, serde_json::Value> = serde_json::from_str(&params_src).unwrap_or_default();
+    let message = resolve_user_message(&key, &params, &locale);
+    encode_ok(serde_json::json!({"message": message}))
 }
 
 #[no_mangle]

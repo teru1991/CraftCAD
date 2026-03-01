@@ -17,6 +17,18 @@
 
 static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 
+static QString localizeReason(const QJsonObject& reasonObj) {
+    const QString key = reasonObj.value("user_msg_key").toString();
+    if (key.isEmpty()) return QString::fromUtf8(QJsonDocument(reasonObj).toJson(QJsonDocument::Compact));
+    const QByteArray kb = key.toUtf8();
+    const QByteArray pb = QJsonDocument(reasonObj.value("params").toObject()).toJson(QJsonDocument::Compact);
+    const QByteArray lb = QByteArray("ja-JP");
+    QString env = take(craftcad_i18n_resolve_message(kb.constData(), pb.constData(), lb.constData()));
+    auto root = QJsonDocument::fromJson(env.toUtf8()).object();
+    if (!root.value("ok").toBool()) return QString::fromUtf8(QJsonDocument(reasonObj).toJson(QJsonDocument::Compact));
+    return root.value("data").toObject().value("message").toString();
+}
+
 static bool runExportAction(
     QWidget* parent,
     DocStore& store,
@@ -30,43 +42,7 @@ static bool runExportAction(
     QString env = take(ffi_fn(docJson.constData(), opts.constData()));
     auto root = QJsonDocument::fromJson(env.toUtf8()).object();
     if (!root.value("ok").toBool()) {
-        QMessageBox::warning(parent, "Export failed", QString::fromUtf8(QJsonDocument(root.value("reason").toObject()).toJson()));
-        return false;
-    }
-    auto data = root.value("data").toObject();
-    auto bytes = QByteArray::fromBase64(data.value("bytes_base64").toString().toUtf8());
-    auto path = QFileDialog::getSaveFileName(parent, "Save Export", defaultName, filter);
-    if (path.isEmpty()) return false;
-    QFile f(path);
-    if (!f.open(QIODevice::WriteOnly)) {
-        QMessageBox::warning(parent, "Export failed", "EXPORT_IO_WRITE_FAILED");
-        return false;
-    }
-    f.write(bytes);
-    QMessageBox::information(parent, "Export", "Export completed.");
-    return true;
-}
-
-static bool runExportAction(
-    QWidget* parent,
-    DocStore& store,
-    char* (*ffi_fn)(const char*, const char*),
-    const QJsonObject& options,
-    const QString& filter,
-    const QString& defaultName
-) {
-    auto docJson = QJsonDocument(store.document).toJson(QJsonDocument::Compact);
-    auto opts = QJsonDocument(options).toJson(QJsonDocument::Compact);
-    char* out = ffi_fn(docJson.constData(), opts.constData());
-    if (!out) {
-        QMessageBox::warning(parent, "Export failed", "EXPORT_PDF_FAILED");
-        return false;
-    }
-    QByteArray env(out);
-    craftcad_free_string(out);
-    auto root = QJsonDocument::fromJson(env).object();
-    if (!root.value("ok").toBool()) {
-        QMessageBox::warning(parent, "Export failed", QString::fromUtf8(QJsonDocument(root.value("reason").toObject()).toJson()));
+        QMessageBox::warning(parent, "Export failed", localizeReason(root.value("reason").toObject()));
         return false;
     }
     auto data = root.value("data").toObject();

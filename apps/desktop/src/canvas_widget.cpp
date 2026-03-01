@@ -4,6 +4,24 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QMessageBox>
+#include "ffi/craftcad_ffi.h"
+
+static QString takeStr(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
+
+static QString localizeReason(const QString& reasonJson) {
+    auto obj = QJsonDocument::fromJson(reasonJson.toUtf8()).object();
+    const QString key = obj.value("user_msg_key").toString();
+    const auto params = obj.value("params").toObject();
+    if (key.isEmpty()) return reasonJson;
+    const QByteArray kb = key.toUtf8();
+    const QByteArray pb = QJsonDocument(params).toJson(QJsonDocument::Compact);
+    const QByteArray lb = QByteArray("ja-JP");
+    QString env = takeStr(craftcad_i18n_resolve_message(kb.constData(), pb.constData(), lb.constData()));
+    auto root = QJsonDocument::fromJson(env.toUtf8()).object();
+    if (!root.value("ok").toBool()) return reasonJson;
+    return root.value("data").toObject().value("message").toString(reasonJson);
+}
+
 #include <cmath>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -119,8 +137,8 @@ void CanvasWidget::wheelEvent(QWheelEvent* e) {
 
 void CanvasWidget::keyPressEvent(QKeyEvent* e) {
     QString reason;
-    if (isUndo(e)) { if(!store_->undo(&reason)) QMessageBox::warning(this,"Undo failed",reason); update(); return; }
-    if (isRedo(e)) { if(!store_->redo(&reason)) QMessageBox::warning(this,"Redo failed",reason); update(); return; }
+    if (isUndo(e)) { if(!store_->undo(&reason)) QMessageBox::warning(this,"Undo failed",localizeReason(reason)); update(); return; }
+    if (isRedo(e)) { if(!store_->redo(&reason)) QMessageBox::warning(this,"Redo failed",localizeReason(reason)); update(); return; }
     if (e->key() == Qt::Key_1) activeTool_ = ActiveTool::Line;
     if (e->key() == Qt::Key_2) activeTool_ = ActiveTool::Move;
     if (e->key() == Qt::Key_3) activeTool_ = ActiveTool::Rotate;
