@@ -26,6 +26,10 @@ add_executable(craftcad_desktop
   src/tools/move_tool.cpp
   src/tools/trim_tool.cpp
   src/tools/offset_tool.cpp
+  src/tools/polyline_tool.cpp
+  src/tools/arc_tool.cpp
+  src/tools/circle_tool.cpp
+  src/tools/rect_tool.cpp
   src/ffi/craftcad_ffi.cpp
 )
 

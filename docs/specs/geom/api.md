@@ -27,3 +27,14 @@ Part/Face and BOM FFI:
 - `craftcad_history_apply_update_part(h, doc_json, part_id_uuid, patch_json)` using JSON Merge Patch (RFC7396)
 - `craftcad_history_apply_delete_part(h, doc_json, part_id_uuid)`
 - `craftcad_export_bom_csv_bytes(doc_json, bom_options_json)` -> `{bytes_base64, filename, mime}`
+
+## Drawing command JSON params (v1)
+
+- RectParams (fixed mode in v1):
+  - `{ "mode": "TwoPoint", "p0": {"x":num,"y":num}, "p1": {"x":num,"y":num}, "corner": "Sharp" }`
+- CircleParams (fixed mode in v1):
+  - `{ "mode": "CenterRadius", "c": {"x":num,"y":num}, "r": num }`
+- ArcParams (fixed mode in v1):
+  - `{ "mode": "Center", "c": {"x":num,"y":num}, "r": num, "start_angle": num, "end_angle": num, "ccw": bool }`
+- PolylineParams:
+  - `{ "pts": [{"x":num,"y":num}, ...], "closed": bool }`

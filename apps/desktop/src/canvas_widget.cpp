@@ -4,9 +4,13 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QMessageBox>
+#include <cmath>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 CanvasWidget::CanvasWidget(DocStore* store, QWidget* parent)
-    : QWidget(parent), store_(store), lineTool_(store, &camera_), moveTool_(store, &camera_), rotateTool_(store, &camera_), scaleTool_(store, &camera_), offsetTool_(store, &camera_), trimTool_(store, &camera_) {
+    : QWidget(parent), store_(store), lineTool_(store, &camera_), moveTool_(store, &camera_), rotateTool_(store, &camera_), scaleTool_(store, &camera_), offsetTool_(store, &camera_), trimTool_(store, &camera_), rectTool_(store,&camera_), circleTool_(store,&camera_), arcTool_(store,&camera_), polylineTool_(store,&camera_) {
     setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -17,13 +21,17 @@ void CanvasWidget::setHighlightedFace(const QJsonObject& face) {
 }
 
 ToolBase* CanvasWidget::currentTool() {
-    switch (activeTool_) {
+        switch (activeTool_) {
         case ActiveTool::Line: return &lineTool_;
         case ActiveTool::Move: return &moveTool_;
         case ActiveTool::Rotate: return &rotateTool_;
         case ActiveTool::Scale: return &scaleTool_;
         case ActiveTool::Offset: return &offsetTool_;
         case ActiveTool::Trim: return &trimTool_;
+        case ActiveTool::Rect: return &rectTool_;
+        case ActiveTool::Circle: return &circleTool_;
+        case ActiveTool::Arc: return &arcTool_;
+        case ActiveTool::Polyline: return &polylineTool_;
     }
     return &lineTool_;
 }
@@ -33,12 +41,29 @@ void CanvasWidget::paintEvent(QPaintEvent*) {
     p.fillRect(rect(), QColor(24,24,24));
 
     for (const auto& e : store_->entities()) {
-        if (e.geom.value("type").toString() != "Line") continue;
-        auto a=e.geom.value("a").toObject(); auto b=e.geom.value("b").toObject();
-        WVec2 wa{a.value("x").toDouble(), a.value("y").toDouble()};
-        WVec2 wb{b.value("x").toDouble(), b.value("y").toDouble()};
+        auto t = e.geom.value("type").toString();
         p.setPen(QPen(store_->selection().isSelected(e.id) ? QColor(255,200,0) : QColor(0,220,255), 0));
-        p.drawLine(camera_.worldToScreen(wa), camera_.worldToScreen(wb));
+        if (t == "Line") {
+            auto a=e.geom.value("a").toObject(); auto b=e.geom.value("b").toObject();
+            p.drawLine(camera_.worldToScreen({a.value("x").toDouble(), a.value("y").toDouble()}), camera_.worldToScreen({b.value("x").toDouble(), b.value("y").toDouble()}));
+        } else if (t == "Polyline") {
+            auto pts = e.geom.value("pts").toArray();
+            QPolygonF poly;
+            for (auto v: pts){ auto o=v.toObject(); poly << camera_.worldToScreen({o.value("x").toDouble(), o.value("y").toDouble()}); }
+            if (!poly.isEmpty()) {
+                if (e.geom.value("closed").toBool()) p.drawPolygon(poly);
+                else p.drawPolyline(poly);
+            }
+        } else if (t == "Circle") {
+            auto c=e.geom.value("c").toObject(); double r=e.geom.value("r").toDouble();
+            p.drawEllipse(camera_.worldToScreen({c.value("x").toDouble(), c.value("y").toDouble()}), r*camera_.zoom, r*camera_.zoom);
+        } else if (t == "Arc") {
+            auto c=e.geom.value("c").toObject(); double r=e.geom.value("r").toDouble();
+            double a0=e.geom.value("start_angle").toDouble()*180.0/M_PI;
+            double a1=e.geom.value("end_angle").toDouble()*180.0/M_PI;
+            QRectF rr(camera_.worldToScreen({c.value("x").toDouble(), c.value("y").toDouble()})-QPointF(r*camera_.zoom,r*camera_.zoom), QSizeF(2*r*camera_.zoom,2*r*camera_.zoom));
+            p.drawArc(rr, int(-a0*16), int(-(a1-a0)*16));
+        }
     }
 
     if (!highlightedFace_.isEmpty()) {
@@ -91,6 +116,10 @@ void CanvasWidget::keyPressEvent(QKeyEvent* e) {
     if (e->key() == Qt::Key_4) activeTool_ = ActiveTool::Scale;
     if (e->key() == Qt::Key_5) activeTool_ = ActiveTool::Offset;
     if (e->key() == Qt::Key_6) activeTool_ = ActiveTool::Trim;
+    if (e->key() == Qt::Key_7) activeTool_ = ActiveTool::Rect;
+    if (e->key() == Qt::Key_8) activeTool_ = ActiveTool::Circle;
+    if (e->key() == Qt::Key_9) activeTool_ = ActiveTool::Arc;
+    if (e->key() == Qt::Key_0) activeTool_ = ActiveTool::Polyline;
     currentTool()->onKeyPress(e);
     update();
 }

@@ -37,3 +37,8 @@ Transform editing and desktop tools use these edit-specific reason codes:
 - `EXPORT_UNSUPPORTED_FEATURE`: export option/feature not supported in v1.
 - `EXPORT_IO_PARSE_FAILED`: export input/options JSON parse failed.
 - `EXPORT_IO_WRITE_FAILED`: file write failed in host UI/export flow.
+
+
+- `DRAW_INVALID_NUMERIC`: drawing tool numeric input is invalid (NaN/Inf/<=0 where forbidden).
+- `DRAW_CONSTRAINT_CONFLICT`: active drawing constraints conflict and no unique solution exists.
+- `DRAW_INSUFFICIENT_INPUT`: drawing commit attempted before required points/parameters were provided.

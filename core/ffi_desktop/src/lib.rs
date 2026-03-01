@@ -4,6 +4,11 @@ use craftcad_commands::commands::create_part::{
     CreatePartCommand, CreatePartFromFaceCommand, CreatePartFromFaceInput, CreatePartInput,
     DeletePartCommand, PartProps, UpdatePartCommand, UpdatePartInput,
 };
+use craftcad_commands::commands::create_shapes::{
+    ArcParams, CircleParams, CreateArcCommand, CreateArcInput, CreateCircleCommand,
+    CreateCircleInput, CreatePolylineCommand, CreatePolylineInput, CreateRectCommand,
+    CreateRectInput, PolylineParams, RectParams,
+};
 use craftcad_commands::commands::nesting::{
     EditPlacementCommand, EditPlacementInput, PlacementPose, RunNestingCommand, RunNestingInput,
 };
@@ -13,8 +18,11 @@ use craftcad_commands::commands::transform_selection::{
 };
 use craftcad_commands::commands::trim_entity::{TrimEntityCommand, TrimEntityInput};
 use craftcad_commands::{Command, CommandContext, History};
+use craftcad_export::{
+    export_drawing_pdf, export_svg, export_tiled_pdf, DrawingPdfOptions, SvgExportOptions,
+    TiledPdfOptions,
+};
 use craftcad_faces::{extract_faces, Face};
-use craftcad_export::{export_drawing_pdf, export_svg, export_tiled_pdf, DrawingPdfOptions, SvgExportOptions, TiledPdfOptions};
 use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
 use diycad_nesting::RunLimits;
@@ -618,6 +626,132 @@ where
         Ok(()) => encode_ok(serde_json::json!({"document": doc})),
         Err(r) => encode_err(r),
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_create_rect(
+    handle: u64,
+    doc_json: *const c_char,
+    layer_id_uuid: *const c_char,
+    rect_params_json: *const c_char,
+    _eps_json: *const c_char,
+) -> *mut c_char {
+    let layer_id = match parse_cstr(layer_id_uuid, "layer_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let params: RectParams = match parse_cstr(rect_params_json, "rect_params_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::DrawInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut cmd = CreateRectCommand::new(layer_id);
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(CreateRectInput { params })?;
+        let d = cmd.commit()?;
+        d.apply(doc)?;
+        h.push(d);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_create_circle(
+    handle: u64,
+    doc_json: *const c_char,
+    layer_id_uuid: *const c_char,
+    circle_params_json: *const c_char,
+    _eps_json: *const c_char,
+) -> *mut c_char {
+    let layer_id = match parse_cstr(layer_id_uuid, "layer_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let params: CircleParams =
+        match parse_cstr(circle_params_json, "circle_params_json").and_then(|s| {
+            serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::DrawInvalidNumeric))
+        }) {
+            Ok(v) => v,
+            Err(r) => return encode_err(r),
+        };
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut cmd = CreateCircleCommand::new(layer_id);
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(CreateCircleInput { params })?;
+        let d = cmd.commit()?;
+        d.apply(doc)?;
+        h.push(d);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_create_arc(
+    handle: u64,
+    doc_json: *const c_char,
+    layer_id_uuid: *const c_char,
+    arc_params_json: *const c_char,
+    _eps_json: *const c_char,
+) -> *mut c_char {
+    let layer_id = match parse_cstr(layer_id_uuid, "layer_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let params: ArcParams = match parse_cstr(arc_params_json, "arc_params_json").and_then(|s| {
+        serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::DrawInvalidNumeric))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut cmd = CreateArcCommand::new(layer_id);
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(CreateArcInput { params })?;
+        let d = cmd.commit()?;
+        d.apply(doc)?;
+        h.push(d);
+        Ok(())
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_history_apply_create_polyline(
+    handle: u64,
+    doc_json: *const c_char,
+    layer_id_uuid: *const c_char,
+    polyline_params_json: *const c_char,
+    _eps_json: *const c_char,
+) -> *mut c_char {
+    let layer_id = match parse_cstr(layer_id_uuid, "layer_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let params: PolylineParams = match parse_cstr(polyline_params_json, "polyline_params_json")
+        .and_then(|s| {
+            serde_json::from_str(&s).map_err(|_| Reason::from_code(ReasonCode::DrawInvalidNumeric))
+        }) {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    with_history_doc(handle, doc_json, |h, doc| {
+        let mut cmd = CreatePolylineCommand::new(layer_id);
+        cmd.begin(&CommandContext::default())?;
+        cmd.update(CreatePolylineInput { params })?;
+        let d = cmd.commit()?;
+        d.apply(doc)?;
+        h.push(d);
+        Ok(())
+    })
 }
 
 #[no_mangle]
