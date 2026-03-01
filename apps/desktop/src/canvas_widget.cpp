@@ -41,10 +41,12 @@ ToolBase* CanvasWidget::currentTool() {
 }
 
 void CanvasWidget::paintEvent(QPaintEvent*) {
-    QPainter p(this);
-    p.fillRect(rect(), QColor(24,24,24));
-
-    for (const auto& e : store_->entities()) {
+    const bool needRebuild = renderCache_.size() != size() || cachedRevision_ != store_->revision() || std::abs(cachedZoom_ - camera_.zoom) > 1e-12;
+    if (needRebuild) {
+        renderCache_ = QPixmap(size());
+        renderCache_.fill(QColor(24,24,24));
+        QPainter rp(&renderCache_);
+        for (const auto& e : store_->entities()) {
         auto t = e.geom.value("type").toString();
         p.setPen(QPen(store_->selection().isSelected(e.id) ? QColor(255,200,0) : QColor(0,220,255), 0));
         if (t == "Line") {
@@ -68,7 +70,12 @@ void CanvasWidget::paintEvent(QPaintEvent*) {
             QRectF rr(camera_.worldToScreen({c.value("x").toDouble(), c.value("y").toDouble()})-QPointF(r*camera_.zoom,r*camera_.zoom), QSizeF(2*r*camera_.zoom,2*r*camera_.zoom));
             p.drawArc(rr, int(-a0*16), int(-(a1-a0)*16));
         }
+        cachedRevision_ = store_->revision();
+        cachedZoom_ = camera_.zoom;
     }
+
+    QPainter p(this);
+    p.drawPixmap(0, 0, renderCache_);
 
     if (!highlightedFace_.isEmpty()) {
         auto outer = highlightedFace_.value("outer").toArray();

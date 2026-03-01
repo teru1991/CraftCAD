@@ -17,6 +17,7 @@
 #include "tools/fillet_tool.h"
 #include <QWidget>
 #include <QJsonObject>
+#include <QPixmap>
 
 class CanvasWidget : public QWidget {
 public:
@@ -52,4 +53,7 @@ private:
     PatternTool patternTool_;
     ToolBase* currentTool();
     QJsonObject highlightedFace_;
+    QPixmap renderCache_;
+    quint64 cachedRevision_{0};
+    double cachedZoom_{-1.0};
 };

@@ -33,10 +33,13 @@ use diycad_nesting::RunLimits;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::ffi::{c_char, CStr, CString};
+use std::io::Write;
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
 use uuid::Uuid;
+use zip::write::FileOptions;
+use zip::ZipWriter;
 
 #[derive(Serialize)]
 struct Envelope<T: Serialize> {
@@ -1180,4 +1183,103 @@ pub extern "C" fn craftcad_history_end_group(handle: u64) -> *mut c_char {
         return encode_ok(serde_json::json!({}));
     }
     encode_err(Reason::from_code(ReasonCode::CoreInvariantViolation))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_export_diagnostic_pack(
+    doc_json: *const c_char,
+    options_json: *const c_char,
+) -> *mut c_char {
+    use base64::Engine;
+    let doc_src = match parse_cstr(doc_json, "doc_json") {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let opts_src = match parse_cstr(options_json, "options_json") {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let opts: serde_json::Value = match serde_json::from_str(&opts_src) {
+        Ok(v) => v,
+        Err(_) => return encode_err(Reason::from_code(ReasonCode::ExportIoParseFailed)),
+    };
+
+    let include_snapshot = opts
+        .get("include_doc_snapshot")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let reason_logs: Vec<String> = opts
+        .get("reason_logs")
+        .and_then(|v| v.as_array())
+        .map(|arr| {
+            arr.iter()
+                .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                .collect()
+        })
+        .unwrap_or_default();
+    let latest_n = opts.get("latest_n").and_then(|v| v.as_u64()).unwrap_or(50) as usize;
+
+    let env = serde_json::json!({
+        "os": std::env::consts::OS,
+        "arch": std::env::consts::ARCH,
+        "app_version": env!("CARGO_PKG_VERSION"),
+        "git_hash": option_env!("GITHUB_SHA").unwrap_or("unknown"),
+    });
+    let replay = serde_json::json!({
+        "seed": opts.get("seed").cloned().unwrap_or(serde_json::Value::Null),
+        "eps": opts.get("eps").cloned().unwrap_or(serde_json::Value::Null),
+        "settings_digest": opts.get("settings_digest").cloned().unwrap_or(serde_json::Value::Null),
+    });
+
+    let mut bytes = Vec::<u8>::new();
+    {
+        let mut zip = ZipWriter::new(std::io::Cursor::new(&mut bytes));
+        let file_opts = FileOptions::default().compression_method(zip::CompressionMethod::Deflated);
+        let mut write_json =
+            |path: &str, value: &serde_json::Value| -> std::result::Result<(), Reason> {
+                zip.start_file(path, file_opts)
+                    .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))?;
+                let s = serde_json::to_vec_pretty(value)
+                    .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))?;
+                zip.write_all(&s)
+                    .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))?;
+                Ok(())
+            };
+
+        if write_json("env.json", &env).is_err() {
+            return encode_err(Reason::from_code(ReasonCode::ExportIoWriteFailed));
+        }
+        if write_json("replay.json", &replay).is_err() {
+            return encode_err(Reason::from_code(ReasonCode::ExportIoWriteFailed));
+        }
+        let mut latest = reason_logs;
+        if latest.len() > latest_n {
+            latest = latest[latest.len() - latest_n..].to_vec();
+        }
+        if write_json(
+            "reason_logs/latest.json",
+            &serde_json::json!({"count": latest.len(), "items": latest}),
+        )
+        .is_err()
+        {
+            return encode_err(Reason::from_code(ReasonCode::ExportIoWriteFailed));
+        }
+        if include_snapshot {
+            zip.start_file("snapshot/document.json", file_opts)
+                .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))
+                .ok();
+            zip.write_all(doc_src.as_bytes())
+                .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))
+                .ok();
+        }
+        if zip.finish().is_err() {
+            return encode_err(Reason::from_code(ReasonCode::ExportIoWriteFailed));
+        }
+    }
+
+    encode_ok(serde_json::json!({
+        "bytes_base64": base64::engine::general_purpose::STANDARD.encode(bytes),
+        "filename": "diagnostic_pack.zip",
+        "mime": "application/zip"
+    }))
 }

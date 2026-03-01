@@ -12,6 +12,7 @@ char *craftcad_export_bom_csv_bytes(const char *doc_json, const char *bom_option
 char *craftcad_export_tiled_pdf(const char *doc_json, const char *options_json);
 char *craftcad_export_drawing_pdf(const char *doc_json, const char *options_json);
 char *craftcad_export_svg(const char *doc_json, const char *options_json);
+char *craftcad_export_diagnostic_pack(const char *doc_json, const char *options_json);
 char *craftcad_extract_faces(const char *doc_json, const char *eps_json);
 char *craftcad_geom_project_point(const char *geom_json, const char *point_json, const char *eps_json);
 char *craftcad_geom_intersect(const char *a_json, const char *b_json, const char *eps_json);
