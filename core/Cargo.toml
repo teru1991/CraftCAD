@@ -22,6 +22,8 @@ members = [
   "crates/perf",
   "crates/security",
   "crates/diagnostics",
+  "crates/drawing_model",
+  "crates/diycad_document",
   "serialize",
   "commands",
   "edit_ops",

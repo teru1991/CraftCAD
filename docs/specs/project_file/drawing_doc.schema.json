@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/specs/project_file/drawing_doc.schema.json",
+  "title": "CraftCAD DrawingDoc (embedded in .diycad/document.json as `drawing`)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "units",
+    "view",
+    "style_preset_id",
+    "sheet_template_id",
+    "print_preset_id",
+    "dimensions",
+    "annotations",
+    "refs"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "id": { "$ref": "#/$defs/id" },
+    "units": { "enum": ["mm", "inch"] },
+    "view": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_to_sheet"],
+      "properties": {
+        "model_to_sheet": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scale", "translate_mm"],
+          "properties": {
+            "scale": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 1000.0 },
+            "translate_mm": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["x", "y"],
+              "properties": {
+                "x": { "type": "number", "minimum": -1000000.0, "maximum": 1000000.0 },
+                "y": { "type": "number", "minimum": -1000000.0, "maximum": 1000000.0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "style_preset_id": { "$ref": "#/$defs/id_v" },
+    "sheet_template_id": { "$ref": "#/$defs/id_v" },
+    "print_preset_id": { "$ref": "#/$defs/id_v" },
+    "dimensions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dimension_entity" }
+    },
+    "annotations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/annotation_entity" }
+    },
+    "refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parts", "sketches"],
+      "properties": {
+        "parts": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "sketches": { "type": "array", "items": { "$ref": "#/$defs/id" } }
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "id_v": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*_v[0-9]+$"
+    },
+    "geometry_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["space", "kind", "stable_id"],
+      "properties": {
+        "space": { "enum": ["sketch", "part"] },
+        "kind": { "enum": ["point", "segment", "circle", "arc", "edge"] },
+        "stable_id": { "$ref": "#/$defs/id" }
+      }
+    },
+    "placement_hint": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "side": { "enum": ["auto", "left", "right", "top", "bottom"] },
+        "offset_level": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "manual_text_pos_mm": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "number", "minimum": -1000000.0, "maximum": 1000000.0 },
+            "y": { "type": "number", "minimum": -1000000.0, "maximum": 1000000.0 }
+          }
+        }
+      }
+    },
+    "dimension_overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "text_override": { "type": ["string", "null"], "maxLength": 256 },
+        "precision_override": { "type": ["integer", "null"], "minimum": 0, "maximum": 6 }
+      }
+    },
+    "dimension_kind": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["linear_serial", "linear_baseline", "angular", "radius", "diameter"] }
+      }
+    },
+    "dimension_entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "ref_geometry", "placement_hint", "overrides"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "$ref": "#/$defs/dimension_kind" },
+        "ref_geometry": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/geometry_ref" }
+        },
+        "placement_hint": { "$ref": "#/$defs/placement_hint" },
+        "overrides": { "$ref": "#/$defs/dimension_overrides" }
+      }
+    },
+    "annotation_kind": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["text", "leader", "hole_callout", "chamfer_callout"] }
+      }
+    },
+    "annotation_payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["text", "leader", "hole", "chamfer"] },
+        "text": { "type": ["string", "null"], "maxLength": 1024 },
+        "hole_diameter_mm": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1000000.0 },
+        "hole_depth_mm": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1000000.0 },
+        "hole_count": { "type": ["integer", "null"], "minimum": 1, "maximum": 1000000 },
+        "chamfer_type": { "type": ["string", "null"], "enum": [null, "C", "R"] },
+        "chamfer_value_mm": { "type": ["number", "null"], "minimum": 0.0, "maximum": 1000000.0 },
+        "leader_default_angle_deg": { "type": ["number", "null"], "minimum": 0.0, "maximum": 89.0 }
+      }
+    },
+    "annotation_entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "ref_geometry", "placement_hint", "payload"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "$ref": "#/$defs/annotation_kind" },
+        "ref_geometry": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": { "$ref": "#/$defs/geometry_ref" }
+        },
+        "placement_hint": { "$ref": "#/$defs/placement_hint" },
+        "payload": { "$ref": "#/$defs/annotation_payload" }
+      }
+    }
+  }
+}
