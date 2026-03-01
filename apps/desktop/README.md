@@ -46,3 +46,20 @@ $env:PATH = "$(Get-Location)\core\target\debug;" + $env:PATH
 ```bash
 ./build/desktop/craftcad_desktop /path/to/project.diycad
 ```
+
+
+## Drawing tools (v1)
+Tool hotkeys:
+- `1`: Line
+- `7`: Rect (TwoPoint mode)
+- `8`: Circle (CenterRadius mode)
+- `9`: Arc (Center mode)
+- `0`: Polyline
+
+Common key bindings:
+- Numeric typing: builds numeric buffer for active stage
+- `Enter`: commit current stage/tool
+- `Tab`: cycle numeric field (v1 tools mostly single-field; retained for consistency)
+- `Esc`: cancel current stage/tool
+- Constraints: `H` horizontal lock, `V` vertical lock, `A` angle lock (Arc)
+- Polyline: `C` close+commit, `Backspace` remove last point

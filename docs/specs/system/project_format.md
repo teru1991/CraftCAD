@@ -37,3 +37,19 @@
 ## Note
 - UI表示: Reason.user_msg_key + params
 - ログ: Reason.debug（errors配列、path、値、schema id など）
+
+
+## v1 Add-only compatibility fields
+- `Document.materials` (default `[]` when missing in legacy files)
+- `Document.settings` (default `{}` when missing in legacy files)
+
+These are loader-normalized to keep `schema_version = 1` backward-compatible.
+
+
+## NestJob v1 structured result/trace
+- `NestJob.parts_ref` supports both legacy UUID array and structured refs:
+  - legacy: `["<part_uuid>"]`
+  - structured: `[{"part_id":"<uuid>","quantity_override":2}]`
+- `NestJob.constraints` includes optional `no_go_zones` (v1: `Rect`) and `grain_policy` (`Strict|Prefer|Ignore`).
+- `NestJob.result` persists deterministic `NestResultV1` (`placements`, `metrics`, `per_part_status`).
+- `NestJob.trace` persists `NestTraceV1` (`seed`, `iterations`, `time_ms`, `stop_reason`, `best_updates`, `failure_stats`).

@@ -23,6 +23,8 @@ fn sample_doc() -> Document {
         entities: vec![],
         parts: vec![],
         jobs: vec![],
+        materials: vec![],
+        settings: craftcad_serialize::ProjectSettings::default(),
     }
 }
 
