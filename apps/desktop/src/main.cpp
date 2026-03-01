@@ -14,6 +14,10 @@
 #include <QMessageBox>
 #include <QStandardPaths>
 #include <QTimer>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QDialogButtonBox>
+#include <QCheckBox>
 
 static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 
@@ -95,7 +99,8 @@ int main(int argc, char* argv[]) {
     auto* tiledAction = exportMenu->addAction("Tiled PDF (1:1)");
     auto* drawingAction = exportMenu->addAction("Drawing PDF");
     auto* svgAction = exportMenu->addAction("SVG");
-    auto* diagAction = exportMenu->addAction("Diagnostic Pack");
+    auto* helpMenu = w.menuBar()->addMenu("&Help");
+    auto* diagAction = helpMenu->addAction("Export Diagnostic Pack");
 
     QObject::connect(tiledAction, &QAction::triggered, [&]() {
         QJsonObject opts{{"page_size", "A4"}, {"orientation", "Portrait"}, {"margin_mm", 10.0},
@@ -112,10 +117,29 @@ int main(int argc, char* argv[]) {
         runExportAction(&w, store, craftcad_export_svg, opts, "SVG Files (*.svg)", "drawing.svg");
     });
     QObject::connect(diagAction, &QAction::triggered, [&]() {
-        const bool includeDoc = QMessageBox::question(&w, "Include snapshot", "Include current .diycad document snapshot?\n(Contains project data)") == QMessageBox::Yes;
+        QDialog dlg(&w);
+        dlg.setWindowTitle("Diagnostic Pack Options");
+        auto* layout = new QVBoxLayout(&dlg);
+        auto* includeDoc = new QCheckBox("Include document snapshot (contains project data)");
+        includeDoc->setChecked(false);
+        auto* includeSystem = new QCheckBox("Include system information");
+        includeSystem->setChecked(false);
+        layout->addWidget(includeDoc);
+        layout->addWidget(includeSystem);
+        auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+        layout->addWidget(buttons);
+        QObject::connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+        QObject::connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+        if (dlg.exec() != QDialog::Accepted) return;
+
         QJsonArray logs;
         for (const auto& line : store.latestReasonLogs(100)) logs.append(line);
-        QJsonObject opts{{"latest_n", 100}, {"include_doc_snapshot", includeDoc}, {"reason_logs", logs},
+        QJsonObject opts{{"max_logs", 100}, {"latest_n", 100},
+                         {"include_doc", includeDoc->isChecked()},
+                         {"include_doc_snapshot", includeDoc->isChecked()},
+                         {"include_system", includeSystem->isChecked()},
+                         {"reason_logs", logs},
+                         {"locale", "ja-JP"},
                          {"eps", QJsonDocument::fromJson(store.epsPolicyJson().toUtf8()).object()}};
         runExportAction(&w, store, craftcad_export_diagnostic_pack, opts, "ZIP Files (*.zip)", "diagnostic_pack.zip");
     });

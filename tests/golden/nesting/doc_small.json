@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "00000000-0000-4000-8000-000000000101",
+  "units": "mm",
+  "layers": [],
+  "entities": [],
+  "parts": [
+    {
+      "id": "00000000-0000-4000-8000-000000000201",
+      "name": "A",
+      "outline": {"outer":[{"x":0,"y":0},{"x":40,"y":0},{"x":40,"y":20},{"x":0,"y":20}],"holes":[]},
+      "thickness": 3.0,
+      "quantity": 1,
+      "material_id": "00000000-0000-4000-8000-000000000301",
+      "grain_dir": null,
+      "allow_rotate": true,
+      "margin": 0.0,
+      "kerf": 0.0
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000202",
+      "name": "B",
+      "outline": {"outer":[{"x":0,"y":0},{"x":30,"y":0},{"x":30,"y":10},{"x":0,"y":10}],"holes":[]},
+      "thickness": 3.0,
+      "quantity": 1,
+      "material_id": "00000000-0000-4000-8000-000000000301",
+      "grain_dir": null,
+      "allow_rotate": true,
+      "margin": 0.0,
+      "kerf": 0.0
+    }
+  ],
+  "jobs": [],
+  "materials": [{"id":"00000000-0000-4000-8000-000000000301","name":"ply","category":"wood","thickness_mm":3.0,"sheet_default":null,"notes":""}],
+  "settings": {}
+}

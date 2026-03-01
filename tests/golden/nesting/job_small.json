@@ -1,0 +1,15 @@
+{
+  "id": "00000000-0000-4000-8000-000000000401",
+  "sheet_defs": [
+    {"id":"00000000-0000-4000-8000-000000000501","material_id":"00000000-0000-4000-8000-000000000301","width":100.0,"height":100.0,"quantity":1}
+  ],
+  "parts_ref": [
+    {"part_id":"00000000-0000-4000-8000-000000000201","quantity_override":1},
+    {"part_id":"00000000-0000-4000-8000-000000000202","quantity_override":1}
+  ],
+  "constraints": {"global_margin":0.0,"global_kerf":0.0,"allow_rotate_default":true,"no_go_zones":[],"grain_policy":"Ignore"},
+  "objective": {"w_utilization":1.0,"w_sheet_count":1.0,"w_cut_count":1.0},
+  "seed": 7,
+  "result": null,
+  "trace": null
+}

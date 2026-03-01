@@ -16,7 +16,11 @@ fn parse_dict(src: &str) -> HashMap<String, String> {
     serde_json::from_str(src).unwrap_or_default()
 }
 
-pub fn resolve_user_message(user_msg_key: &str, params: &Map<String, Value>, locale: &str) -> String {
+pub fn resolve_user_message(
+    user_msg_key: &str,
+    params: &Map<String, Value>,
+    locale: &str,
+) -> String {
     let dict = DICTS
         .get(locale)
         .or_else(|| DICTS.get("en-US"))

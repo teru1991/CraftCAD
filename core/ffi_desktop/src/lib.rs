@@ -22,6 +22,7 @@ use craftcad_commands::commands::transform_selection::{
 };
 use craftcad_commands::commands::trim_entity::{TrimEntityCommand, TrimEntityInput};
 use craftcad_commands::{Command, CommandContext, History};
+use craftcad_diag::{build_diagnostic_pack, DiagnosticOptions};
 use craftcad_export::{
     export_drawing_pdf, export_svg, export_tiled_pdf, DrawingPdfOptions, SvgExportOptions,
     TiledPdfOptions,
@@ -658,6 +659,27 @@ pub unsafe extern "C" fn craftcad_i18n_resolve_message(
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn craftcad_i18n_resolve_message(
+    user_msg_key_utf8: *const c_char,
+    params_json: *const c_char,
+    locale_utf8: *const c_char,
+) -> *mut c_char {
+    let key = match parse_cstr(user_msg_key_utf8, "user_msg_key") {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let params_src = match parse_cstr(params_json, "params_json") {
+        Ok(v) => v,
+        Err(r) => return encode_err(r),
+    };
+    let locale = parse_cstr(locale_utf8, "locale").unwrap_or_else(|_| "ja-JP".to_string());
+    let params: serde_json::Map<String, serde_json::Value> =
+        serde_json::from_str(&params_src).unwrap_or_default();
+    let message = resolve_user_message(&key, &params, &locale);
+    encode_ok(serde_json::json!({"message": message}))
+}
+
+#[no_mangle]
 pub extern "C" fn craftcad_history_new() -> u64 {
     let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
     if let Ok(mut m) = histories().lock() {
@@ -1262,16 +1284,26 @@ pub unsafe extern "C" fn craftcad_export_diagnostic_pack(
         Ok(v) => v,
         Err(r) => return encode_err(r),
     };
-    let opts: serde_json::Value = match serde_json::from_str(&opts_src) {
+    let opts_v: serde_json::Value = match serde_json::from_str(&opts_src) {
         Ok(v) => v,
         Err(_) => return encode_err(Reason::from_code(ReasonCode::ExportIoParseFailed)),
     };
 
-    let include_snapshot = opts
-        .get("include_doc_snapshot")
+    let include_doc = opts_v
+        .get("include_doc")
+        .and_then(|v| v.as_bool())
+        .or_else(|| opts_v.get("include_doc_snapshot").and_then(|v| v.as_bool()))
+        .unwrap_or(false);
+    let include_system = opts_v
+        .get("include_system")
         .and_then(|v| v.as_bool())
         .unwrap_or(false);
-    let reason_logs: Vec<String> = opts
+    let max_logs = opts_v
+        .get("max_logs")
+        .or_else(|| opts_v.get("latest_n"))
+        .and_then(|v| v.as_u64())
+        .unwrap_or(50) as usize;
+    let reason_logs: Vec<String> = opts_v
         .get("reason_logs")
         .and_then(|v| v.as_array())
         .map(|arr| {
@@ -1280,65 +1312,29 @@ pub unsafe extern "C" fn craftcad_export_diagnostic_pack(
                 .collect()
         })
         .unwrap_or_default();
-    let latest_n = opts.get("latest_n").and_then(|v| v.as_u64()).unwrap_or(50) as usize;
 
-    let env = serde_json::json!({
-        "os": std::env::consts::OS,
-        "arch": std::env::consts::ARCH,
-        "app_version": env!("CARGO_PKG_VERSION"),
-        "git_hash": option_env!("GITHUB_SHA").unwrap_or("unknown"),
-    });
-    let replay = serde_json::json!({
-        "seed": opts.get("seed").cloned().unwrap_or(serde_json::Value::Null),
-        "eps": opts.get("eps").cloned().unwrap_or(serde_json::Value::Null),
-        "settings_digest": opts.get("settings_digest").cloned().unwrap_or(serde_json::Value::Null),
-    });
+    let opts = DiagnosticOptions {
+        include_doc,
+        include_system,
+        max_logs,
+        locale: opts_v
+            .get("locale")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string()),
+        eps: opts_v.get("eps").cloned(),
+        seed: opts_v.get("seed").and_then(|v| v.as_u64()),
+        settings_digest: opts_v
+            .get("settings_digest")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string()),
+        nesting_limits: opts_v.get("nesting_limits").cloned(),
+        reason_logs,
+    };
 
-    let mut bytes = Vec::<u8>::new();
-    {
-        let mut zip = ZipWriter::new(std::io::Cursor::new(&mut bytes));
-        let file_opts = FileOptions::default().compression_method(zip::CompressionMethod::Deflated);
-        let mut write_json =
-            |path: &str, value: &serde_json::Value| -> std::result::Result<(), Reason> {
-                zip.start_file(path, file_opts)
-                    .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))?;
-                let s = serde_json::to_vec_pretty(value)
-                    .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))?;
-                zip.write_all(&s)
-                    .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))?;
-                Ok(())
-            };
-
-        if write_json("env.json", &env).is_err() {
-            return encode_err(Reason::from_code(ReasonCode::ExportIoWriteFailed));
-        }
-        if write_json("replay.json", &replay).is_err() {
-            return encode_err(Reason::from_code(ReasonCode::ExportIoWriteFailed));
-        }
-        let mut latest = reason_logs;
-        if latest.len() > latest_n {
-            latest = latest[latest.len() - latest_n..].to_vec();
-        }
-        if write_json(
-            "reason_logs/latest.json",
-            &serde_json::json!({"count": latest.len(), "items": latest}),
-        )
-        .is_err()
-        {
-            return encode_err(Reason::from_code(ReasonCode::ExportIoWriteFailed));
-        }
-        if include_snapshot {
-            zip.start_file("snapshot/document.json", file_opts)
-                .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))
-                .ok();
-            zip.write_all(doc_src.as_bytes())
-                .map_err(|_| Reason::from_code(ReasonCode::ExportIoWriteFailed))
-                .ok();
-        }
-        if zip.finish().is_err() {
-            return encode_err(Reason::from_code(ReasonCode::ExportIoWriteFailed));
-        }
-    }
+    let bytes = match build_diagnostic_pack(&doc_src, &opts) {
+        Ok(v) => v,
+        Err(_) => return encode_err(Reason::from_code(ReasonCode::ExportIoWriteFailed)),
+    };
 
     encode_ok(serde_json::json!({
         "bytes_base64": base64::engine::general_purpose::STANDARD.encode(bytes),

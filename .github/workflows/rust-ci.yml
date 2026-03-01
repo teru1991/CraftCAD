@@ -34,6 +34,11 @@ jobs:
       - name: Test
         run: cargo test --all
 
+      - name: Perf smoke
+        run: |
+          cargo test -p diycad_geom --test perf_threshold
+          cargo test -p craftcad_commands --test e2e_pipeline
+
       - name: Generate sample_v0.diycad
         working-directory: ${{ github.workspace }}
         run: cargo run --manifest-path tools/diycad-cli/Cargo.toml -- generate-sample /tmp/sample_v0.diycad

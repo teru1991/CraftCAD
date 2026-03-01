@@ -1,5 +1,5 @@
 [package]
-name = "diycad_geom"
+name = "craftcad_diag"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,12 +8,5 @@ authors.workspace = true
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-craftcad_serialize = { path = "../../serialize" }
-
-[dev-dependencies]
-rand = "0.8"
-criterion = "0.5"
-
-[[bench]]
-name = "geom_bench"
-harness = false
+zip = "0.6"
+base64 = "0.22"

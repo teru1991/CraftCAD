@@ -14,10 +14,7 @@ fn exported_symbols_snapshot_matches_docs_hash() {
         .lines()
         .find(|l| l.contains("ffi_symbols_sha256"))
         .expect("hash line present");
-    let expected = line
-        .split('`')
-        .nth(1)
-        .expect("hash in backticks");
+    let expected = line.split('`').nth(1).expect("hash in backticks");
 
     assert_eq!(actual, expected, "ffi symbol snapshot drift");
 }

@@ -1,0 +1,7 @@
+{
+  "stop_reason": "NEST_STOPPED_BY_ITERATION_LIMIT",
+  "sheet_count_used": 0,
+  "placed_count": 0,
+  "unplaced_count": 1,
+  "reason_code": "NEST_PART_TOO_LARGE_FOR_ANY_SHEET"
+}

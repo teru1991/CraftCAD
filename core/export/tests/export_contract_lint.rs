@@ -22,7 +22,9 @@ fn tiled_defaults_invariants() {
         parts: vec![],
         jobs: vec![],
         materials: vec![],
-        settings: ProjectSettings { bom_delimiter: None },
+        settings: ProjectSettings {
+            bom_delimiter: None,
+        },
     };
     let layout = compute_tiled_layout(&doc, &TiledPdfOptions::default()).expect("layout");
     assert!(layout.tiles_x >= 1 && layout.tiles_y >= 1);
