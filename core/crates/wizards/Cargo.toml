@@ -20,6 +20,8 @@ ordered-float = "4"
 
 [dev-dependencies]
 tempfile = "3"
+recovery = { path = "../recovery" }
+diycad_format = { path = "../diycad_format" }
 
 
 [[test]]
@@ -33,3 +35,7 @@ path = "../../../tests/determinism/wizard_determinism.rs"
 [[test]]
 name = "presets_templates_compat"
 path = "../../../tests/compat/presets_templates_compat.rs"
+
+[[test]]
+name = "project_crash_recovery"
+path = "../../../tests/e2e/project_crash_recovery.rs"

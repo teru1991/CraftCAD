@@ -175,6 +175,20 @@
         "head_sha": "see docs/verification/SPRINT14-STEP4.md",
         "tests": "cargo test -p migration: pass; cargo test -p diycad_format: pass; cargo test -p diycad_format --features test_latest_2: pass; scripts/ci/run_all.sh (timeout 120): rust_fmt pass, rust_clippy/rust_test fail, new migration+diycad_format gates pass"
       }
+    },
+    "SPRINT14-STEP5": {
+      "branch": "feature/sprint14-step5-001",
+      "artifacts": [
+        "core/crates/recovery/**",
+        "tests/e2e/project_crash_recovery.rs",
+        "scripts/ci/run_all.sh",
+        "docs/verification/SPRINT14-STEP5.md"
+      ],
+      "verification": "docs/verification/SPRINT14-STEP5.md",
+      "evidence": {
+        "head_sha": "see docs/verification/SPRINT14-STEP5.md",
+        "tests": "cargo test -p recovery: pass; cargo test -p craftcad_wizards --test project_crash_recovery: pass; scripts/ci/run_all.sh: includes recovery + crash recovery gates"
+      }
     }
   }
 }
