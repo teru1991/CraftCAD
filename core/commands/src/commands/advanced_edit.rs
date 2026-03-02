@@ -109,18 +109,48 @@ impl EditOp {
                     *radius,
                 ) {
                     Ok((g1, g2, _)) => {
-                        let pa = match &g1 { diycad_geom::Geom2D::Line{b,..} => *b, _ => diycad_geom::Vec2{x:a0.x,y:a0.y} };
-                        let pb = match &g2 { diycad_geom::Geom2D::Line{b,..} => *b, _ => diycad_geom::Vec2{x:b0.x,y:b0.y} };
-                        let center = diycad_geom::Vec2 { x: 0.5*(pa.x+pb.x), y: 0.5*(pa.y+pb.y) };
-                        let ga = diycad_geom::Geom2D::Arc { c:center, r:*radius, start_angle:(pa.y-center.y).atan2(pa.x-center.x), end_angle:(pb.y-center.y).atan2(pb.x-center.x), ccw:true };
-                        (g1,g2,ga)
+                        let pa = match &g1 {
+                            diycad_geom::Geom2D::Line { b, .. } => *b,
+                            _ => diycad_geom::Vec2 { x: a0.x, y: a0.y },
+                        };
+                        let pb = match &g2 {
+                            diycad_geom::Geom2D::Line { b, .. } => *b,
+                            _ => diycad_geom::Vec2 { x: b0.x, y: b0.y },
+                        };
+                        let center = diycad_geom::Vec2 {
+                            x: 0.5 * (pa.x + pb.x),
+                            y: 0.5 * (pa.y + pb.y),
+                        };
+                        let ga = diycad_geom::Geom2D::Arc {
+                            c: center,
+                            r: *radius,
+                            start_angle: (pa.y - center.y).atan2(pa.x - center.x),
+                            end_angle: (pb.y - center.y).atan2(pb.x - center.x),
+                            ccw: true,
+                        };
+                        (g1, g2, ga)
                     }
                     Err(_) => {
-                        let g1 = diycad_geom::Geom2D::Line { a:diycad_geom::Vec2{x:a0.x,y:a0.y}, b:diycad_geom::Vec2{x:a1.x,y:a1.y} };
-                        let g2 = diycad_geom::Geom2D::Line { a:diycad_geom::Vec2{x:b0.x,y:b0.y}, b:diycad_geom::Vec2{x:b1.x,y:b1.y} };
-                        let c = diycad_geom::Vec2 { x: 0.5*(a0.x+b0.x), y: 0.5*(a0.y+b0.y) };
-                        let ga = diycad_geom::Geom2D::Arc { c, r:*radius, start_angle:0.0, end_angle:1.57, ccw:true };
-                        (g1,g2,ga)
+                        let g1 = diycad_geom::Geom2D::Line {
+                            a: diycad_geom::Vec2 { x: a0.x, y: a0.y },
+                            b: diycad_geom::Vec2 { x: a1.x, y: a1.y },
+                        };
+                        let g2 = diycad_geom::Geom2D::Line {
+                            a: diycad_geom::Vec2 { x: b0.x, y: b0.y },
+                            b: diycad_geom::Vec2 { x: b1.x, y: b1.y },
+                        };
+                        let c = diycad_geom::Vec2 {
+                            x: 0.5 * (a0.x + b0.x),
+                            y: 0.5 * (a0.y + b0.y),
+                        };
+                        let ga = diycad_geom::Geom2D::Arc {
+                            c,
+                            r: *radius,
+                            start_angle: 0.0,
+                            end_angle: 1.57,
+                            ccw: true,
+                        };
+                        (g1, g2, ga)
                     }
                 };
                 let layer_id = a.layer_id;
@@ -135,7 +165,7 @@ impl EditOp {
                 });
                 entities.push(Entity {
                     id: Uuid::new_v4(),
-                    layer_id: layer_id,
+                    layer_id,
                     geom: from_op(&ga)?,
                     style: serde_json::json!({}),
                     tags: vec!["fillet".into()],
@@ -179,7 +209,7 @@ impl EditOp {
                 });
                 entities.push(Entity {
                     id: Uuid::new_v4(),
-                    layer_id: layer_id,
+                    layer_id,
                     geom: from_op(&gc)?,
                     style: serde_json::json!({}),
                     tags: vec!["chamfer".into()],

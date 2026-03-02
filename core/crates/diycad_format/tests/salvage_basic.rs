@@ -85,4 +85,3 @@ fn test_salvage_document_with_extra_properties() {
         "Salvage should fail for document with extra properties"
     );
 }
-

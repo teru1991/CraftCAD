@@ -76,11 +76,11 @@ pub fn trim_line_to_intersection(
         Geom2D::Line { a, b } => (*a, *b),
         _ => return Err(Reason::from_code(ReasonCode::GeomOffsetNotSupported)),
     };
-    let set = intersect(target_line, cutter_geom, eps).or_else(|r| {
+    let set = intersect(target_line, cutter_geom, eps).map_err(|r| {
         if r.code == "GEOM_NO_INTERSECTION" {
-            Err(Reason::from_code(ReasonCode::GeomTrimNoIntersection))
+            Reason::from_code(ReasonCode::GeomTrimNoIntersection)
         } else {
-            Err(r)
+            r
         }
     })?;
     let p = choose_candidate(&set.points, a, b, pick_point, eps, candidate_index)?;

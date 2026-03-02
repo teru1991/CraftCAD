@@ -1,8 +1,10 @@
 #include "arc_tool.h"
 #include "../ffi/craftcad_ffi.h"
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QMessageBox>
 #include <cmath>
+#include <QJsonObject>
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif

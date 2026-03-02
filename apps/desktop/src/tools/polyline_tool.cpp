@@ -1,8 +1,10 @@
 #include "polyline_tool.h"
 #include "../ffi/craftcad_ffi.h"
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QMessageBox>
 #include <cmath>
+#include <QJsonObject>
 static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 PolylineTool::PolylineTool(DocStore* store, Camera* camera):store_(store),camera_(camera){}
 void PolylineTool::onPointerDown(const QPointF& s){ WVec2 w=camera_->screenToWorld(s); snap_=computeSnap(*store_,w,pts_.isEmpty()?std::nullopt:std::optional<WVec2>(pts_.last())); WVec2 p=snap_.best?snap_.best->point:w; if(!pts_.isEmpty()){ if(lockH_) p.y=pts_.last().y; if(lockV_) p.x=pts_.last().x; if(auto n=numeric_.value()){ double dx=p.x-pts_.last().x, dy=p.y-pts_.last().y; double d=std::sqrt(dx*dx+dy*dy); if(d>0){ p={pts_.last().x+dx/d*(*n),pts_.last().y+dy/d*(*n)}; } } }

@@ -4,6 +4,12 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${ROOT_DIR}/build/desktop"
 
+# Ensure desktop FFI is available for CMake find_library(CRAFTCAD_DESKTOP_FFI_LIB ...).
+(
+  cd "${ROOT_DIR}/core"
+  cargo build -p craftcad_ffi_desktop
+)
+
 cmake -S "${ROOT_DIR}/apps/desktop" -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release
 cmake --build "${BUILD_DIR}" --parallel
 

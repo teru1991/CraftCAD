@@ -220,8 +220,8 @@ QVector<int> DocStore::querySpatialCandidates(const QPointF& worldPoint, double 
 
 QStringList DocStore::latestReasonLogs(int n) const {
     if (n <= 0 || reasonLogs_.isEmpty()) return {};
-    const int start = std::max(0, reasonLogs_.size() - n);
+    const int start = std::max(0, static_cast<int>(reasonLogs_.size()) - n);
     QStringList out;
-    for (int i = start; i < reasonLogs_.size(); ++i) out.push_back(reasonLogs_.at(i));
+    for (qsizetype i = start; i < reasonLogs_.size(); ++i) out.push_back(reasonLogs_.at(i));
     return out;
 }

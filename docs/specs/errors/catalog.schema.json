@@ -22,7 +22,7 @@
         ],
         "properties": {
           "code": { "type": "string", "pattern": "^[A-Z]{2,8}_[A-Z0-9_]{3,64}$" },
-          "domain": { "type": "string", "enum": ["CAD", "IO", "NEST", "SAVE", "DIAG", "SECURITY", "PERF", "UI"] },
+          "domain": { "type": "string", "enum": ["CAD", "IO", "NEST", "SAVE", "DIAG", "SECURITY", "PERF", "UI", "SALVAGE"] },
           "severity": { "type": "string", "enum": ["INFO", "WARN", "ERROR", "FATAL"] },
           "summary": { "type": "string", "minLength": 3 },
           "detail": { "type": "string", "minLength": 3 },

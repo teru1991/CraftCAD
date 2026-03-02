@@ -1,7 +1,6 @@
-use craftcad_errors::{AppError, AppResult, ReasonCode, Severity};
 use craftcad_io::model::InternalModel;
 use craftcad_io::options::ExportOptions;
-use craftcad_io::pipeline::finalize_export;
+use craftcad_io::reasons::{AppError, AppResult, ReasonCode};
 use craftcad_io::report::IoReport;
 use craftcad_io::{ExportResult, Exporter};
 
@@ -16,18 +15,20 @@ impl Exporter for JsonExporter {
         let optimized = crate::postprocess::optimize_for_machine(model, opts);
         let bytes = crate::mapping::encode_model(&optimized).map_err(|e| {
             AppError::new(
-                ReasonCode::new("IO_LIMIT_016"),
-                Severity::Error,
+                ReasonCode::IoNormalizeRounded,
                 format!("Failed to encode JSON model: {e}"),
             )
         })?;
-        let report = IoReport {
-            format: self.format_id().to_string(),
-            entities_in: model.entities.len(),
-            entities_out: optimized.entities.len(),
-            postprocess_applied: opts.postprocess,
-            ..IoReport::default()
-        };
-        Ok(finalize_export(bytes, report, Vec::new(), opts))
+        let mut report = IoReport::new(self.format_id());
+        report.entities_in = model.entities.len();
+        report.entities_out = optimized.entities.len();
+        report
+            .extras
+            .insert("postprocess".to_string(), opts.postprocess.to_string());
+        Ok(ExportResult {
+            bytes,
+            warnings: Vec::new(),
+            report,
+        })
     }
 }

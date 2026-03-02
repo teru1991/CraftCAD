@@ -16,7 +16,7 @@ const NEST_JOB_SCHEMA: &str =
 #[derive(Debug, Clone)]
 pub struct SalvageReport {
     pub recovered: bool,
-    pub issues: Vec<(String, String)>,  // (field, issue)
+    pub issues: Vec<(String, String)>, // (field, issue)
     pub normalized_fields: Vec<String>,
 }
 
@@ -73,7 +73,9 @@ pub fn salvage_document(document_value: &Value) -> AppResult<(Value, SalvageRepo
     };
 
     if !document_value.is_object() {
-        report.issues.push(("root".to_string(), "not a JSON object".to_string()));
+        report
+            .issues
+            .push(("root".to_string(), "not a JSON object".to_string()));
         return Err(AppError::new(
             ReasonCode::new("SALVAGE_DOCUMENT_MALFORMED"),
             Severity::Error,
@@ -85,13 +87,24 @@ pub fn salvage_document(document_value: &Value) -> AppResult<(Value, SalvageRepo
     let obj = doc.as_object_mut().unwrap();
 
     // Check for critical required fields from document.schema.json
-    let required_fields = vec!["id", "schema_version", "created_by", "updated_at", "title", "parts", "nest_jobs", "settings"];
+    let required_fields = vec![
+        "id",
+        "schema_version",
+        "created_by",
+        "updated_at",
+        "title",
+        "parts",
+        "nest_jobs",
+        "settings",
+    ];
     let mut missing_required = Vec::new();
 
     for field in &required_fields {
         if !obj.contains_key(*field) {
             missing_required.push(*field);
-            report.issues.push((field.to_string(), "missing required field".to_string()));
+            report
+                .issues
+                .push((field.to_string(), "missing required field".to_string()));
         }
     }
 
@@ -111,7 +124,9 @@ pub fn salvage_document(document_value: &Value) -> AppResult<(Value, SalvageRepo
             Ok((doc, report))
         }
         Err(e) => {
-            report.issues.push(("schema".to_string(), e.message.clone()));
+            report
+                .issues
+                .push(("schema".to_string(), e.message.clone()));
             Err(AppError::new(
                 ReasonCode::new("SALVAGE_DOCUMENT_MALFORMED"),
                 Severity::Error,

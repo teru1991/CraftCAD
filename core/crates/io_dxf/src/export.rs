@@ -1,7 +1,6 @@
-use craftcad_errors::{AppError, AppResult, ReasonCode, Severity};
 use craftcad_io::model::InternalModel;
 use craftcad_io::options::ExportOptions;
-use craftcad_io::pipeline::finalize_export;
+use craftcad_io::reasons::{AppError, AppResult, ReasonCode};
 use craftcad_io::report::IoReport;
 use craftcad_io::{ExportResult, Exporter};
 
@@ -16,20 +15,22 @@ impl Exporter for DxfExporter {
         let (_optimized, approx_applied, origin_shifted) =
             crate::postprocess::optimize_for_machine(model, opts);
         let warnings = vec![AppError::new(
-            ReasonCode::new("IO_APPROX_022"),
-            Severity::Warn,
+            ReasonCode::IoNormalizeRounded,
             "DXF exporter currently emits placeholder output",
         )];
         let placeholder = b"0\nSECTION\n2\nENTITIES\n0\nENDSEC\n0\nEOF\n".to_vec();
-        let report = IoReport {
-            format: self.format_id().to_string(),
-            entities_in: model.entities.len(),
-            entities_out: model.entities.len(),
-            approx_applied,
-            postprocess_applied: opts.postprocess,
-            origin_shifted,
-            ..IoReport::default()
-        };
-        Ok(finalize_export(placeholder, report, warnings, opts))
+        let mut report = IoReport::new(self.format_id());
+        report.entities_in = model.entities.len();
+        report.entities_out = model.entities.len();
+        report.approx_applied_count = approx_applied;
+        report.origin_shifted = origin_shifted;
+        report
+            .extras
+            .insert("postprocess".to_string(), opts.postprocess.to_string());
+        Ok(ExportResult {
+            bytes: placeholder,
+            warnings,
+            report,
+        })
     }
 }

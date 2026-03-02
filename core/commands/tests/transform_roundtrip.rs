@@ -52,7 +52,7 @@ fn transform_roundtrip_undo_redo_json_equality() {
     let mut cmd = TransformSelectionCommand::new();
     let mut history = History::new();
 
-    cmd.begin(&CommandContext::default()).expect("begin");
+    cmd.begin(&CommandContext).expect("begin");
     cmd.update(TransformSelectionInput {
         selection_ids: vec![entity_id],
         transform: Transform::Rotate {

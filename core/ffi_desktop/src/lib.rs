@@ -1,3 +1,10 @@
+#![allow(
+    clippy::default_constructed_unit_structs,
+    clippy::missing_safety_doc,
+    clippy::result_large_err,
+    dead_code
+)]
+
 mod editor_bridge;
 use craftcad_bom::{generate_bom, write_bom_csv, CsvOptions, RoundingPolicy, UnitPolicy};
 use craftcad_commands::commands::advanced_edit::{
@@ -36,13 +43,10 @@ use diycad_nesting::RunLimits;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::ffi::{c_char, CStr, CString};
-use std::io::Write;
 use std::path::Path;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
 use uuid::Uuid;
-use zip::write::FileOptions;
-use zip::ZipWriter;
 
 #[derive(Serialize)]
 struct Envelope<T: Serialize> {
@@ -581,8 +585,8 @@ pub unsafe extern "C" fn craftcad_geom_project_point(
         let eps: EpsilonPolicy = serde_json::from_str(&parse_cstr(eps_json, "eps")?)
             .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?;
         let h = project_point(&g, p, &eps)?;
-        Ok(serde_json::to_value(h)
-            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?)
+        serde_json::to_value(h)
+            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
     })() {
         Ok(v) => encode_ok(v),
         Err(r) => encode_err(r),
@@ -603,8 +607,8 @@ pub unsafe extern "C" fn craftcad_geom_intersect(
         let eps: EpsilonPolicy = serde_json::from_str(&parse_cstr(eps_json, "eps")?)
             .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?;
         let out = intersect(&a, &b, &eps)?;
-        Ok(serde_json::to_value(out)
-            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?)
+        serde_json::to_value(out)
+            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
     })() {
         Ok(v) => encode_ok(v),
         Err(r) => encode_err(r),
@@ -623,8 +627,8 @@ pub unsafe extern "C" fn craftcad_geom_split_at_t(
         let eps: EpsilonPolicy = serde_json::from_str(&parse_cstr(eps_json, "eps")?)
             .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?;
         let out = split_at(&g, SplitBy::T(t), &eps)?;
-        Ok(serde_json::to_value(out)
-            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?)
+        serde_json::to_value(out)
+            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
     })() {
         Ok(v) => encode_ok(v),
         Err(r) => encode_err(r),
@@ -636,27 +640,6 @@ static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 
 fn histories() -> &'static Mutex<HashMap<u64, History>> {
     HISTORIES.get_or_init(|| Mutex::new(HashMap::new()))
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn craftcad_i18n_resolve_message(
-    user_msg_key_utf8: *const c_char,
-    params_json: *const c_char,
-    locale_utf8: *const c_char,
-) -> *mut c_char {
-    let key = match parse_cstr(user_msg_key_utf8, "user_msg_key") {
-        Ok(v) => v,
-        Err(r) => return encode_err(r),
-    };
-    let params_src = match parse_cstr(params_json, "params_json") {
-        Ok(v) => v,
-        Err(r) => return encode_err(r),
-    };
-    let locale = parse_cstr(locale_utf8, "locale").unwrap_or_else(|_| "ja-JP".to_string());
-    let params: serde_json::Map<String, serde_json::Value> =
-        serde_json::from_str(&params_src).unwrap_or_default();
-    let message = resolve_user_message(&key, &params, &locale);
-    encode_ok(serde_json::json!({"message": message}))
 }
 
 #[no_mangle]
@@ -700,7 +683,7 @@ fn with_history_doc<F>(handle: u64, doc_json: *const c_char, f: F) -> *mut c_cha
 where
     F: FnOnce(&mut History, &mut Document) -> craftcad_serialize::Result<()>,
 {
-    let mut doc: Document = match unsafe { parse_cstr(doc_json, "doc_json") }.and_then(|s| {
+    let mut doc: Document = match parse_cstr(doc_json, "doc_json").and_then(|s| {
         serde_json::from_str(&s)
             .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
     }) {

@@ -1,4 +1,4 @@
-use craftcad_serialize::{Document, Layer, Vec2};
+use craftcad_serialize::{Document, Layer};
 use std::ffi::{CStr, CString};
 use uuid::Uuid;
 

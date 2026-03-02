@@ -3,6 +3,7 @@
 #include "../hittest.h"
 #include <QJsonDocument>
 #include <QMessageBox>
+#include <QJsonObject>
 
 static QString take_trim(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 

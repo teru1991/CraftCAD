@@ -1,3 +1,5 @@
+#![allow(clippy::result_large_err)]
+
 use craftcad_serialize::{Geom2D, Reason, ReasonCode, Result, Vec2};
 
 const MIN_SCALE: f64 = 1e-12;

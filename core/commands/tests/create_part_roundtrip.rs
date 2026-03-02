@@ -51,7 +51,7 @@ fn create_part_undo_redo_json_roundtrip() {
 
     let mut cmd = CreatePartCommand::new();
     let mut history = History::new();
-    cmd.begin(&CommandContext::default()).unwrap();
+    cmd.begin(&CommandContext).unwrap();
     cmd.update(CreatePartInput { part }).unwrap();
     let delta = cmd.commit().unwrap();
     delta.apply(&mut doc).unwrap();
@@ -65,7 +65,7 @@ fn create_part_undo_redo_json_roundtrip() {
 #[test]
 fn rejects_invalid_outline() {
     let mut cmd = CreatePartCommand::new();
-    cmd.begin(&CommandContext::default()).unwrap();
+    cmd.begin(&CommandContext).unwrap();
     let bad = Part {
         id: Uuid::new_v4(),
         name: "Bad".into(),

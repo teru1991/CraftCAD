@@ -434,7 +434,7 @@ fn ssot_lint_drawing_style_specs() {
 
         let min_text = get_f64(p, "/min_readable_text_height_mm");
         assert!(
-            min_text >= 2.0 && min_text <= 6.0,
+            (2.0..=6.0).contains(&min_text),
             "min_readable_text_height_mm should be practical (2..6): {} => {}",
             pid,
             min_text
@@ -442,7 +442,7 @@ fn ssot_lint_drawing_style_specs() {
 
         let lw = get_f64(p, "/line_weight_scale");
         assert!(
-            lw >= 0.2 && lw <= 5.0,
+            (0.2..=5.0).contains(&lw),
             "line_weight_scale should be practical (0.2..5): {} => {}",
             pid,
             lw
@@ -461,7 +461,7 @@ fn ssot_lint_drawing_style_specs() {
             .and_then(|x| x.as_i64())
             .unwrap_or(-1);
         assert!(
-            svg_prec >= 0 && svg_prec <= 8,
+            (0..=8).contains(&svg_prec),
             "svg_precision out of range: {} => {}",
             pid,
             svg_prec

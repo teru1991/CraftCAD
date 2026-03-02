@@ -1,8 +1,10 @@
 #include "circle_tool.h"
 #include "../ffi/craftcad_ffi.h"
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QMessageBox>
 #include <cmath>
+#include <QJsonObject>
 static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 CircleTool::CircleTool(DocStore* store, Camera* camera):store_(store),camera_(camera){}
 void CircleTool::onPointerDown(const QPointF& s){ WVec2 w=camera_->screenToWorld(s); snap_=computeSnap(*store_,w,std::nullopt); if(!c_) c_=snap_.best?snap_.best->point:w; else edge_=snap_.best?snap_.best->point:w; }

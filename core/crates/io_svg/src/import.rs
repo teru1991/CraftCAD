@@ -1,6 +1,5 @@
-use craftcad_errors::{AppError, AppResult, ReasonCode, Severity};
 use craftcad_io::options::ImportOptions;
-use craftcad_io::pipeline::finalize_import;
+use craftcad_io::reasons::{AppError, AppResult, ReasonCode};
 use craftcad_io::report::IoReport;
 use craftcad_io::{ImportResult, Importer};
 
@@ -14,19 +13,21 @@ impl Importer for SvgImporter {
     fn import_bytes(&self, bytes: &[u8], opts: &ImportOptions) -> AppResult<ImportResult> {
         crate::preflight::run(bytes, opts)?;
         let warnings = vec![AppError::new(
-            ReasonCode::new("IO_CURVE_APPROX_APPLIED"),
-            Severity::Warn,
+            ReasonCode::IoNormalizeRounded,
             "SVG importer currently keeps best-effort placeholder behavior",
         )];
-        let model = crate::mapping::empty_model(opts.seed, opts.approx_epsilon);
-        let report = IoReport {
-            format: self.format_id().to_string(),
-            entities_in: 0,
-            entities_out: 0,
-            approx_applied: 1,
-            unit_guessed: opts.allow_unit_guess,
-            ..IoReport::default()
-        };
-        Ok(finalize_import(model, opts, report, warnings))
+        let model = crate::mapping::empty_model(
+            opts.determinism.seed,
+            opts.determinism.round_step,
+            opts.allow_unit_guess,
+        );
+        let mut report = IoReport::new(self.format_id());
+        report.approx_applied_count = 1;
+        report.unit_guessed = opts.allow_unit_guess;
+        Ok(ImportResult {
+            model,
+            warnings,
+            report,
+        })
     }
 }

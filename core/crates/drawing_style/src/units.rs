@@ -35,8 +35,6 @@ pub fn fmt_length(style: &StylePreset, mm: f64, precision_override: Option<u8>) 
             1
         } else if (s - 0.01).abs() < 1e-9 {
             2
-        } else if (s - 0.001).abs() < 1e-9 {
-            3
         } else {
             3
         }

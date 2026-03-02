@@ -1,3 +1,5 @@
+#![allow(clippy::result_large_err)]
+
 use craftcad_serialize::{Document, Reason, ReasonCode, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

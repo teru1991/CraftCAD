@@ -1,8 +1,10 @@
 #include "rect_tool.h"
 #include "../ffi/craftcad_ffi.h"
 #include <QJsonDocument>
+#include <QJsonArray>
 #include <QMessageBox>
 #include <cmath>
+#include <QJsonObject>
 
 static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 RectTool::RectTool(DocStore* store, Camera* camera):store_(store),camera_(camera){}

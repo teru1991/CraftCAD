@@ -1,3 +1,5 @@
+#![allow(clippy::result_large_err)]
+
 pub mod pdf_drawing;
 pub mod pdf_tiled;
 pub mod svg;

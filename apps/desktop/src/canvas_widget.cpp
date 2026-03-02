@@ -5,6 +5,9 @@
 #include <QPainter>
 #include <QMessageBox>
 #include "ffi/craftcad_ffi.h"
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 static QString takeStr(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 
@@ -65,28 +68,29 @@ void CanvasWidget::paintEvent(QPaintEvent*) {
         renderCache_.fill(QColor(24,24,24));
         QPainter rp(&renderCache_);
         for (const auto& e : store_->entities()) {
-        auto t = e.geom.value("type").toString();
-        p.setPen(QPen(store_->selection().isSelected(e.id) ? QColor(255,200,0) : QColor(0,220,255), 0));
-        if (t == "Line") {
-            auto a=e.geom.value("a").toObject(); auto b=e.geom.value("b").toObject();
-            p.drawLine(camera_.worldToScreen({a.value("x").toDouble(), a.value("y").toDouble()}), camera_.worldToScreen({b.value("x").toDouble(), b.value("y").toDouble()}));
-        } else if (t == "Polyline") {
-            auto pts = e.geom.value("pts").toArray();
-            QPolygonF poly;
-            for (auto v: pts){ auto o=v.toObject(); poly << camera_.worldToScreen({o.value("x").toDouble(), o.value("y").toDouble()}); }
-            if (!poly.isEmpty()) {
-                if (e.geom.value("closed").toBool()) p.drawPolygon(poly);
-                else p.drawPolyline(poly);
+            auto t = e.geom.value("type").toString();
+            rp.setPen(QPen(store_->selection().isSelected(e.id) ? QColor(255,200,0) : QColor(0,220,255), 0));
+            if (t == "Line") {
+                auto a=e.geom.value("a").toObject(); auto b=e.geom.value("b").toObject();
+                rp.drawLine(camera_.worldToScreen({a.value("x").toDouble(), a.value("y").toDouble()}), camera_.worldToScreen({b.value("x").toDouble(), b.value("y").toDouble()}));
+            } else if (t == "Polyline") {
+                auto pts = e.geom.value("pts").toArray();
+                QPolygonF poly;
+                for (auto v: pts){ auto o=v.toObject(); poly << camera_.worldToScreen({o.value("x").toDouble(), o.value("y").toDouble()}); }
+                if (!poly.isEmpty()) {
+                    if (e.geom.value("closed").toBool()) rp.drawPolygon(poly);
+                    else rp.drawPolyline(poly);
+                }
+            } else if (t == "Circle") {
+                auto c=e.geom.value("c").toObject(); double r=e.geom.value("r").toDouble();
+                rp.drawEllipse(camera_.worldToScreen({c.value("x").toDouble(), c.value("y").toDouble()}), r*camera_.zoom, r*camera_.zoom);
+            } else if (t == "Arc") {
+                auto c=e.geom.value("c").toObject(); double r=e.geom.value("r").toDouble();
+                double a0=e.geom.value("start_angle").toDouble()*180.0/M_PI;
+                double a1=e.geom.value("end_angle").toDouble()*180.0/M_PI;
+                QRectF rr(camera_.worldToScreen({c.value("x").toDouble(), c.value("y").toDouble()})-QPointF(r*camera_.zoom,r*camera_.zoom), QSizeF(2*r*camera_.zoom,2*r*camera_.zoom));
+                rp.drawArc(rr, int(-a0*16), int(-(a1-a0)*16));
             }
-        } else if (t == "Circle") {
-            auto c=e.geom.value("c").toObject(); double r=e.geom.value("r").toDouble();
-            p.drawEllipse(camera_.worldToScreen({c.value("x").toDouble(), c.value("y").toDouble()}), r*camera_.zoom, r*camera_.zoom);
-        } else if (t == "Arc") {
-            auto c=e.geom.value("c").toObject(); double r=e.geom.value("r").toDouble();
-            double a0=e.geom.value("start_angle").toDouble()*180.0/M_PI;
-            double a1=e.geom.value("end_angle").toDouble()*180.0/M_PI;
-            QRectF rr(camera_.worldToScreen({c.value("x").toDouble(), c.value("y").toDouble()})-QPointF(r*camera_.zoom,r*camera_.zoom), QSizeF(2*r*camera_.zoom,2*r*camera_.zoom));
-            p.drawArc(rr, int(-a0*16), int(-(a1-a0)*16));
         }
         cachedRevision_ = store_->revision();
         cachedZoom_ = camera_.zoom;
