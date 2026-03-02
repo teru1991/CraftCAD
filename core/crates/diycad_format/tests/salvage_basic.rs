@@ -1,86 +1,31 @@
-use craftcad_diycad_format::salvage_document;
-use serde_json::json;
+use diycad_format::{open_package, OpenOptions};
+use std::io::Write;
+use tempfile::tempdir;
+use zip::write::FileOptions;
 
 #[test]
-fn test_salvage_document_valid_passes_through() {
-    // Document with all required fields should pass through
-    let input = json!({
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "schema_version": 1,
-        "created_by": "test_user",
-        "updated_at": "2026-03-01T00:00:00Z",
-        "title": "Test Document",
-        "parts": [],
-        "nest_jobs": [],
-        "settings": {}
-    });
+fn opens_when_manifest_missing_by_document_heuristic() {
+    let td = tempdir().expect("tmp");
+    let p = td.path().join("salvage.diycad");
+    let f = std::fs::File::create(&p).expect("create");
+    let mut zw = zip::ZipWriter::new(f);
+    let zopt = FileOptions::default();
 
-    let result = salvage_document(&input);
-    assert!(result.is_ok(), "Salvage should succeed for valid document");
+    zw.start_file("foo/document.json", zopt).expect("doc file");
+    zw.write_all(
+        br#"{"id":"d","name":"n","unit":"mm","entities":[],"parts_index":[],"nest_jobs_index":[]}"#,
+    )
+    .expect("doc write");
+    zw.finish().expect("finish");
 
-    let (_salvaged_doc, report) = result.unwrap();
-    assert!(report.recovered, "Report should indicate recovery");
-    assert_eq!(report.normalized_fields.len(), 3);
-    assert!(report.normalized_fields.contains(&"used_presets".to_string()));
-    assert!(report.normalized_fields.contains(&"used_templates".to_string()));
-    assert!(report.normalized_fields.contains(&"wizard_runs".to_string()));
-}
-
-#[test]
-fn test_salvage_document_missing_required_field() {
-    // Document missing required 'id' field should fail
-    let input = json!({
-        "schema_version": 1,
-        "created_by": "test_user",
-        "updated_at": "2026-03-01T00:00:00Z",
-        "title": "Test Document",
-        "parts": [],
-        "nest_jobs": [],
-        "settings": {}
-    });
-
-    let result = salvage_document(&input);
-    assert!(
-        result.is_err(),
-        "Salvage should fail for missing required 'id' field"
-    );
-
-    let err = result.unwrap_err();
-    assert_eq!(err.code, "SALVAGE_DOCUMENT_MALFORMED");
-}
-
-#[test]
-fn test_salvage_document_invalid_structure() {
-    // Non-object JSON should fail
-    let input = json!([1, 2, 3]);
-
-    let result = salvage_document(&input);
-    assert!(result.is_err(), "Salvage should fail for non-object JSON");
-
-    let err = result.unwrap_err();
-    assert_eq!(err.code, "SALVAGE_DOCUMENT_MALFORMED");
-}
-
-#[test]
-fn test_salvage_document_with_extra_properties() {
-    // Document with extra properties (not in schema) should fail validation
-    // (schema has additionalProperties: false)
-    let input = json!({
-        "id": "550e8400-e29b-41d4-a716-446655440000",
-        "schema_version": 1,
-        "created_by": "test_user",
-        "updated_at": "2026-03-01T00:00:00Z",
-        "title": "Test Document",
-        "parts": [],
-        "nest_jobs": [],
-        "settings": {},
-        "extra_field": "should_fail"
-    });
-
-    let result = salvage_document(&input);
-    // This should fail because of additionalProperties: false in schema
-    assert!(
-        result.is_err(),
-        "Salvage should fail for document with extra properties"
-    );
+    let r = open_package(&p, OpenOptions::default()).expect("open salvage");
+    assert_eq!(r.document.id, "d");
+    assert!(r
+        .warnings
+        .iter()
+        .any(|w| w.code.as_str() == "OPEN_MANIFEST_MISSING"));
+    assert!(r
+        .warnings
+        .iter()
+        .any(|w| w.code.as_str() == "OPEN_DOCUMENT_LOCATE_HEURISTIC_USED"));
 }

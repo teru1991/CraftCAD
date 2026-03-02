@@ -1,8 +1,30 @@
-# Migration policy
+# Migration policy (SSOT)
 
-- 読み込みは N-2 まで保証。
-- 書き出しは常に最新 schema_version。
-- forward incompatible は ReadOnly で開き、ReasonCode を返す。
-- migration は段階適用（vN->vN+1）。
-- `--dry-run` では差分要約のみを表示し、ファイルは更新しない。
-- `--in-place` は明示指定時のみ許可（既定は拒否）。
+Compatibility contract
+- Loader MUST support reading N-2 (latest, latest-1, latest-2).
+- Forward version (schema_version > latest): may open read-only best-effort if allow_forward_compat_readonly=true.
+- Too old (schema_version < latest-2): may attempt best-effort open, but MUST surface ReasonCode suggesting migration tool.
+
+Migration contract
+- Migration is always stepwise: vN -> vN+1 (no skipping).
+- Each step:
+  1) schema validate (input)
+  2) transform (pure, deterministic)
+  3) schema validate (output)
+  4) logical validate (output)
+- Migration must be deterministic:
+  - stable ordering, stable rounding, no nondeterministic iteration.
+
+Breaking changes
+- Any breaking change requires:
+  - versions.md update
+  - new migration step implementation
+  - compat assets update (tests/compat)
+  - release note entry (out of this Sprint scope)
+
+Dry-run report
+- migration tool can generate a dry-run report with stable ordering (path order).
+- It must include:
+  - schema_version: N -> N+1
+  - added/removed/changed fields (JSON pointer paths)
+  - counts: parts/nest_jobs/assets delta
