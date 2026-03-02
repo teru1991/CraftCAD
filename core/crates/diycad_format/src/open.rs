@@ -3,8 +3,13 @@ use crate::{
     OpenResult, Part, ReasonCode, SalvageActionHint, WarningKind, ZipIndexEntry,
 };
 use anyhow::{anyhow, Result};
+use migration::Registry;
+use serde_json::Value;
 use std::path::Path;
 
+#[cfg(feature = "test_latest_2")]
+const LATEST_SCHEMA_VERSION: i64 = 2;
+#[cfg(not(feature = "test_latest_2"))]
 const LATEST_SCHEMA_VERSION: i64 = 1;
 
 fn push_warn(
@@ -62,14 +67,21 @@ fn parse_json<T: serde::de::DeserializeOwned>(bytes: &[u8], _strict: bool) -> Re
     Ok(serde_json::from_slice(bytes)?)
 }
 
+fn validate_pair(_version: i64, manifest: &Value, document: &Value) -> Result<()> {
+    let _: Manifest = serde_json::from_value(manifest.clone())?;
+    let _: Document = serde_json::from_value(document.clone())?;
+    Ok(())
+}
+
 pub fn open_package(path: &Path, opt: OpenOptions) -> Result<OpenResult> {
     let mut pkg = open_package_file(path, &opt.limits)?;
 
     let mut warnings: Vec<AppWarning> = Vec::new();
     let mut salvage_actions: Vec<SalvageActionHint> = Vec::new();
     let mut read_only = false;
+    let mut migrate_report = None;
 
-    let manifest: Option<Manifest> = match pkg
+    let mut manifest: Option<Manifest> = match pkg
         .read_entry_bytes("manifest.json", opt.limits.max_entry_uncompressed)?
     {
         None => {
@@ -157,6 +169,12 @@ pub fn open_package(path: &Path, opt: OpenOptions) -> Result<OpenResult> {
     let mut parts_failed: Vec<FailedEntry> = Vec::new();
     let mut nest_jobs_loaded: Vec<NestJob> = Vec::new();
     let mut nest_jobs_failed: Vec<FailedEntry> = Vec::new();
+
+    let assets_count = pkg
+        .entries
+        .iter()
+        .filter(|e| e.path.starts_with("assets/") && !e.path.ends_with('/'))
+        .count();
 
     let parts_total = pkg
         .entries
@@ -264,6 +282,76 @@ pub fn open_package(path: &Path, opt: OpenOptions) -> Result<OpenResult> {
         }
     }
 
+    if let Some(mut m) = manifest.clone() {
+        if m.schema_version < LATEST_SCHEMA_VERSION {
+            let mut manifest_v = serde_json::to_value(&m)?;
+            let mut document_v = serde_json::to_value(&document)?;
+            let mut parts_v: Vec<Value> = parts_loaded
+                .iter()
+                .map(serde_json::to_value)
+                .collect::<std::result::Result<_, _>>()?;
+            let mut nest_jobs_v: Vec<Value> = nest_jobs_loaded
+                .iter()
+                .map(serde_json::to_value)
+                .collect::<std::result::Result<_, _>>()?;
+
+            let before = (parts_v.len(), nest_jobs_v.len(), assets_count);
+            let after = before;
+
+            #[cfg(feature = "test_latest_2")]
+            let registry = Registry::new().register(Box::new(crate::migrate_steps::Step1to2));
+            #[cfg(not(feature = "test_latest_2"))]
+            let registry = Registry::new();
+
+            let mut vin = |version: i64, man: &Value, doc: &Value| {
+                let _ = version;
+                validate_pair(version, man, doc)
+            };
+            let mut vout = |version: i64, man: &Value, doc: &Value| {
+                let _ = version;
+                validate_pair(version, man, doc)
+            };
+
+            match registry.migrate_stepwise(
+                m.schema_version,
+                LATEST_SCHEMA_VERSION,
+                &mut manifest_v,
+                &mut document_v,
+                &mut parts_v,
+                &mut nest_jobs_v,
+                before,
+                after,
+                false,
+                &mut vin,
+                &mut vout,
+            ) {
+                Ok(rep) => {
+                    m = serde_json::from_value(manifest_v)?;
+                    manifest = Some(m);
+                    migrate_report = Some(rep);
+                    push_warn(
+                        &mut warnings,
+                        ReasonCode::MigrateApplied,
+                        Some("manifest.json".to_string()),
+                        WarningKind::Warning,
+                        "migration applied successfully",
+                    );
+                }
+                Err(e) => {
+                    read_only = true;
+                    salvage_actions.push(SalvageActionHint::SuggestMigrateTool);
+                    push_warn(
+                        &mut warnings,
+                        ReasonCode::MigrateFailed,
+                        Some("manifest.json".to_string()),
+                        WarningKind::Warning,
+                        format!("migration failed; opened with salvage state: {e}"),
+                    );
+                }
+            }
+        }
+    }
+
     if opt.verify_integrity {
         if let Some(m) = &manifest {
             let mut fetch = |p: &str| -> Result<Option<Vec<u8>>> {
@@ -318,5 +406,6 @@ pub fn open_package(path: &Path, opt: OpenOptions) -> Result<OpenResult> {
         nest_jobs_failed,
         warnings,
         salvage_actions: uniq,
+        migrate_report,
     })
 }

@@ -136,6 +136,7 @@ pub struct OpenResult {
     pub nest_jobs_failed: Vec<FailedEntry>,
     pub warnings: Vec<AppWarning>,
     pub salvage_actions: Vec<SalvageActionHint>,
+    pub migrate_report: Option<migration::MigrateReport>,
 }
 
 #[derive(Debug, Clone)]

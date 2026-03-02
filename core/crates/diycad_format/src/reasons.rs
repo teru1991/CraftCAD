@@ -43,6 +43,10 @@ pub enum ReasonCode {
     SaveAtomicFsyncFailed,
     SaveAtomicRenameFailed,
 
+    // Migration
+    MigrateFailed,
+    MigrateApplied,
+
     // General
     IoReadFailed,
     IoWriteFailed,
@@ -88,6 +92,9 @@ impl ReasonCode {
             SaveAtomicWriteFailed => "SAVE_ATOMIC_WRITE_FAILED",
             SaveAtomicFsyncFailed => "SAVE_ATOMIC_FSYNC_FAILED",
             SaveAtomicRenameFailed => "SAVE_ATOMIC_RENAME_FAILED",
+
+            MigrateFailed => "MIGRATE_FAILED",
+            MigrateApplied => "MIGRATE_APPLIED",
 
             IoReadFailed => "IO_READ_FAILED",
             IoWriteFailed => "IO_WRITE_FAILED",

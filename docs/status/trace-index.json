@@ -160,6 +160,21 @@
         "head_sha": "see docs/verification/SPRINT14-STEP2.md",
         "tests": "cargo test -p diycad_format: pass; cargo test -p diycad_format --tests: pass; scripts/ci/run_all.sh: diycad_format_tests/ssot_lint/e2e/determinism/compat/ffi pass, existing rust_clippy/rust_test/cmake fail"
       }
+    },
+    "SPRINT14-STEP4": {
+      "branch": "feature/sprint14-step4-001",
+      "artifacts": [
+        "core/crates/migration/**",
+        "core/crates/diycad_format/**",
+        "tools/migrate/Cargo.toml",
+        "scripts/ci/run_all.sh",
+        "docs/verification/SPRINT14-STEP4.md"
+      ],
+      "verification": "docs/verification/SPRINT14-STEP4.md",
+      "evidence": {
+        "head_sha": "see docs/verification/SPRINT14-STEP4.md",
+        "tests": "cargo test -p migration: pass; cargo test -p diycad_format: pass; cargo test -p diycad_format --features test_latest_2: pass; scripts/ci/run_all.sh (timeout 120): rust_fmt pass, rust_clippy/rust_test fail, new migration+diycad_format gates pass"
+      }
     }
   }
 }

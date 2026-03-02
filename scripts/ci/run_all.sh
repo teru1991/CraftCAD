@@ -35,6 +35,8 @@ run_step rust_fmt "${ROOT_DIR}/core" cargo fmt --all -- --check
 run_step rust_clippy "${ROOT_DIR}/core" cargo clippy --workspace --all-targets -- -D warnings
 run_step rust_test "${ROOT_DIR}/core" cargo test --workspace --all-targets
 run_step diycad_format_tests "${ROOT_DIR}/core" cargo test -p diycad_format --tests
+run_step diycad_format_tests_latest2 "${ROOT_DIR}/core" cargo test -p diycad_format --features test_latest_2 --test migrate_applies_under_feature
+run_step migration_tests "${ROOT_DIR}/core" cargo test -p migration
 run_step ssot_lint "${ROOT_DIR}" cargo run -q -p ssot_lint --bin ssot-lint --manifest-path core/Cargo.toml
 run_step e2e_shelf_flow "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test flow_shelf_to_nest_to_export
 run_step determinism_wizard "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test wizard_determinism
