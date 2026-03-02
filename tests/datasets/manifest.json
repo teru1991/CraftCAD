@@ -35,6 +35,32 @@
         "io_export_p95_ms": 50,
         "roundtrip_p95_ms": 120
       }
+    },
+    {
+      "id": "svg_roundtrip_01",
+      "description": "I/O SVG roundtrip baseline",
+      "inputs": [
+        "tests/golden/io_roundtrip/inputs/svg/sample_01.svg"
+      ],
+      "expected_outputs": [],
+      "perf_budget": {
+        "io_import_p95_ms": 50,
+        "io_export_p95_ms": 50,
+        "roundtrip_p95_ms": 120
+      }
+    },
+    {
+      "id": "dxf_roundtrip_01",
+      "description": "I/O DXF roundtrip baseline",
+      "inputs": [
+        "tests/golden/io_roundtrip/inputs/dxf/sample_01.dxf"
+      ],
+      "expected_outputs": [],
+      "perf_budget": {
+        "io_import_p95_ms": 50,
+        "io_export_p95_ms": 50,
+        "roundtrip_p95_ms": 120
+      }
     }
   ],
   "perf_budget": {

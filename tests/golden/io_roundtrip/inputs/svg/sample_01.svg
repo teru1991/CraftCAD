@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100" height="100" viewBox="0 0 100 100">
+  <path class="CUT" d="M 0 0 L 10 0 L 10 10 Z" />
+  <line x1="0" y1="0" x2="20" y2="0" />
+  <circle cx="50" cy="50" r="10" />
+  <text x="5" y="5" font-family="Arial">hello</text>
+</svg>
