@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schema/presets/material_preset.schema.json",
+  "title": "MaterialPreset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "schema_version", "kind", "thickness_mm", "grain", "tags"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9][a-z0-9_\\-]*$" },
+    "version": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "display_name_key": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "tags": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "type": "string", "minLength": 1, "maxLength": 64 }
+    },
+    "created_by": { "type": "string", "enum": ["builtin", "user", "project"] },
+    "updated_at": { "type": "string" },
+    "kind": { "type": "string", "enum": ["wood", "leather", "metal", "other"] },
+    "thickness_mm": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 1000.0 },
+    "grain": { "type": "string", "enum": ["none", "dir_x", "dir_y"] },
+    "shrink_allowance_mm": { "type": "number", "minimum": 0.0, "maximum": 10.0, "default": 0.0 },
+    "recommended_process_ids": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9][a-z0-9_\\-]*$" }
+    }
+  }
+}

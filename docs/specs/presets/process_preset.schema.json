@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schema/presets/process_preset.schema.json",
+  "title": "ProcessPreset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "schema_version", "tool_kind", "kerf_mm", "margin_mm", "min_feature_mm", "tags"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9][a-z0-9_\\-]*$" },
+    "version": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "display_name_key": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "tags": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "type": "string", "minLength": 1, "maxLength": 64 }
+    },
+    "created_by": { "type": "string", "enum": ["builtin", "user", "project"] },
+    "updated_at": { "type": "string" },
+    "tool_kind": { "type": "string", "enum": ["saw", "laser", "cnc", "knife"] },
+    "kerf_mm": { "type": "number", "minimum": 0.0, "maximum": 50.0 },
+    "margin_mm": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+    "min_feature_mm": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 100.0 },
+    "joinery_defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tabs_enabled": { "type": "boolean" },
+        "dogbone_enabled": { "type": "boolean" }
+      }
+    }
+  }
+}

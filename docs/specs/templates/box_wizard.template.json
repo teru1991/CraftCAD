@@ -1,0 +1,24 @@
+{
+  "template_id": "box_wizard",
+  "template_version": "1.0.0",
+  "schema_version": 1,
+  "kind": "box",
+  "display_name_key": "template.box",
+  "required_presets": {
+    "material_preset_ids": ["plywood_12mm"],
+    "process_preset_ids": ["cnc_basic"],
+    "output_preset_ids": ["export_dxf_cnc"]
+  },
+  "ui_inputs": [
+    { "key": "inner_w_mm", "type": "number", "unit": "mm", "default": 200.0, "min": 30.0, "max": 1200.0, "step": 1.0 },
+    { "key": "inner_h_mm", "type": "number", "unit": "mm", "default": 120.0, "min": 30.0, "max": 1200.0, "step": 1.0 },
+    { "key": "inner_d_mm", "type": "number", "unit": "mm", "default": 120.0, "min": 30.0, "max": 1200.0, "step": 1.0 },
+    { "key": "thickness_mm", "type": "number", "unit": "mm", "default": 12.0, "min": 1.0, "max": 50.0, "step": 0.1 },
+    { "key": "lid", "type": "bool", "unit": "none", "default": false, "min": false, "max": true, "step": 1 }
+  ],
+  "generation_steps": [
+    { "op": "add_part_rect", "args": { "name": "box_panel_front", "w_expr": "inner_w_mm + 2*thickness_mm", "h_expr": "inner_h_mm + 2*thickness_mm" } },
+    { "op": "recommend_nest", "args": { "material_hint": "plywood_12mm", "process_hint": "cnc_basic" } }
+  ],
+  "determinism": { "seed_source": "ssot_default" }
+}
