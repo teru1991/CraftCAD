@@ -1,40 +1,20 @@
 use crate::options::ImportOptions;
-use craftcad_errors::{AppError, AppResult, ReasonCode, Severity};
+use crate::reasons::{AppError, AppResult, ReasonCode};
 
-pub fn check_bytes_len(bytes: &[u8], opts: &ImportOptions) -> AppResult<()> {
-    if bytes.len() > opts.max_bytes {
+pub fn preflight_bytes(format_id: &str, bytes: &[u8], opts: &ImportOptions) -> AppResult<()> {
+    let len = bytes.len();
+    if len > opts.limits.max_bytes {
         return Err(AppError::new(
-            ReasonCode::new("IO_LIMIT_016"),
-            Severity::Error,
+            ReasonCode::IoLimitBytesExceeded,
             format!(
-                "Input too large: {} > {} bytes",
-                bytes.len(),
-                opts.max_bytes
+                "input too large: {} bytes (max {})",
+                len, opts.limits.max_bytes
             ),
-        ));
-    }
-    Ok(())
-}
-
-pub fn estimate_entity_count(text: &str) -> usize {
-    text.matches('\n').count() + text.matches('{').count()
-}
-
-pub fn check_limits(
-    bytes: &[u8],
-    estimated_entities: usize,
-    opts: &ImportOptions,
-) -> AppResult<()> {
-    check_bytes_len(bytes, opts)?;
-    if estimated_entities > opts.max_entities {
-        return Err(AppError::new(
-            ReasonCode::new("IO_LIMIT_016"),
-            Severity::Error,
-            format!(
-                "Estimated entities exceed max limit: {} > {}",
-                estimated_entities, opts.max_entities
-            ),
-        ));
+        )
+        .with_context("format_id", format_id)
+        .with_context("bytes", len.to_string())
+        .with_context("max_bytes", opts.limits.max_bytes.to_string())
+        .with_hint("入力を分割するか、要素数を減らして再試行してください。"));
     }
     Ok(())
 }
