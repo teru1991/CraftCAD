@@ -11,7 +11,25 @@ pub struct SvgNode {
     pub text: Option<String>,
 }
 
-pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
+#[derive(Debug)]
+pub struct SvgDom {
+    pub root: SvgNode,
+    pub warnings: Vec<AppError>,
+}
+
+fn truncate_for_context(s: &str, max: usize) -> String {
+    if s.len() <= max {
+        s.to_string()
+    } else {
+        format!("{}…", &s[..max])
+    }
+}
+
+fn is_external_ref_attr(k: &str) -> bool {
+    k == "href" || k == "xlink:href"
+}
+
+pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgDom> {
     if bytes.len() > opts.limits.max_bytes {
         return Err(AppError::new(ReasonCode::IO_LIMIT_BYTES_EXCEEDED, "input too large").fatal());
     }
@@ -19,12 +37,13 @@ pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
     let mut reader = Reader::from_reader(bytes);
     reader.trim_text(true);
 
-    let max_nodes = opts.limits.max_entities.max(10_000);
-    let max_depth = opts.limits.max_depth.max(64);
+    let max_nodes = opts.limits.max_entities.max(1);
+    let max_depth = opts.limits.max_depth.max(1);
 
     let mut buf = Vec::new();
     let mut stack: Vec<SvgNode> = Vec::new();
     let mut nodes_count = 0usize;
+    let mut warnings: Vec<AppError> = Vec::new();
 
     loop {
         match reader.read_event_into(&mut buf) {
@@ -51,6 +70,7 @@ pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
 
                 let name = String::from_utf8_lossy(e.name().as_ref()).to_string();
                 let mut attrs = Vec::new();
+
                 for a in e.attributes().flatten() {
                     let k = String::from_utf8_lossy(a.key.as_ref()).to_string();
                     let v = a
@@ -64,8 +84,17 @@ pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
                             .fatal()
                         })?
                         .to_string();
-                    if k == "href" || k == "xlink:href" {
-                        attrs.push((k, "".to_string()));
+
+                    if is_external_ref_attr(&k) && !v.is_empty() {
+                        warnings.push(
+                            AppError::new(
+                                ReasonCode::IO_IMAGE_REFERENCE_DROPPED,
+                                "external reference blocked (href/xlink:href)",
+                            )
+                            .with_context("attr", k.clone())
+                            .with_context("value", truncate_for_context(&v, 128)),
+                        );
+                        attrs.push((k, String::new()));
                     } else {
                         attrs.push((k, v));
                     }
@@ -90,8 +119,10 @@ pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
                     .with_context("nodes", nodes_count.to_string())
                     .fatal());
                 }
+
                 let name = String::from_utf8_lossy(e.name().as_ref()).to_string();
                 let mut attrs = Vec::new();
+
                 for a in e.attributes().flatten() {
                     let k = String::from_utf8_lossy(a.key.as_ref()).to_string();
                     let v = a
@@ -105,20 +136,39 @@ pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
                             .fatal()
                         })?
                         .to_string();
-                    attrs.push((k, v));
+
+                    if is_external_ref_attr(&k) && !v.is_empty() {
+                        warnings.push(
+                            AppError::new(
+                                ReasonCode::IO_IMAGE_REFERENCE_DROPPED,
+                                "external reference blocked (href/xlink:href)",
+                            )
+                            .with_context("attr", k.clone())
+                            .with_context("value", truncate_for_context(&v, 128)),
+                        );
+                        attrs.push((k, String::new()));
+                    } else {
+                        attrs.push((k, v));
+                    }
                 }
+
                 let node = SvgNode {
                     name,
                     attrs,
                     children: vec![],
                     text: None,
                 };
+
                 if let Some(parent) = stack.last_mut() {
                     parent.children.push(node);
                 } else {
-                    return Ok(node);
+                    return Ok(SvgDom {
+                        root: node,
+                        warnings,
+                    });
                 }
             }
+
             Ok(Event::End(_)) => {
                 let node = stack.pop().ok_or_else(|| {
                     AppError::new(ReasonCode::IO_PARSE_SVG_MALFORMED, "unbalanced svg tags").fatal()
@@ -126,9 +176,13 @@ pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
                 if let Some(parent) = stack.last_mut() {
                     parent.children.push(node);
                 } else {
-                    return Ok(node);
+                    return Ok(SvgDom {
+                        root: node,
+                        warnings,
+                    });
                 }
             }
+
             Ok(Event::Text(t)) => {
                 if let Some(cur) = stack.last_mut() {
                     let s = t
@@ -147,7 +201,9 @@ pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
                     }
                 }
             }
+
             Ok(Event::Eof) => break,
+
             Err(e) => {
                 return Err(
                     AppError::new(ReasonCode::IO_PARSE_SVG_MALFORMED, "malformed svg")
@@ -155,6 +211,7 @@ pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
                         .fatal(),
                 );
             }
+
             _ => {}
         }
         buf.clear();

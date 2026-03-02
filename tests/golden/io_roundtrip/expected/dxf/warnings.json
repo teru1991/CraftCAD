@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "context": {},
+    "hint": null,
+    "is_fatal": false,
+    "message": "DXF TEXT imported best-effort",
+    "reason": "IO_TEXT_FALLBACK_FONT"
+  },
+  {
+    "context": {},
+    "hint": null,
+    "is_fatal": false,
+    "message": "DXF TEXT imported best-effort",
+    "reason": "IO_FALLBACK_024"
+  }
+]
