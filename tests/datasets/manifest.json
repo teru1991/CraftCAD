@@ -18,6 +18,54 @@
         "io_roundtrip_ms_p95": 150,
         "render_ms_p95": 180
       }
+    },
+    {
+      "id": "json_roundtrip_01",
+      "description": "I/O JSON roundtrip golden baseline",
+      "inputs": [
+        "tests/golden/io_roundtrip/inputs/json/sample_01.json"
+      ],
+      "expected_outputs": [
+        "tests/golden/io_roundtrip/expected/normalized_internal_model.json",
+        "tests/golden/io_roundtrip/expected/warnings.json",
+        "tests/golden/io_roundtrip/expected/exported_out.json"
+      ],
+      "perf_budget": {
+        "io_import_p95_ms": 50,
+        "io_export_p95_ms": 50,
+        "roundtrip_p95_ms": 120
+      }
+    },
+    {
+      "id": "svg_roundtrip_01",
+      "description": "I/O SVG roundtrip baseline",
+      "inputs": [
+        "tests/golden/io_roundtrip/inputs/svg/sample_01.svg"
+      ],
+      "expected_outputs": [],
+      "perf_budget": {
+        "io_import_p95_ms": 50,
+        "io_export_p95_ms": 50,
+        "roundtrip_p95_ms": 120
+      }
+    },
+    {
+      "id": "dxf_roundtrip_01",
+      "description": "I/O DXF roundtrip baseline",
+      "inputs": [
+        "tests/golden/io_roundtrip/inputs/dxf/sample_01.dxf"
+      ],
+      "expected_outputs": [],
+      "perf_budget": {
+        "io_import_p95_ms": 50,
+        "io_export_p95_ms": 50,
+        "roundtrip_p95_ms": 120
+      }
     }
-  ]
+  ],
+  "perf_budget": {
+    "io_import_p95_ms": 50,
+    "io_export_p95_ms": 50,
+    "roundtrip_p95_ms": 120
+  }
 }

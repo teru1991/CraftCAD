@@ -20,6 +20,7 @@ members = [
   "crates/io_dxf",
   "crates/io_svg",
   "crates/io_json",
+  "crates/io_bridge",
   "crates/perf",
   "crates/security",
   "crates/diagnostics",

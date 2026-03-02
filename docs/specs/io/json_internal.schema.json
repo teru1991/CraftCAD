@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schemas/json_internal_v1.schema.json",
+  "title": "CraftCAD Internal Model JSON v1",
+  "type": "object",
+  "required": ["schema_version", "units", "entities", "metadata"],
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "units": { "type": "string", "enum": ["mm", "inch"] },
+    "metadata": {
+      "type": "object",
+      "required": ["source_format", "determinism_tag"],
+      "properties": {
+        "source_format": { "type": "string" },
+        "unit_guess": { "type": ["string", "null"] },
+        "determinism_tag": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/path_entity" },
+          { "$ref": "#/$defs/text_entity" }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "point2d": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+    "stroke_style": {
+      "type": "object",
+      "required": ["layer", "linetype", "weight", "color_policy"],
+      "properties": {
+        "layer": { "type": "string" },
+        "linetype": { "type": "string" },
+        "weight": { "type": "number" },
+        "color_policy": {
+          "oneOf": [
+            { "type": "string", "const": "by_layer" },
+            {
+              "type": "object",
+              "required": ["fixed_rgb"],
+              "properties": {
+                "fixed_rgb": {
+                  "type": "object",
+                  "required": ["r", "g", "b"],
+                  "properties": {
+                    "r": { "type": "integer", "minimum": 0, "maximum": 255 },
+                    "g": { "type": "integer", "minimum": 0, "maximum": 255 },
+                    "b": { "type": "integer", "minimum": 0, "maximum": 255 }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "segment2d": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["line", "arc", "circle", "cubic_bezier"] },
+        "a": { "$ref": "#/$defs/point2d" },
+        "b": { "$ref": "#/$defs/point2d" },
+        "c1": { "$ref": "#/$defs/point2d" },
+        "c2": { "$ref": "#/$defs/point2d" },
+        "center": { "$ref": "#/$defs/point2d" },
+        "radius": { "type": "number" },
+        "start_rad": { "type": "number" },
+        "end_rad": { "type": "number" },
+        "ccw": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "path_entity": {
+      "type": "object",
+      "required": ["type", "id", "stroke", "closed", "segments"],
+      "properties": {
+        "type": { "type": "string", "const": "path" },
+        "id": { "type": "string" },
+        "stroke": { "$ref": "#/$defs/stroke_style" },
+        "closed": { "type": "boolean" },
+        "segments": { "type": "array", "items": { "$ref": "#/$defs/segment2d" } }
+      },
+      "additionalProperties": false
+    },
+    "text_entity": {
+      "type": "object",
+      "required": ["type", "id", "layer", "pos", "text", "size", "rotation_rad"],
+      "properties": {
+        "type": { "type": "string", "const": "text" },
+        "id": { "type": "string" },
+        "layer": { "type": "string" },
+        "pos": { "$ref": "#/$defs/point2d" },
+        "text": { "type": "string" },
+        "size": { "type": "number" },
+        "font_hint": { "type": ["string", "null"] },
+        "rotation_rad": { "type": "number" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

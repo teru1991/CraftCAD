@@ -2149,10 +2149,171 @@
         "severity:fatal"
       ],
       "retryable": false
+    },
+    {
+      "code": "IO_SUPPORT_MATRIX_FEATURE_MISSING",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "IO_SUPPORT_MATRIX_FEATURE_MISSING",
+      "detail": "IO_SUPPORT_MATRIX_FEATURE_MISSING",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_SVG_ARC_CONVERTED",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "IO_SVG_ARC_CONVERTED",
+      "detail": "IO_SVG_ARC_CONVERTED",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "IO_DXF_SPLINE_CONVERTED",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "IO_DXF_SPLINE_CONVERTED",
+      "detail": "IO_DXF_SPLINE_CONVERTED",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "PERF_BUDGET_EXCEEDED",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "PERF_BUDGET_EXCEEDED",
+      "detail": "PERF_BUDGET_EXCEEDED",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_DIYCAD_WRITE_FAILED",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "SAVE_DIYCAD_WRITE_FAILED",
+      "detail": "SAVE_DIYCAD_WRITE_FAILED",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_PART_IMPORT_FAILED",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "SAVE_PART_IMPORT_FAILED",
+      "detail": "SAVE_PART_IMPORT_FAILED",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_GEOM_DROPPED",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "SAVE_GEOM_DROPPED",
+      "detail": "SAVE_GEOM_DROPPED",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "SAVE_TEXT_BEST_EFFORT",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "SAVE_TEXT_BEST_EFFORT",
+      "detail": "SAVE_TEXT_BEST_EFFORT",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "LOAD_DIYCAD_READ_FAILED",
+      "domain": "IO",
+      "severity": "ERROR",
+      "summary": "LOAD_DIYCAD_READ_FAILED",
+      "detail": "LOAD_DIYCAD_READ_FAILED",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "LOAD_PART_EXPORT_FAILED",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "LOAD_PART_EXPORT_FAILED",
+      "detail": "LOAD_PART_EXPORT_FAILED",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
+    },
+    {
+      "code": "LOAD_DIYCAD_EMPTY",
+      "domain": "IO",
+      "severity": "WARN",
+      "summary": "LOAD_DIYCAD_EMPTY",
+      "detail": "LOAD_DIYCAD_EMPTY",
+      "user_actions": [
+        "ログのcontextを確認してください"
+      ],
+      "doc_link": "docs/specs/io/support_matrix.md",
+      "telemetry_tags": [
+        "domain:io"
+      ],
+      "retryable": true
     }
   ]
 }
-
-
-
-
