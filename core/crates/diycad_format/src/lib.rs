@@ -117,6 +117,19 @@ pub fn salvage_document(document_value: &Value) -> AppResult<(Value, SalvageRepo
         ));
     }
 
+    if !obj.contains_key("used_presets") {
+        obj.insert("used_presets".to_string(), serde_json::json!([]));
+        report.normalized_fields.push("used_presets".to_string());
+    }
+    if !obj.contains_key("used_templates") {
+        obj.insert("used_templates".to_string(), serde_json::json!([]));
+        report.normalized_fields.push("used_templates".to_string());
+    }
+    if !obj.contains_key("wizard_runs") {
+        obj.insert("wizard_runs".to_string(), serde_json::json!([]));
+        report.normalized_fields.push("wizard_runs".to_string());
+    }
+
     // Re-validate after checking critical fields
     match validate_document(&doc) {
         Ok(_) => {

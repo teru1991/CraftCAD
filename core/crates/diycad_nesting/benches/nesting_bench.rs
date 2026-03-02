@@ -51,6 +51,9 @@ fn sample_doc_and_job() -> (Document, NestJob) {
         settings: ProjectSettings {
             bom_delimiter: None,
         },
+        used_presets: vec![],
+        used_templates: vec![],
+        wizard_runs: vec![],
     };
     let job = NestJob {
         id: Uuid::new_v4(),

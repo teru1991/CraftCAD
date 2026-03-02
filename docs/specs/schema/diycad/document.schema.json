@@ -2,16 +2,150 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://craftcad.local/schemas/diycad_document.schema.json",
   "type": "object",
-  "required": ["id", "schema_version", "created_by", "updated_at", "title", "parts", "nest_jobs", "settings"],
+  "required": [
+    "id",
+    "schema_version",
+    "created_by",
+    "updated_at",
+    "title",
+    "parts",
+    "nest_jobs",
+    "settings",
+    "used_presets",
+    "used_templates",
+    "wizard_runs"
+  ],
   "properties": {
-    "id": { "type": "string", "format": "uuid" },
-    "schema_version": { "type": "integer", "minimum": 1 },
-    "created_by": { "type": "string" },
-    "updated_at": { "type": "string", "format": "date-time" },
-    "title": { "type": "string" },
-    "parts": { "type": "array", "items": { "type": "string", "pattern": "^parts/.+\\.json$" } },
-    "nest_jobs": { "type": "array", "items": { "type": "string", "pattern": "^nest_jobs/.+\\.json$" } },
-    "settings": { "type": "object", "additionalProperties": true }
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "created_by": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "title": {
+      "type": "string"
+    },
+    "parts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^parts/.+\\.json$"
+      }
+    },
+    "nest_jobs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^nest_jobs/.+\\.json$"
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "used_presets": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "id",
+          "version"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "material",
+              "process",
+              "output",
+              "hardware"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "used_templates": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "version"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "wizard_runs": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": [
+          "run_id",
+          "template_id",
+          "template_version",
+          "inputs_hash",
+          "seed",
+          "outputs_part_ids",
+          "created_at_unix_ms"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "run_id": {
+            "type": "string"
+          },
+          "template_id": {
+            "type": "string"
+          },
+          "template_version": {
+            "type": "string"
+          },
+          "inputs_hash": {
+            "type": "string"
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "outputs_part_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "created_at_unix_ms": {
+            "type": "integer"
+          }
+        }
+      }
+    }
   },
   "additionalProperties": false
 }

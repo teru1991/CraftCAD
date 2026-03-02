@@ -4,6 +4,7 @@ pub mod engine;
 pub mod leather_pouch;
 pub mod parts;
 pub mod reasons;
+pub mod run_record;
 pub mod shelf;
 pub mod template;
 pub mod types;

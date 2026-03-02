@@ -76,6 +76,9 @@ fn base_doc(part_w: f64, part_h: f64, margin: f64, kerf: f64) -> (Document, Uuid
                 notes: String::new(),
             }],
             settings: ProjectSettings::default(),
+            used_presets: vec![],
+            used_templates: vec![],
+            wizard_runs: vec![],
         },
         job,
     )

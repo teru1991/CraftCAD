@@ -637,7 +637,10 @@ fn repo_root_from_manifest_s13() -> PathBuf {
             return p;
         }
     }
-    panic!("repo root not found from CARGO_MANIFEST_DIR={}", start.display());
+    panic!(
+        "repo root not found from CARGO_MANIFEST_DIR={}",
+        start.display()
+    );
 }
 
 fn resolve_local_refs_s13(value: &mut Value, schema_root: &Path) {
@@ -684,8 +687,8 @@ fn id_must_match_s13(re: &Regex, id: &str, ctx: &str) {
     }
     let lower = id.to_ascii_lowercase();
     let reserved = [
-        "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7",
-        "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+        "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8",
+        "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
     ];
     if reserved.contains(&lower.as_str()) {
         panic!("id is reserved word ({}): {}", ctx, id);
@@ -772,9 +775,9 @@ fn validate_template_required_presets_s13(template: &Value, builtin_ids: &BTreeS
     for k in keys {
         if let Some(arr) = req.get(k).and_then(|v| v.as_array()) {
             for idv in arr {
-                let id = idv
-                    .as_str()
-                    .unwrap_or_else(|| panic!("template.required_presets.{} contains non-string", k));
+                let id = idv.as_str().unwrap_or_else(|| {
+                    panic!("template.required_presets.{} contains non-string", k)
+                });
                 if !builtin_ids.contains(id) {
                     panic!("template requires missing preset: {} (field={})", id, k);
                 }
@@ -887,14 +890,15 @@ fn spec_ssot_lint_presets_templates_library() {
             for e in errors {
                 msg.push_str(&format!("- {} at {}\n", e, e.instance_path));
             }
-            panic!("template schema validation failed: {}\n{}", tf.display(), msg);
+            panic!(
+                "template schema validation failed: {}\n{}",
+                tf.display(),
+                msg
+            );
         }
 
         let tid = t.get("template_id").and_then(|v| v.as_str()).unwrap();
-        let tver = t
-            .get("template_version")
-            .and_then(|v| v.as_str())
-            .unwrap();
+        let tver = t.get("template_version").and_then(|v| v.as_str()).unwrap();
         id_must_match_s13(&id_re, tid, "template_id");
         semver_must_parse_s13(tver, &format!("template:{}", tid));
 
@@ -915,7 +919,10 @@ fn spec_ssot_lint_presets_templates_library() {
             for pidv in arr {
                 let pid = pidv.as_str().unwrap();
                 if !processes.contains(pid) {
-                    panic!("material {} recommends missing process preset: {}", mid, pid);
+                    panic!(
+                        "material {} recommends missing process preset: {}",
+                        mid, pid
+                    );
                 }
             }
         }

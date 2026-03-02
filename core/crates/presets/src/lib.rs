@@ -4,6 +4,9 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+pub mod reasons;
+pub mod salvage;
+
 pub mod model {
     #[derive(Debug, Clone, Copy)]
     pub enum PresetKind {

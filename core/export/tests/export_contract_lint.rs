@@ -25,6 +25,9 @@ fn tiled_defaults_invariants() {
         settings: ProjectSettings {
             bom_delimiter: None,
         },
+        used_presets: vec![],
+        used_templates: vec![],
+        wizard_runs: vec![],
     };
     let layout = compute_tiled_layout(&doc, &TiledPdfOptions::default()).expect("layout");
     assert!(layout.tiles_x >= 1 && layout.tiles_y >= 1);
