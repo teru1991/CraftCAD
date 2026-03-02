@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -u
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+LOG_DIR="${ROOT_DIR}/.ci_logs"
+SUMMARY_SCRIPT="${ROOT_DIR}/scripts/ci/parse_failures.py"
+SUMMARY_FILE="${LOG_DIR}/summary.json"
+
+mkdir -p "${LOG_DIR}"
+rm -f "${LOG_DIR}"/*.log "${SUMMARY_FILE}"
+
+overall_status=0
+
+run_step() {
+  local name="$1"
+  local workdir="$2"
+  shift 2
+  local log_file="${LOG_DIR}/${name}.log"
+
+  echo "==> ${name}" | tee "${log_file}"
+  (
+    cd "${workdir}" && "$@"
+  ) >>"${log_file}" 2>&1
+  local status=$?
+
+  if [ ${status} -ne 0 ]; then
+    echo "[FAIL] ${name} (exit ${status})" | tee -a "${log_file}"
+    overall_status=1
+  else
+    echo "[PASS] ${name}" | tee -a "${log_file}"
+  fi
+}
+
+run_step rust_fmt "${ROOT_DIR}/core" cargo fmt --all -- --check
+run_step rust_clippy "${ROOT_DIR}/core" cargo clippy --workspace --all-targets -- -D warnings
+run_step rust_test "${ROOT_DIR}/core" cargo test --workspace --all-targets
+
+if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
+  DESKTOP_BUILD_DIR="${ROOT_DIR}/build/desktop"
+  run_step cmake_configure "${ROOT_DIR}" cmake -S apps/desktop -B "${DESKTOP_BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release
+  run_step cmake_build "${ROOT_DIR}" cmake --build "${DESKTOP_BUILD_DIR}" --parallel
+
+  if [ -f "${DESKTOP_BUILD_DIR}/CTestTestfile.cmake" ] || [ -d "${DESKTOP_BUILD_DIR}/Testing" ]; then
+    run_step ctest "${ROOT_DIR}" ctest --test-dir "${DESKTOP_BUILD_DIR}" --output-on-failure
+  else
+    echo "==> ctest" > "${LOG_DIR}/ctest.log"
+    echo "[SKIP] ctest metadata not found in ${DESKTOP_BUILD_DIR}" >> "${LOG_DIR}/ctest.log"
+  fi
+fi
+
+python3 "${SUMMARY_SCRIPT}" --log-dir "${LOG_DIR}" --out "${SUMMARY_FILE}"
+
+if [ ${overall_status} -eq 0 ]; then
+  python3 - <<'PY' "${SUMMARY_FILE}"
+import json, sys
+summary_path = sys.argv[1]
+with open(summary_path, encoding='utf-8') as f:
+    summary = json.load(f)
+if summary.get('total_failures', 0) != 0:
+    sys.exit(1)
+PY
+  overall_status=$?
+fi
+
+exit ${overall_status}

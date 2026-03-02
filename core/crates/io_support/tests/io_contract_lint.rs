@@ -6,11 +6,11 @@ use std::fs;
 fn test_io_support_matrix_consistency() {
     // CARGO_MANIFEST_DIR = core/crates/io_support, so we go up to core and then to CraftCAD root
     let root_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()           // -> core/crates
+        .parent() // -> core/crates
         .unwrap()
-        .parent()           // -> core
+        .parent() // -> core
         .unwrap()
-        .parent()           // -> CraftCAD
+        .parent() // -> CraftCAD
         .unwrap();
 
     // Load support_matrix.json
@@ -21,19 +21,17 @@ fn test_io_support_matrix_consistency() {
         matrix_abs_path
     );
 
-    let matrix_content = fs::read_to_string(&matrix_abs_path)
-        .expect("Failed to read support_matrix.json");
+    let matrix_content =
+        fs::read_to_string(&matrix_abs_path).expect("Failed to read support_matrix.json");
     let matrix_value: serde_json::Value =
-        serde_json::from_str(&matrix_content)
-            .expect("Failed to parse support_matrix.json");
+        serde_json::from_str(&matrix_content).expect("Failed to parse support_matrix.json");
 
     // Load catalog.json
     let catalog_abs_path = root_path.join("docs/specs/errors/catalog.json");
-    let catalog_content = fs::read_to_string(&catalog_abs_path)
-        .expect("Failed to read catalog.json");
+    let catalog_content =
+        fs::read_to_string(&catalog_abs_path).expect("Failed to read catalog.json");
     let catalog_value: serde_json::Value =
-        serde_json::from_str(&catalog_content)
-            .expect("Failed to parse catalog.json");
+        serde_json::from_str(&catalog_content).expect("Failed to parse catalog.json");
 
     let mut catalog_codes_set = HashSet::new();
     if let Some(items) = catalog_value["items"].as_array() {
@@ -114,18 +112,17 @@ fn test_io_support_matrix_consistency() {
 #[test]
 fn test_io_reason_codes_domain() {
     let root_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()           // -> core/crates
+        .parent() // -> core/crates
         .unwrap()
-        .parent()           // -> core
+        .parent() // -> core
         .unwrap()
-        .parent()           // -> CraftCAD
+        .parent() // -> CraftCAD
         .unwrap();
     let matrix_abs_path = root_path.join("docs/specs/io/support_matrix.json");
-    let matrix_content = fs::read_to_string(&matrix_abs_path)
-        .expect("Failed to read support_matrix.json");
+    let matrix_content =
+        fs::read_to_string(&matrix_abs_path).expect("Failed to read support_matrix.json");
     let matrix_value: serde_json::Value =
-        serde_json::from_str(&matrix_content)
-            .expect("Failed to parse support_matrix.json");
+        serde_json::from_str(&matrix_content).expect("Failed to parse support_matrix.json");
 
     let mut errors = Vec::new();
     let formats = matrix_value["formats"]
@@ -163,11 +160,11 @@ fn test_io_reason_codes_domain() {
 #[test]
 fn test_mapping_rules_reason_codes() {
     let root_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()           // -> core/crates
+        .parent() // -> core/crates
         .unwrap()
-        .parent()           // -> core
+        .parent() // -> core
         .unwrap()
-        .parent()           // -> CraftCAD
+        .parent() // -> CraftCAD
         .unwrap();
 
     let rules_abs_path = root_path.join("docs/specs/io/mapping_rules.json");
@@ -177,19 +174,17 @@ fn test_mapping_rules_reason_codes() {
         rules_abs_path
     );
 
-    let rules_content = fs::read_to_string(&rules_abs_path)
-        .expect("Failed to read mapping_rules.json");
+    let rules_content =
+        fs::read_to_string(&rules_abs_path).expect("Failed to read mapping_rules.json");
     let rules_value: serde_json::Value =
-        serde_json::from_str(&rules_content)
-            .expect("Failed to parse mapping_rules.json");
+        serde_json::from_str(&rules_content).expect("Failed to parse mapping_rules.json");
 
     // Load catalog.json
     let catalog_abs_path = root_path.join("docs/specs/errors/catalog.json");
-    let catalog_content = fs::read_to_string(&catalog_abs_path)
-        .expect("Failed to read catalog.json");
+    let catalog_content =
+        fs::read_to_string(&catalog_abs_path).expect("Failed to read catalog.json");
     let catalog_value: serde_json::Value =
-        serde_json::from_str(&catalog_content)
-            .expect("Failed to parse catalog.json");
+        serde_json::from_str(&catalog_content).expect("Failed to parse catalog.json");
 
     let mut catalog_codes_set = HashSet::new();
     if let Some(items) = catalog_value["items"].as_array() {
@@ -219,4 +214,3 @@ fn test_mapping_rules_reason_codes() {
         );
     }
 }
-

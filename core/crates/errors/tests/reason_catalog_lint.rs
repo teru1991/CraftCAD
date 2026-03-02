@@ -7,9 +7,9 @@ fn test_reason_codes_catalog_consistency() {
     // Load reason_codes.json (simple list)
     // CARGO_MANIFEST_DIR = core/crates/errors, so we go up to core and then to errors
     let abs_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()           // -> core/crates
+        .parent() // -> core/crates
         .unwrap()
-        .parent()           // -> core
+        .parent() // -> core
         .unwrap()
         .join("errors/reason_codes.json");
 
@@ -19,11 +19,10 @@ fn test_reason_codes_catalog_consistency() {
         abs_path
     );
 
-    let reason_codes_content = fs::read_to_string(&abs_path)
-        .expect("Failed to read reason_codes.json");
+    let reason_codes_content =
+        fs::read_to_string(&abs_path).expect("Failed to read reason_codes.json");
     let reason_codes_value: serde_json::Value =
-        serde_json::from_str(&reason_codes_content)
-            .expect("Failed to parse reason_codes.json");
+        serde_json::from_str(&reason_codes_content).expect("Failed to parse reason_codes.json");
 
     let codes_array = reason_codes_value["codes"]
         .as_array()
@@ -31,19 +30,17 @@ fn test_reason_codes_catalog_consistency() {
 
     let mut reason_codes_set = HashSet::new();
     for code in codes_array.iter() {
-        let code_str = code
-            .as_str()
-            .expect("Each code must be a string");
+        let code_str = code.as_str().expect("Each code must be a string");
         reason_codes_set.insert(code_str.to_string());
     }
 
     // Load catalog.json
     let catalog_abs_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()           // -> core/crates
+        .parent() // -> core/crates
         .unwrap()
-        .parent()           // -> core
+        .parent() // -> core
         .unwrap()
-        .parent()           // -> CraftCAD
+        .parent() // -> CraftCAD
         .unwrap()
         .join("docs/specs/errors/catalog.json");
     assert!(
@@ -52,11 +49,10 @@ fn test_reason_codes_catalog_consistency() {
         catalog_abs_path
     );
 
-    let catalog_content = fs::read_to_string(&catalog_abs_path)
-        .expect("Failed to read catalog.json");
+    let catalog_content =
+        fs::read_to_string(&catalog_abs_path).expect("Failed to read catalog.json");
     let catalog_value: serde_json::Value =
-        serde_json::from_str(&catalog_content)
-            .expect("Failed to parse catalog.json");
+        serde_json::from_str(&catalog_content).expect("Failed to parse catalog.json");
 
     let items = catalog_value["items"]
         .as_array()
@@ -73,10 +69,7 @@ fn test_reason_codes_catalog_consistency() {
 
         // Check that 'domain' field exists
         if item["domain"].is_null() {
-            errors.push(format!(
-                "Code '{}' is missing 'domain' field",
-                code
-            ));
+            errors.push(format!("Code '{}' is missing 'domain' field", code));
         } else {
             let domain = item["domain"].as_str().expect("domain must be string");
             // Check domain matches code prefix (e.g., domain=IO → code starts with IO_)
@@ -90,24 +83,15 @@ fn test_reason_codes_catalog_consistency() {
 
         // Check that 'severity' field exists
         if item["severity"].is_null() {
-            errors.push(format!(
-                "Code '{}' is missing 'severity' field",
-                code
-            ));
+            errors.push(format!("Code '{}' is missing 'severity' field", code));
         }
 
         // Check that 'user_actions' exists and is not empty
         if item["user_actions"].is_null() {
-            errors.push(format!(
-                "Code '{}' is missing 'user_actions' field",
-                code
-            ));
+            errors.push(format!("Code '{}' is missing 'user_actions' field", code));
         } else if let Some(actions) = item["user_actions"].as_array() {
             if actions.is_empty() {
-                errors.push(format!(
-                    "Code '{}' has empty 'user_actions' array",
-                    code
-                ));
+                errors.push(format!("Code '{}' has empty 'user_actions' array", code));
             } else {
                 // Check that no action is empty string or too short
                 for (idx, action) in actions.iter().enumerate() {
@@ -120,7 +104,10 @@ fn test_reason_codes_catalog_consistency() {
                         } else if action_str.len() < 5 {
                             errors.push(format!(
                                 "Code '{}' has very short user_action at index {} (len={}): '{}'",
-                                code, idx, action_str.len(), action_str
+                                code,
+                                idx,
+                                action_str.len(),
+                                action_str
                             ));
                         }
                     } else {
@@ -135,10 +122,7 @@ fn test_reason_codes_catalog_consistency() {
 
         // Check that 'doc_link' exists and only references docs/ (no ..)
         if item["doc_link"].is_null() {
-            errors.push(format!(
-                "Code '{}' is missing 'doc_link' field",
-                code
-            ));
+            errors.push(format!("Code '{}' is missing 'doc_link' field", code));
         } else if let Some(doc_link) = item["doc_link"].as_str() {
             if doc_link.contains("..") {
                 errors.push(format!(
@@ -188,18 +172,17 @@ fn test_reason_codes_catalog_consistency() {
 #[test]
 fn test_domain_code_prefix_consistency() {
     let catalog_abs_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()           // -> core/crates
+        .parent() // -> core/crates
         .unwrap()
-        .parent()           // -> core
+        .parent() // -> core
         .unwrap()
-        .parent()           // -> CraftCAD
+        .parent() // -> CraftCAD
         .unwrap()
         .join("docs/specs/errors/catalog.json");
-    let catalog_content = fs::read_to_string(&catalog_abs_path)
-        .expect("Failed to read catalog.json");
+    let catalog_content =
+        fs::read_to_string(&catalog_abs_path).expect("Failed to read catalog.json");
     let catalog_value: serde_json::Value =
-        serde_json::from_str(&catalog_content)
-            .expect("Failed to parse catalog.json");
+        serde_json::from_str(&catalog_content).expect("Failed to parse catalog.json");
 
     let items = catalog_value["items"]
         .as_array()
@@ -209,12 +192,8 @@ fn test_domain_code_prefix_consistency() {
     let mut domain_code_map: HashMap<String, Vec<String>> = HashMap::new();
 
     for item in items.iter() {
-        let code = item["code"]
-            .as_str()
-            .expect("code field is required");
-        let domain = item["domain"]
-            .as_str()
-            .expect("domain field is required");
+        let code = item["code"].as_str().expect("code field is required");
+        let domain = item["domain"].as_str().expect("domain field is required");
 
         domain_code_map
             .entry(domain.to_string())
@@ -247,18 +226,17 @@ fn test_domain_code_prefix_consistency() {
 #[test]
 fn test_fatal_severity_non_crash_policy() {
     let catalog_abs_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()           // -> core/crates
+        .parent() // -> core/crates
         .unwrap()
-        .parent()           // -> core
+        .parent() // -> core
         .unwrap()
-        .parent()           // -> CraftCAD
+        .parent() // -> CraftCAD
         .unwrap()
         .join("docs/specs/errors/catalog.json");
-    let catalog_content = fs::read_to_string(&catalog_abs_path)
-        .expect("Failed to read catalog.json");
+    let catalog_content =
+        fs::read_to_string(&catalog_abs_path).expect("Failed to read catalog.json");
     let catalog_value: serde_json::Value =
-        serde_json::from_str(&catalog_content)
-            .expect("Failed to parse catalog.json");
+        serde_json::from_str(&catalog_content).expect("Failed to parse catalog.json");
 
     let items = catalog_value["items"]
         .as_array()
@@ -267,9 +245,7 @@ fn test_fatal_severity_non_crash_policy() {
     let mut errors = Vec::new();
 
     for item in items.iter() {
-        let code = item["code"]
-            .as_str()
-            .expect("code field is required");
+        let code = item["code"].as_str().expect("code field is required");
         let severity = item["severity"]
             .as_str()
             .expect("severity field is required");
@@ -299,4 +275,3 @@ fn test_fatal_severity_non_crash_policy() {
         );
     }
 }
-
