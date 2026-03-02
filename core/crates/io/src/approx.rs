@@ -129,7 +129,6 @@ pub fn apply_approx(
     for e in model.entities.drain(..) {
         match e {
             Entity::Path(mut p) => {
-                let mut replaced = false;
                 let mut out_segments: Vec<Segment2D> = Vec::new();
 
                 for s in p.segments.drain(..) {
@@ -137,7 +136,6 @@ pub fn apply_approx(
                         Segment2D::CubicBezier { a, c1, c2, b } => {
                             let (pts, seg, clamped) = flatten_cubic(a, c1, c2, b, opts);
                             out_segments.extend(polyline_from_points(&pts));
-                            replaced = true;
                             report.approx_applied_count += 1;
                             warnings.push(
                                 AppError::new(
@@ -161,7 +159,6 @@ pub fn apply_approx(
                             let (pts, seg, clamped) =
                                 flatten_arc(center, radius, start_rad, end_rad, ccw, opts);
                             out_segments.extend(polyline_from_points(&pts));
-                            replaced = true;
                             report.approx_applied_count += 1;
                             warnings.push(
                                 AppError::new(
@@ -179,7 +176,6 @@ pub fn apply_approx(
                             let (pts, seg, clamped) =
                                 flatten_arc(center, radius, 0.0, std::f64::consts::TAU, true, opts);
                             out_segments.extend(polyline_from_points(&pts));
-                            replaced = true;
                             report.approx_applied_count += 1;
                             warnings.push(
                                 AppError::new(
@@ -199,9 +195,7 @@ pub fn apply_approx(
                     }
                 }
 
-                if replaced {
-                    p.segments = out_segments;
-                }
+                p.segments = out_segments;
                 new_entities.push(Entity::Path(p));
             }
             other => new_entities.push(other),
