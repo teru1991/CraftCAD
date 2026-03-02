@@ -13,6 +13,13 @@ pub enum ReasonCode {
     IO_PATH_CLOSED_BY_EPS,
     IO_NORMALIZE_ROUNDED,
 
+    // support_matrix.json parity (SSOT)
+    IO_TEXT_FALLBACK_FONT,
+    IO_FALLBACK_024,
+    IO_UNSUPPORTED_ENTITY_DXF_SPLINE,
+    IO_HATCH_SIMPLIFIED,
+    IO_IMAGE_REFERENCE_DROPPED,
+
     // PR3: approx/postprocess
     IO_CURVE_APPROX_APPLIED,
     IO_ORIGIN_SHIFTED,
