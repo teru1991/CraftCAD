@@ -78,6 +78,47 @@ pub fn parse_svg_dom(bytes: &[u8], opts: &ImportOptions) -> AppResult<SvgNode> {
                     text: None,
                 });
             }
+
+            Ok(Event::Empty(e)) => {
+                nodes_count += 1;
+                if nodes_count > max_nodes {
+                    return Err(AppError::new(
+                        ReasonCode::IO_SVG_LIMIT_NODES_EXCEEDED,
+                        "svg nodes limit exceeded",
+                    )
+                    .with_context("max_nodes", max_nodes.to_string())
+                    .with_context("nodes", nodes_count.to_string())
+                    .fatal());
+                }
+                let name = String::from_utf8_lossy(e.name().as_ref()).to_string();
+                let mut attrs = Vec::new();
+                for a in e.attributes().flatten() {
+                    let k = String::from_utf8_lossy(a.key.as_ref()).to_string();
+                    let v = a
+                        .unescape_value()
+                        .map_err(|err| {
+                            AppError::new(
+                                ReasonCode::IO_PARSE_SVG_MALFORMED,
+                                "svg attribute decode failed",
+                            )
+                            .with_context("error", err.to_string())
+                            .fatal()
+                        })?
+                        .to_string();
+                    attrs.push((k, v));
+                }
+                let node = SvgNode {
+                    name,
+                    attrs,
+                    children: vec![],
+                    text: None,
+                };
+                if let Some(parent) = stack.last_mut() {
+                    parent.children.push(node);
+                } else {
+                    return Ok(node);
+                }
+            }
             Ok(Event::End(_)) => {
                 let node = stack.pop().ok_or_else(|| {
                     AppError::new(ReasonCode::IO_PARSE_SVG_MALFORMED, "unbalanced svg tags").fatal()

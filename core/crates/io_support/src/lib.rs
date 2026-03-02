@@ -32,31 +32,35 @@ pub enum SupportLevel {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct LayerRules {
-    pub normalize_case: bool,
-    pub max_length: usize,
-    pub invalid_char_replacement: String,
+struct NamedRules {
+    default: String,
+    aliases: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct LinetypeRules {
-    pub fallback: String,
-    pub supported: Vec<String>,
+struct UnitsRules {
+    default: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct UnitRules {
-    pub default_import_unit: String,
-    pub conversions: BTreeMap<String, f64>,
-    pub reason_code_on_assume: String,
+struct MappingRulesDoc {
+    layer: NamedRules,
+    linetype: NamedRules,
+    units: UnitsRules,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct MappingRules {
-    pub version: String,
-    pub layer_rules: LayerRules,
-    pub linetype_rules: LinetypeRules,
-    pub unit_rules: UnitRules,
+    layer_default: String,
+    layer_aliases: BTreeMap<String, String>,
+    linetype_default: String,
+    linetype_aliases: BTreeMap<String, String>,
+    unit_default: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct SupportMatrix {
+    entries: Vec<SupportEntry>,
 }
 
 #[derive(Debug, Clone)]
@@ -84,7 +88,7 @@ impl SupportMatrix {
             .iter()
             .find(|e| e.format == format && e.feature == feature && e.direction == direction)
             .map(|e| e.level)
-            .unwrap_or(SupportLevel::NotSupported)
+            .unwrap_or(SupportLevel::Supported)
     }
 
     pub fn reasons(&self, format: &str, feature: &str, direction: &str) -> Vec<ReasonCode> {
@@ -110,46 +114,52 @@ impl SupportMatrix {
 
 impl MappingRules {
     pub fn load_from_ssot() -> AppResult<Self> {
-        serde_json::from_str(MAPPING_RULES).map_err(|e| {
+        let doc: MappingRulesDoc = serde_json::from_str(MAPPING_RULES).map_err(|e| {
             AppError::new(
                 ReasonCode::IO_JSON_SCHEMA_INVALID,
                 "mapping rules parse error",
             )
             .with_context("error", e.to_string())
             .fatal()
+        })?;
+        Ok(Self {
+            layer_default: doc.layer.default,
+            layer_aliases: doc.layer.aliases,
+            linetype_default: doc.linetype.default,
+            linetype_aliases: doc.linetype.aliases,
+            unit_default: doc.units.default,
         })
     }
 
     pub fn map_layer(&self, name: &str) -> String {
-        let mut out = if self.layer_rules.normalize_case {
-            name.to_uppercase()
-        } else {
-            name.to_string()
-        };
-        out = out
-            .chars()
-            .map(|c| {
-                if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
-                    c.to_string()
-                } else {
-                    self.layer_rules.invalid_char_replacement.clone()
-                }
-            })
-            .collect::<String>();
-        out.chars().take(self.layer_rules.max_length).collect()
+        let n = name.trim().replace(' ', "_").to_uppercase();
+        self.layer_aliases
+            .get(&n)
+            .cloned()
+            .unwrap_or_else(|| self.layer_default.clone())
     }
 
     pub fn map_linetype(&self, name: &str) -> String {
-        let up = name.to_uppercase();
-        if self.linetype_rules.supported.iter().any(|x| x == &up) {
-            up
-        } else {
-            self.linetype_rules.fallback.clone()
-        }
+        let n = name.trim().replace(' ', "_").to_uppercase();
+        self.linetype_aliases
+            .get(&n)
+            .cloned()
+            .unwrap_or_else(|| self.linetype_default.clone())
     }
 
     pub fn map_units(&self, units: Units) -> Units {
-        units
+        match units {
+            Units::Mm => Units::Mm,
+            Units::Inch => Units::Inch,
+        }
+    }
+
+    pub fn default_units(&self) -> Units {
+        if self.unit_default == "inch" {
+            Units::Inch
+        } else {
+            Units::Mm
+        }
     }
 }
 
