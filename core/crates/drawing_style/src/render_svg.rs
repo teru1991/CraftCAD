@@ -27,13 +27,18 @@ pub fn render_svg(ir: &RenderIr, precision: u32) -> Result<String, SvgError> {
     }
 
     let mut items = ir.items.clone();
-    items.sort_by(|a, b| {
-        let z = a.z.cmp(&b.z);
-        if z != std::cmp::Ordering::Equal {
-            return z;
+    items.sort_by(|a, b| a.z.cmp(&b.z).then(a.stable_id.cmp(&b.stable_id)));
+
+    let mut clip_defs: Vec<(String, Rect)> = vec![];
+    for it in &items {
+        if let Primitive::ClipRect { rect } = it.prim {
+            clip_defs.push((format!("clip_{}", it.stable_id), rect));
         }
-        a.stable_id.cmp(&b.stable_id)
-    });
+    }
+    let model_clip = clip_defs
+        .iter()
+        .find(|(id, _)| id.contains("MODEL_VIEW_CLIP"))
+        .map(|(id, _)| id.clone());
 
     let mut out = String::new();
     out.push_str(r#"<?xml version="1.0" encoding="UTF-8"?>"#);
@@ -47,17 +52,29 @@ pub fn render_svg(ir: &RenderIr, precision: u32) -> Result<String, SvgError> {
     ));
     out.push('\n');
 
-    for it in items {
-        if let Primitive::ClipRect { rect } = it.prim {
+    if !clip_defs.is_empty() {
+        out.push_str("<defs>\n");
+        for (id, rect) in &clip_defs {
             out.push_str(&format!(
-                r#"<!-- CLIP {} x={} y={} w={} h={} -->"#,
-                it.stable_id,
+                r#"<clipPath id="{}"><rect x="{}" y="{}" width="{}" height="{}" /></clipPath>"#,
+                id,
                 fmt_f(rect.x.0, precision),
                 fmt_f(rect.y.0, precision),
                 fmt_f(rect.w.0, precision),
                 fmt_f(rect.h.0, precision)
             ));
             out.push('\n');
+        }
+        out.push_str("</defs>\n");
+    }
+
+    if let Some(c) = &model_clip {
+        out.push_str(&format!(r#"<g clip-path="url(#{})">"#, c));
+        out.push('\n');
+    }
+
+    for it in items {
+        if matches!(it.prim, Primitive::ClipRect { .. }) {
             continue;
         }
 
@@ -108,6 +125,33 @@ pub fn render_svg(ir: &RenderIr, precision: u32) -> Result<String, SvgError> {
                 fmt_f(r.0, precision),
                 attrs.join(" ")
             )),
+            Primitive::Arc {
+                c,
+                r,
+                start_deg,
+                sweep_deg,
+            } => {
+                let start_rad = start_deg.to_radians();
+                let end_rad = (start_deg + sweep_deg).to_radians();
+                let sx = c.x.0 + r.0 * start_rad.cos();
+                let sy = c.y.0 + r.0 * start_rad.sin();
+                let ex = c.x.0 + r.0 * end_rad.cos();
+                let ey = c.y.0 + r.0 * end_rad.sin();
+                let large_arc = if sweep_deg.abs() > 180.0 { 1 } else { 0 };
+                let sweep_flag = if sweep_deg >= 0.0 { 1 } else { 0 };
+                out.push_str(&format!(
+                    r#"<path d="M {} {} A {} {} 0 {} {} {} {}" {} />"#,
+                    fmt_f(sx, precision),
+                    fmt_f(sy, precision),
+                    fmt_f(r.0, precision),
+                    fmt_f(r.0, precision),
+                    large_arc,
+                    sweep_flag,
+                    fmt_f(ex, precision),
+                    fmt_f(ey, precision),
+                    attrs.join(" ")
+                ))
+            }
             Primitive::Polyline { pts, closed } => {
                 let mut p = pts
                     .iter()
@@ -136,15 +180,11 @@ pub fn render_svg(ir: &RenderIr, precision: u32) -> Result<String, SvgError> {
                 anchor,
                 ..
             } => {
-                let tx = it
-                    .text
-                    .as_ref()
-                    .expect("text style required for Text primitive");
+                let tx = it.text.as_ref().expect("text style required");
                 let mut fams = vec![tx.font_family.clone()];
                 fams.extend(tx.fallback_families.clone());
                 let family = fams.join(", ");
                 let escaped = escape_text(&text);
-
                 let mut tattrs = vec![
                     format!(r#"x="{}""#, fmt_f(pos.x.0, precision)),
                     format!(r#"y="{}""#, fmt_f(pos.y.0, precision)),
@@ -168,6 +208,9 @@ pub fn render_svg(ir: &RenderIr, precision: u32) -> Result<String, SvgError> {
         out.push('\n');
     }
 
+    if model_clip.is_some() {
+        out.push_str("</g>\n");
+    }
     out.push_str("</svg>\n");
     Ok(out)
 }
