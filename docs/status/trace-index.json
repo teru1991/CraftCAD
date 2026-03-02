@@ -147,6 +147,19 @@
         "head_sha": "see docs/verification/SPRINT14-STEP1.md",
         "tests": "cargo test -p ssot_lint: pass; cargo run -p ssot_lint --bin ssot-lint: pass; scripts/ci/run_all.sh: ssot_lint/e2e/determinism/compat/ffi pass, existing rust_clippy/rust_test/cmake steps fail"
       }
+    },
+    "SPRINT14-STEP2": {
+      "branch": "feature/sprint14-step2-001",
+      "artifacts": [
+        "core/crates/diycad_format/**",
+        "scripts/ci/run_all.sh",
+        "docs/verification/SPRINT14-STEP2.md"
+      ],
+      "verification": "docs/verification/SPRINT14-STEP2.md",
+      "evidence": {
+        "head_sha": "see docs/verification/SPRINT14-STEP2.md",
+        "tests": "cargo test -p diycad_format: pass; cargo test -p diycad_format --tests: pass; scripts/ci/run_all.sh: diycad_format_tests/ssot_lint/e2e/determinism/compat/ffi pass, existing rust_clippy/rust_test/cmake fail"
+      }
     }
   }
 }
