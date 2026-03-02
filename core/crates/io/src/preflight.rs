@@ -5,7 +5,7 @@ pub fn preflight_bytes(format_id: &str, bytes: &[u8], opts: &ImportOptions) -> A
     let len = bytes.len();
     if len > opts.limits.max_bytes {
         return Err(AppError::new(
-            ReasonCode::IoLimitBytesExceeded,
+            ReasonCode::IO_LIMIT_BYTES_EXCEEDED,
             format!(
                 "input too large: {} bytes (max {})",
                 len, opts.limits.max_bytes

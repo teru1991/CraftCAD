@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "units": "mm",
+  "metadata": {
+    "source_format": "json",
+    "unit_guess": null,
+    "determinism_tag": ""
+  },
+  "entities": [
+    {
+      "type": "path",
+      "id": "p1",
+      "stroke": {
+        "layer": "CUT",
+        "linetype": "CONTINUOUS",
+        "weight": 0.25,
+        "color_policy": "by_layer"
+      },
+      "closed": false,
+      "segments": [
+        { "kind": "line", "a": { "x": 0, "y": 0 }, "b": { "x": 10, "y": 0 } },
+        { "kind": "line", "a": { "x": 10, "y": 0 }, "b": { "x": 10, "y": 10 } }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "t1",
+      "layer": "GUIDE",
+      "pos": { "x": 5, "y": 5 },
+      "text": "hello",
+      "size": 12,
+      "font_hint": "Arial",
+      "rotation_rad": 0
+    }
+  ]
+}

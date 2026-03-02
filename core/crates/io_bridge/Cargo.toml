@@ -1,14 +1,17 @@
 [package]
-name = "craftcad_io_json"
+name = "craftcad_io_bridge"
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
 craftcad_io = { path = "../io" }
+craftcad_diycad = { package = "diycad_project", path = "../diycad_project" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "1.0"
 
 [dev-dependencies]
-pretty_assertions = "1.4"
+craftcad_io_dxf = { path = "../io_dxf" }
+craftcad_io_svg = { path = "../io_svg" }
+md5 = "0.7"
