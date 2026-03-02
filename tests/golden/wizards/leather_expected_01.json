@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "parts": [
+    {
+      "part_id": "part:leather_pouch_wizard:pouch_body",
+      "name": "pouch_body",
+      "outline": { "kind": "rect", "w_mm": 100.0, "h_mm": 70.0 },
+      "features": [],
+      "qty": 1,
+      "tags": ["leather_pouch", "wizard"]
+    }
+  ],
+  "annotations": [
+    { "kind": "seam_allowance", "part_id": "part:leather_pouch_wizard:pouch_body", "allowance_mm": 4.0 },
+    { "kind": "stitch_pitch", "part_id": "part:leather_pouch_wizard:pouch_body", "pitch_mm": 4.0 }
+  ],
+  "recommended_nest_job": {
+    "material_preset_id": "leather_2_0mm",
+    "process_preset_id": "knife_basic",
+    "kerf_mm": 0.0,
+    "margin_mm": 1.0,
+    "seed": 0,
+    "allow_rotate": true,
+    "grain": "none"
+  }
+}

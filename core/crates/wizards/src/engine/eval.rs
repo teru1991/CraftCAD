@@ -1,4 +1,5 @@
 use crate::engine::ast::Template;
+use crate::engine::eval_expr::eval_number_expr;
 use crate::reasons::{WizardReason, WizardReasonCode};
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -60,14 +61,26 @@ pub fn eval_generation_steps(
                 let mut args = BTreeMap::new();
                 add_arg(&mut args, "name", Value::String(name.to_string()));
 
-                if step.args.contains_key("w_expr") || step.args.contains_key("h_expr") {
+                if let (Some(w_expr), Some(h_expr)) = (
+                    step.args.get("w_expr").and_then(|v| v.as_str()),
+                    step.args.get("h_expr").and_then(|v| v.as_str()),
+                ) {
+                    let w = eval_number_expr(w_expr, filled_inputs)?;
+                    let h = eval_number_expr(h_expr, filled_inputs)?;
+                    if w <= 0.0 || h <= 0.0 {
+                        return Err(WizardReason::new(
+                            WizardReasonCode::WizardInputInvalid,
+                            format!("evaluated dimensions must be >0: w={w}, h={h}"),
+                        ));
+                    }
+                    add_arg(&mut args, "w_mm", num(w)?);
+                    add_arg(&mut args, "h_mm", num(h)?);
+                } else if step.args.contains_key("w_expr") || step.args.contains_key("h_expr") {
                     return Err(WizardReason::new(
                         WizardReasonCode::WizardDslInvalid,
-                        "expressions (w_expr/h_expr) are not allowed in step4",
+                        "add_part_rect requires both w_expr and h_expr",
                     ));
-                }
-
-                if let (Some(wk), Some(hk)) = (
+                } else if let (Some(wk), Some(hk)) = (
                     step.args.get("w_key").and_then(|v| v.as_str()),
                     step.args.get("h_key").and_then(|v| v.as_str()),
                 ) {
@@ -84,7 +97,7 @@ pub fn eval_generation_steps(
                 } else {
                     return Err(WizardReason::new(
                         WizardReasonCode::WizardDslInvalid,
-                        "add_part_rect requires (w_key,h_key) or (w_const,h_const)",
+                        "add_part_rect requires (w_expr,h_expr), (w_key,h_key) or (w_const,h_const)",
                     ));
                 }
 
