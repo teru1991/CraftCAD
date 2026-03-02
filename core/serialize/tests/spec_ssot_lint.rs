@@ -40,7 +40,8 @@ fn io_support_matrix_is_machine_readable() {
     let raw =
         std::fs::read_to_string("../../docs/specs/io/support_matrix.json").expect("support matrix");
     let value: serde_json::Value = serde_json::from_str(&raw).expect("support matrix json");
-    assert!(value["formats"].is_object());
+    assert!(value["formats"].is_array());
+    assert!(value["matrix"].is_array());
 }
 
 #[test]
@@ -113,7 +114,9 @@ fn repo_root_from_manifest() -> PathBuf {
         .parent()
         .and_then(|p| p.parent())
         .map(|p| p.to_path_buf())
-        .expect("failed to locate repo root from CARGO_MANIFEST_DIR (expected <repo>/core/serialize)")
+        .expect(
+            "failed to locate repo root from CARGO_MANIFEST_DIR (expected <repo>/core/serialize)",
+        )
 }
 
 fn read_json(path: &Path) -> Value {
@@ -127,7 +130,13 @@ fn compile_schema(schema_path: &Path) -> JSONSchema {
     let schema_json = read_json(schema_path);
     JSONSchema::options()
         .compile(&schema_json)
-        .unwrap_or_else(|e| panic!("failed to compile jsonschema {}: {}", schema_path.display(), e))
+        .unwrap_or_else(|e| {
+            panic!(
+                "failed to compile jsonschema {}: {}",
+                schema_path.display(),
+                e
+            )
+        })
 }
 
 fn validate_instance(schema: &JSONSchema, instance_path: &Path, instance: &Value) {
@@ -146,7 +155,12 @@ fn validate_instance(schema: &JSONSchema, instance_path: &Path, instance: &Value
 
 fn rect_inside_page(rect: (f64, f64, f64, f64), page_w: f64, page_h: f64) -> bool {
     let (x, y, w, h) = rect;
-    x >= 0.0 && y >= 0.0 && w > 0.0 && h > 0.0 && (x + w) <= page_w + 1e-9 && (y + h) <= page_h + 1e-9
+    x >= 0.0
+        && y >= 0.0
+        && w > 0.0
+        && h > 0.0
+        && (x + w) <= page_w + 1e-9
+        && (y + h) <= page_h + 1e-9
 }
 
 fn get_f64(v: &Value, p: &str) -> f64 {
@@ -200,7 +214,11 @@ fn ssot_lint_drawing_style_specs() {
     for s in styles {
         let id = s.get("id").and_then(|x| x.as_str()).unwrap_or("");
         assert!(id_re.is_match(id), "style id must match *_vN: {}", id);
-        assert!(style_ids.insert(id.to_string()), "duplicate style id: {}", id);
+        assert!(
+            style_ids.insert(id.to_string()),
+            "duplicate style id: {}",
+            id
+        );
     }
 
     let mut template_ids = HashSet::<String>::new();
@@ -211,7 +229,11 @@ fn ssot_lint_drawing_style_specs() {
     for t in templates {
         let id = t.get("id").and_then(|x| x.as_str()).unwrap_or("");
         assert!(id_re.is_match(id), "template id must match *_vN: {}", id);
-        assert!(template_ids.insert(id.to_string()), "duplicate template id: {}", id);
+        assert!(
+            template_ids.insert(id.to_string()),
+            "duplicate template id: {}",
+            id
+        );
     }
 
     let mut preset_ids = HashSet::<String>::new();
@@ -221,8 +243,16 @@ fn ssot_lint_drawing_style_specs() {
         .expect("print_presets.json: /presets must be array");
     for p in presets {
         let id = p.get("id").and_then(|x| x.as_str()).unwrap_or("");
-        assert!(id_re.is_match(id), "print preset id must match *_vN: {}", id);
-        assert!(preset_ids.insert(id.to_string()), "duplicate print preset id: {}", id);
+        assert!(
+            id_re.is_match(id),
+            "print preset id must match *_vN: {}",
+            id
+        );
+        assert!(
+            preset_ids.insert(id.to_string()),
+            "duplicate print preset id: {}",
+            id
+        );
     }
 
     // 3) sheet_templates：A4/A3サイズ・margin・title_block・viewport整合
@@ -237,10 +267,22 @@ fn ssot_lint_drawing_style_specs() {
 
         match size.as_str() {
             "A4" => {
-                assert!((page_w - 210.0).abs() < 1e-6 && (page_h - 297.0).abs() < 1e-6, "A4 size must be 210x297mm: {} = {}x{}", id, page_w, page_h);
+                assert!(
+                    (page_w - 210.0).abs() < 1e-6 && (page_h - 297.0).abs() < 1e-6,
+                    "A4 size must be 210x297mm: {} = {}x{}",
+                    id,
+                    page_w,
+                    page_h
+                );
             }
             "A3" => {
-                assert!((page_w - 297.0).abs() < 1e-6 && (page_h - 420.0).abs() < 1e-6, "A3 size must be 297x420mm: {} = {}x{}", id, page_w, page_h);
+                assert!(
+                    (page_w - 297.0).abs() < 1e-6 && (page_h - 420.0).abs() < 1e-6,
+                    "A3 size must be 297x420mm: {} = {}x{}",
+                    id,
+                    page_w,
+                    page_h
+                );
             }
             _ => panic!("unknown page.size for template {}: {}", id, size),
         }
@@ -249,8 +291,16 @@ fn ssot_lint_drawing_style_specs() {
         let m_right = get_f64(t, "/page/margin_mm/right");
         let m_bottom = get_f64(t, "/page/margin_mm/bottom");
         let m_left = get_f64(t, "/page/margin_mm/left");
-        assert!(m_left + m_right < page_w, "margins exceed page width: {}", id);
-        assert!(m_top + m_bottom < page_h, "margins exceed page height: {}", id);
+        assert!(
+            m_left + m_right < page_w,
+            "margins exceed page width: {}",
+            id
+        );
+        assert!(
+            m_top + m_bottom < page_h,
+            "margins exceed page height: {}",
+            id
+        );
 
         let tb_x = get_f64(t, "/page/title_block/bbox_mm/x_mm");
         let tb_y = get_f64(t, "/page/title_block/bbox_mm/y_mm");
@@ -417,4 +467,224 @@ fn ssot_lint_drawing_style_specs() {
             svg_prec
         );
     }
+}
+
+const SUPPORT_MATRIX_JSON: &str = "docs/specs/io/support_matrix.json";
+const MAPPING_RULES_JSON: &str = "docs/specs/io/mapping_rules.json";
+const CURVE_APPROX_POLICY_MD: &str = "docs/specs/io/curve_approx_policy.md";
+const POSTPROCESS_POLICY_MD: &str = "docs/specs/io/postprocess_policy.md";
+const REASON_CATALOG_JSON: &str = "docs/specs/errors/catalog.json";
+
+fn read_repo_file(path: &str) -> String {
+    let abs = repo_root_from_manifest().join(path);
+    fs::read_to_string(&abs).unwrap_or_else(|e| panic!("failed to read {}: {}", abs.display(), e))
+}
+
+fn load_json(path: &str) -> Value {
+    let s = read_repo_file(path);
+    serde_json::from_str(&s).unwrap_or_else(|e| panic!("invalid json {}: {}", path, e))
+}
+
+fn read_text(path: &str) -> String {
+    read_repo_file(path)
+}
+
+fn lint_policy_md_required_keys(path: &str) {
+    let text = read_text(path);
+
+    let meta_pos = text
+        .find("ssot_meta:")
+        .unwrap_or_else(|| panic!("{}: missing 'ssot_meta:' block", path));
+
+    let req_pos = text[meta_pos..]
+        .find("required_keys:")
+        .unwrap_or_else(|| panic!("{}: missing 'required_keys' in ssot_meta", path));
+
+    let after = &text[meta_pos + req_pos..];
+    let lb = after
+        .find('[')
+        .unwrap_or_else(|| panic!("{}: required_keys must be array: [..]", path));
+    let rb = after
+        .find(']')
+        .unwrap_or_else(|| panic!("{}: required_keys must be array: [..]", path));
+    let inside = &after[lb + 1..rb];
+
+    let keys: Vec<String> = inside
+        .split(',')
+        .map(|s| s.trim().trim_matches('"').trim_matches('\'').to_string())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    if keys.is_empty() {
+        panic!("{}: required_keys is empty", path);
+    }
+
+    for k in keys {
+        if !text.contains(&k) {
+            panic!(
+                "{}: required key '{}' not mentioned anywhere in the document body",
+                path, k
+            );
+        }
+    }
+}
+
+#[test]
+fn ssot_lint_io_support_matrix_best_effort_has_reason_codes_and_catalog_exists() {
+    let sm = load_json(SUPPORT_MATRIX_JSON);
+    let rc = load_json(REASON_CATALOG_JSON);
+
+    let mut known: HashSet<String> = HashSet::new();
+    if let Some(arr) = rc.get("items").and_then(|v| v.as_array()) {
+        for r in arr {
+            if let Some(code) = r.get("code").and_then(|v| v.as_str()) {
+                known.insert(code.to_string());
+            }
+        }
+    } else if let Some(arr) = rc.get("reasons").and_then(|v| v.as_array()) {
+        for r in arr {
+            if let Some(code) = r.get("code").and_then(|v| v.as_str()) {
+                known.insert(code.to_string());
+            }
+        }
+    } else if let Some(obj) = rc.get("codes").and_then(|v| v.as_object()) {
+        for (k, _) in obj {
+            known.insert(k.to_string());
+        }
+    } else {
+        panic!(
+            "{}: unknown ReasonCatalog structure (expected 'items' array, 'reasons' array or 'codes' object)",
+            REASON_CATALOG_JSON
+        );
+    }
+
+    let matrix = sm
+        .get("matrix")
+        .and_then(|v| v.as_array())
+        .unwrap_or_else(|| panic!("{}: missing 'matrix' array", SUPPORT_MATRIX_JSON));
+
+    for entry in matrix {
+        let format = entry.get("format").and_then(|v| v.as_str()).unwrap_or("");
+        let direction = entry
+            .get("direction")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+        let feature = entry.get("feature").and_then(|v| v.as_str()).unwrap_or("");
+        let level = entry.get("level").and_then(|v| v.as_str()).unwrap_or("");
+
+        if format.is_empty() || direction.is_empty() || feature.is_empty() || level.is_empty() {
+            panic!(
+                "{}: matrix entry must have format/direction/feature/level: {:?}",
+                SUPPORT_MATRIX_JSON, entry
+            );
+        }
+
+        if direction != "import" && direction != "export" {
+            panic!(
+                "{}: invalid direction '{}', must be import|export",
+                SUPPORT_MATRIX_JSON, direction
+            );
+        }
+
+        if level == "best_effort" || level == "not_supported" {
+            let reasons = entry
+                .get("reason_codes")
+                .and_then(|v| v.as_array())
+                .unwrap_or_else(|| {
+                    panic!(
+                        "{}: {} {} {}: '{}' requires reason_codes array",
+                        SUPPORT_MATRIX_JSON, format, direction, feature, level
+                    )
+                });
+
+            if reasons.is_empty() {
+                panic!(
+                    "{}: {} {} {}: reason_codes must not be empty",
+                    SUPPORT_MATRIX_JSON, format, direction, feature
+                );
+            }
+
+            for r in reasons {
+                let code = r.as_str().unwrap_or_else(|| {
+                    panic!(
+                        "{}: reason_codes must be string: {:?}",
+                        SUPPORT_MATRIX_JSON, r
+                    )
+                });
+                if !known.contains(code) {
+                    panic!(
+                        "{}: unknown ReasonCode '{}' (not found in {})",
+                        SUPPORT_MATRIX_JSON, code, REASON_CATALOG_JSON
+                    );
+                }
+            }
+        }
+
+        if level == "best_effort" {
+            let action = entry.get("action").and_then(|v| v.as_str()).unwrap_or("");
+            if action.is_empty() {
+                panic!(
+                    "{}: {} {} {}: best_effort requires 'action'",
+                    SUPPORT_MATRIX_JSON, format, direction, feature
+                );
+            }
+        }
+
+        if level == "not_supported" {
+            let action = entry.get("action").and_then(|v| v.as_str()).unwrap_or("");
+            if action.is_empty() {
+                panic!(
+                    "{}: {} {} {}: not_supported requires 'action'",
+                    SUPPORT_MATRIX_JSON, format, direction, feature
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn ssot_lint_io_mapping_rules_required_keys_and_forbidden_chars_regex_present() {
+    let mr = load_json(MAPPING_RULES_JSON);
+
+    for k in ["layer", "linetype", "units"] {
+        if mr.get(k).is_none() {
+            panic!("{}: missing top-level key '{}'", MAPPING_RULES_JSON, k);
+        }
+    }
+
+    for section in ["layer", "linetype"] {
+        let s = mr.get(section).unwrap();
+        for k in ["default", "max_len", "forbidden_chars_regex", "normalize"] {
+            if s.get(k).is_none() {
+                panic!("{}: '{}' missing key '{}'", MAPPING_RULES_JSON, section, k);
+            }
+        }
+        let re = s
+            .get("forbidden_chars_regex")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+        if re.is_empty() {
+            panic!(
+                "{}: '{}' forbidden_chars_regex must not be empty",
+                MAPPING_RULES_JSON, section
+            );
+        }
+    }
+
+    let units = mr.get("units").unwrap();
+    for k in ["supported", "default", "import_guess_order"] {
+        if units.get(k).is_none() {
+            panic!("{}: 'units' missing key '{}'", MAPPING_RULES_JSON, k);
+        }
+    }
+    let supported = units.get("supported").and_then(|v| v.as_array()).unwrap();
+    if supported.is_empty() {
+        panic!("{}: units.supported must not be empty", MAPPING_RULES_JSON);
+    }
+}
+
+#[test]
+fn ssot_lint_io_policy_docs_have_ssot_meta_and_required_keys() {
+    lint_policy_md_required_keys(CURVE_APPROX_POLICY_MD);
+    lint_policy_md_required_keys(POSTPROCESS_POLICY_MD);
 }

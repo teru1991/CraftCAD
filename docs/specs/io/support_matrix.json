@@ -1,50 +1,125 @@
 {
-  "version": "1.0.0",
-  "formats": {
-    "dxf": {
-      "line": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "polyline": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "arc_circle": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "ellipse": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_CURVE_APPROX_APPLIED"] },
-      "spline": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_UNSUPPORTED_ENTITY_DXF_SPLINE", "IO_CURVE_APPROX_APPLIED"] },
-      "text": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_TEXT_FALLBACK_FONT"] },
-      "dimension": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_UNSUPPORTED_DIMENSION"] },
-      "hatch": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_HATCH_SIMPLIFIED"] },
-      "block": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_BLOCK_EXPLODED"] },
-      "image": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_IMAGE_REFERENCE_DROPPED"] },
-      "units": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "layers": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "linetypes": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_LINETYPE_FALLBACK"] }
+  "schema_version": 1,
+  "formats": ["dxf", "svg", "json"],
+  "directions": ["import", "export"],
+  "levels": ["supported", "best_effort", "not_supported"],
+  "matrix": [
+    {
+      "format": "dxf",
+      "direction": "import",
+      "feature": "entity_line",
+      "level": "supported"
     },
-    "svg": {
-      "line": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "polyline": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "arc_circle": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_CURVE_APPROX_APPLIED"] },
-      "ellipse": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_CURVE_APPROX_APPLIED"] },
-      "spline": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_CURVE_APPROX_APPLIED"] },
-      "text": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "dimension": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_UNSUPPORTED_DIMENSION"] },
-      "hatch": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_HATCH_SIMPLIFIED"] },
-      "block": { "import": "not_supported", "export": "not_supported", "reason_codes": ["IO_BLOCK_EXPLODED"] },
-      "image": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "units": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_UNITS_ASSUMED_MM"] },
-      "layers": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_LAYER_NAME_NORMALIZED"] },
-      "linetypes": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_LINETYPE_FALLBACK"] }
+    {
+      "format": "dxf",
+      "direction": "import",
+      "feature": "entity_polyline",
+      "level": "supported"
     },
-    "json": {
-      "line": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "polyline": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "arc_circle": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "ellipse": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "spline": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "text": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "dimension": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "hatch": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "block": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "image": { "import": "best_effort", "export": "best_effort", "reason_codes": ["IO_IMAGE_REFERENCE_DROPPED"] },
-      "units": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "layers": { "import": "supported", "export": "supported", "reason_codes": [] },
-      "linetypes": { "import": "supported", "export": "supported", "reason_codes": [] }
+    {
+      "format": "dxf",
+      "direction": "import",
+      "feature": "entity_arc",
+      "level": "supported"
+    },
+    {
+      "format": "dxf",
+      "direction": "import",
+      "feature": "entity_circle",
+      "level": "supported"
+    },
+    {
+      "format": "dxf",
+      "direction": "import",
+      "feature": "entity_text",
+      "level": "best_effort",
+      "action": "fallback",
+      "reason_codes": ["IO_TEXT_FALLBACK_FONT", "IO_FALLBACK_024"],
+      "notes": "DXF TEXT/MTEXT のフォント等は環境差が大きいため、hintとして扱う。"
+    },
+    {
+      "format": "dxf",
+      "direction": "import",
+      "feature": "entity_spline",
+      "level": "best_effort",
+      "action": "approx",
+      "reason_codes": ["IO_CURVE_APPROX_APPLIED", "IO_UNSUPPORTED_ENTITY_DXF_SPLINE"],
+      "notes": "SPLINE はポリライン近似で救済する（curve_approx_policy に従う）。"
+    },
+    {
+      "format": "dxf",
+      "direction": "import",
+      "feature": "entity_hatch",
+      "level": "not_supported",
+      "action": "drop",
+      "reason_codes": ["IO_HATCH_SIMPLIFIED"],
+      "notes": "HATCH は未対応。必要なら別ツールで展開してから再試行。"
+    },
+    {
+      "format": "svg",
+      "direction": "import",
+      "feature": "entity_path",
+      "level": "supported"
+    },
+    {
+      "format": "svg",
+      "direction": "import",
+      "feature": "entity_path_cubic_bezier",
+      "level": "supported"
+    },
+    {
+      "format": "svg",
+      "direction": "import",
+      "feature": "entity_path_elliptical_arc",
+      "level": "best_effort",
+      "action": "convert_or_approx",
+      "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
+      "notes": "SVG A は Arc へ変換できる場合は変換、難しい場合は近似。"
+    },
+    {
+      "format": "svg",
+      "direction": "import",
+      "feature": "entity_text",
+      "level": "best_effort",
+      "action": "fallback",
+      "reason_codes": ["IO_TEXT_FALLBACK_FONT"],
+      "notes": "フォントはhint。レイアウト完全一致は保証しない。"
+    },
+    {
+      "format": "svg",
+      "direction": "import",
+      "feature": "external_reference",
+      "level": "not_supported",
+      "action": "drop",
+      "reason_codes": ["IO_IMAGE_REFERENCE_DROPPED"],
+      "notes": "xlink/href 等の外部参照はセキュリティ上遮断。"
+    },
+    {
+      "format": "json",
+      "direction": "import",
+      "feature": "internal_model_v1",
+      "level": "supported"
+    },
+    {
+      "format": "json",
+      "direction": "export",
+      "feature": "internal_model_v1",
+      "level": "supported"
+    },
+    {
+      "format": "dxf",
+      "direction": "export",
+      "feature": "entity_cubic_bezier",
+      "level": "best_effort",
+      "action": "approx",
+      "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
+      "notes": "DXF出力でBezierは近似。"
+    },
+    {
+      "format": "svg",
+      "direction": "export",
+      "feature": "entity_arc",
+      "level": "supported"
     }
-  }
+  ]
 }
