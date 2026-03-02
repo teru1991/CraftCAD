@@ -58,7 +58,15 @@ if (Test-Path $DesktopCmake) {
     }
 }
 
-python $SummaryScript --log-dir $LogDir --out $SummaryFile
+$pythonCmd = if (Get-Command python -ErrorAction SilentlyContinue) {
+    'python'
+} elseif (Get-Command py -ErrorAction SilentlyContinue) {
+    'py -3'
+} else {
+    throw 'Python interpreter not found (python/py).'
+}
+
+Invoke-Expression "$pythonCmd \"$SummaryScript\" --log-dir \"$LogDir\" --out \"$SummaryFile\""
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 if ($script:OverallStatus -eq 0) {

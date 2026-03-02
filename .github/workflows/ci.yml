@@ -27,6 +27,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y cmake ninja-build qt6-base-dev
 
+      - name: Install Windows desktop dependencies (Qt)
+        if: runner.os == 'Windows'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.6.3'
+          arch: 'win64_msvc2019_64'
+
       - name: Run unified CI entrypoint (Linux/macOS)
         if: runner.os != 'Windows'
         run: bash scripts/ci/run_all.sh
