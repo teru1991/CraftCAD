@@ -77,6 +77,7 @@ fn parse_path_d(d: &str) -> Vec<(char, Vec<f64>)> {
 
 fn build_path_segments_from_svg(
     d: &str,
+    opts: &ImportOptions,
     warnings: &mut Vec<AppError>,
     sm: &SupportMatrix,
 ) -> Vec<Segment2D> {
@@ -126,14 +127,32 @@ fn build_path_segments_from_svg(
                 for w in nums.chunks(7) {
                     if w.len() == 7 {
                         let p = Point2D { x: w[5], y: w[6] };
-                        segs.push(Segment2D::Line { a: cur, b: p });
+                        let seg_count = opts.determinism.approx_min_segments.max(2);
+                        for i in 1..=seg_count {
+                            let t0 = (i - 1) as f64 / seg_count as f64;
+                            let t1 = i as f64 / seg_count as f64;
+                            let a = Point2D {
+                                x: cur.x + (p.x - cur.x) * t0,
+                                y: cur.y + (p.y - cur.y) * t0,
+                            };
+                            let b = Point2D {
+                                x: cur.x + (p.x - cur.x) * t1,
+                                y: cur.y + (p.y - cur.y) * t1,
+                            };
+                            segs.push(Segment2D::Line { a, b });
+                        }
                         cur = p;
                         if lvl != SupportLevel::Supported {
+                            warnings.push(
+                                AppError::new(
+                                    ReasonCode::IO_SVG_ARC_CONVERTED,
+                                    "svg elliptical arc converted with deterministic polyline",
+                                )
+                                .with_context("method", "deterministic_polyline")
+                                .with_context("segments", seg_count.to_string()),
+                            );
                             for r in sm.reasons("svg", "entity_path_elliptical_arc", "import") {
-                                warnings.push(
-                                    AppError::new(r, "svg elliptical arc approximated as line")
-                                        .with_context("method", "line_fallback"),
-                                );
+                                warnings.push(AppError::new(r, "svg elliptical arc best-effort"));
                             }
                         }
                     }
@@ -207,7 +226,7 @@ pub fn import_svg(
                 }
                 stroke = map_stroke(&mr, stroke);
                 let mut p = PathEntity::new(format!("svg_path_{}", model.entities.len()), stroke);
-                p.segments = build_path_segments_from_svg(&d, &mut warnings, &sm);
+                p.segments = build_path_segments_from_svg(&d, opts, &mut warnings, &sm);
                 model.entities.push(Entity::Path(p));
             }
             "line" => {

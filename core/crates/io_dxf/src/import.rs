@@ -149,20 +149,68 @@ pub fn import_dxf(
                 if lvl == SupportLevel::NotSupported {
                     continue;
                 }
-                let x = get_f64(&g2, 10).unwrap_or(0.0);
-                let y = get_f64(&g2, 20).unwrap_or(0.0);
+                let xs: Vec<f64> = g2
+                    .iter()
+                    .filter_map(|(c, v)| {
+                        if *c == 10 {
+                            v.parse::<f64>().ok()
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+                let ys: Vec<f64> = g2
+                    .iter()
+                    .filter_map(|(c, v)| {
+                        if *c == 20 {
+                            v.parse::<f64>().ok()
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+                let mut pts: Vec<Point2D> = Vec::new();
+                let n = xs.len().min(ys.len());
+                for i in 0..n {
+                    pts.push(Point2D { x: xs[i], y: ys[i] });
+                }
                 let mut p = PathEntity::new(format!("dxf_spline_{}", model.entities.len()), stroke);
-                p.segments.push(Segment2D::Line {
-                    a: Point2D { x, y },
-                    b: Point2D { x, y },
-                });
-                for r in sm.reasons("dxf", "entity_spline", "import") {
+                if pts.len() >= 4 {
+                    let mut i = 0usize;
+                    while i + 3 < pts.len() {
+                        p.segments.push(Segment2D::CubicBezier {
+                            a: pts[i],
+                            c1: pts[i + 1],
+                            c2: pts[i + 2],
+                            b: pts[i + 3],
+                        });
+                        i += 3;
+                    }
                     warnings.push(
-                        AppError::new(r, "DXF SPLINE best-effort placeholder")
-                            .with_context("method", "placeholder_line"),
+                        AppError::new(
+                            ReasonCode::IO_DXF_SPLINE_CONVERTED,
+                            "DXF SPLINE converted to cubic beziers",
+                        )
+                        .with_context("bezier_segments", p.segments.len().to_string()),
+                    );
+                } else if pts.len() >= 2 {
+                    for w in pts.windows(2) {
+                        p.segments.push(Segment2D::Line { a: w[0], b: w[1] });
+                    }
+                    warnings.push(
+                        AppError::new(
+                            ReasonCode::IO_DXF_SPLINE_CONVERTED,
+                            "DXF SPLINE converted to polyline fallback",
+                        )
+                        .with_context("line_segments", p.segments.len().to_string()),
                     );
                 }
-                model.entities.push(Entity::Path(p));
+                for r in sm.reasons("dxf", "entity_spline", "import") {
+                    warnings.push(AppError::new(r, "DXF SPLINE best-effort conversion"));
+                }
+                if !p.segments.is_empty() {
+                    model.entities.push(Entity::Path(p));
+                }
             }
             other => warnings.push(
                 AppError::new(

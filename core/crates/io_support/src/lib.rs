@@ -63,11 +63,6 @@ pub struct SupportMatrix {
     entries: Vec<SupportEntry>,
 }
 
-#[derive(Debug, Clone)]
-pub struct SupportMatrix {
-    entries: Vec<SupportEntry>,
-}
-
 impl SupportMatrix {
     pub fn load_from_ssot() -> AppResult<Self> {
         let doc: SupportMatrixDoc = serde_json::from_str(SUPPORT_MATRIX).map_err(|e| {
@@ -88,7 +83,7 @@ impl SupportMatrix {
             .iter()
             .find(|e| e.format == format && e.feature == feature && e.direction == direction)
             .map(|e| e.level)
-            .unwrap_or(SupportLevel::Supported)
+            .unwrap_or(SupportLevel::NotSupported)
     }
 
     pub fn reasons(&self, format: &str, feature: &str, direction: &str) -> Vec<ReasonCode> {
@@ -101,7 +96,14 @@ impl SupportMatrix {
                     .map(|s| map_reason_code(s))
                     .collect::<Vec<_>>()
             })
-            .unwrap_or_default()
+            .unwrap_or_else(|| vec![ReasonCode::IO_SUPPORT_MATRIX_FEATURE_MISSING])
+    }
+
+    pub fn action(&self, format: &str, feature: &str, direction: &str) -> Option<String> {
+        self.entries
+            .iter()
+            .find(|e| e.format == format && e.feature == feature && e.direction == direction)
+            .and_then(|e| e.action.clone())
     }
 
     pub fn action(&self, format: &str, feature: &str, direction: &str) -> Option<String> {
@@ -168,9 +170,10 @@ fn map_reason_code(s: &str) -> ReasonCode {
         "IO_CURVE_APPROX_APPLIED" => ReasonCode::IO_CURVE_APPROX_APPLIED,
         "IO_TEXT_FALLBACK_FONT" => ReasonCode::IO_NORMALIZE_ROUNDED,
         "IO_FALLBACK_024" => ReasonCode::IO_NORMALIZE_ROUNDED,
-        "IO_UNSUPPORTED_ENTITY_DXF_SPLINE" => ReasonCode::IO_DXF_ENTITY_UNKNOWN_DROPPED,
+        "IO_UNSUPPORTED_ENTITY_DXF_SPLINE" => ReasonCode::IO_DXF_SPLINE_CONVERTED,
         "IO_HATCH_SIMPLIFIED" => ReasonCode::IO_DXF_ENTITY_UNKNOWN_DROPPED,
         "IO_IMAGE_REFERENCE_DROPPED" => ReasonCode::IO_SVG_EXTERNAL_REFERENCE_BLOCKED,
+        "IO_SUPPORT_MATRIX_FEATURE_MISSING" => ReasonCode::IO_SUPPORT_MATRIX_FEATURE_MISSING,
         _ => ReasonCode::IO_NORMALIZE_ROUNDED,
     }
 }
