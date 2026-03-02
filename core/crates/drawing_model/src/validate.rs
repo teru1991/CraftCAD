@@ -31,13 +31,13 @@ pub enum DrawingValidateError {
 }
 
 fn is_valid_core_id(s: &str) -> bool {
-    static RE: std::sync::OnceLock<Regex> = std::sync::OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"^[A-Za-z0-9_-]{6,64}$").unwrap()).is_match(s)
+    Regex::new(r"^[A-Za-z0-9_-]{6,64}$").unwrap().is_match(s)
 }
 
 fn is_valid_preset_id(s: &str) -> bool {
-    static RE: std::sync::OnceLock<Regex> = std::sync::OnceLock::new();
-    RE.get_or_init(|| Regex::new(r"^[a-z][a-z0-9_]*_v[0-9]+$").unwrap()).is_match(s)
+    Regex::new(r"^[a-z][a-z0-9_]*_v[0-9]+$")
+        .unwrap()
+        .is_match(s)
 }
 
 pub fn validate_drawing_doc(doc: &DrawingDoc) -> Result<(), DrawingValidateError> {

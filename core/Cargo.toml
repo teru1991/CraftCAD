@@ -13,6 +13,7 @@ members = [
   "crates/errors",
   "crates/diycad_format",
   "crates/drawing_style",
+  "crates/export_drawing",
   "crates/migration",
   "crates/io_support",
   "crates/io",
