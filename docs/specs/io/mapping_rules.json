@@ -1,20 +1,46 @@
 {
-  "version": "1.0.0",
-  "layer_rules": {
-    "normalize_case": true,
-    "max_length": 64,
-    "invalid_char_replacement": "_"
-  },
-  "linetype_rules": {
-    "fallback": "continuous",
-    "supported": ["continuous", "dashed", "dotted", "center"]
-  },
-  "unit_rules": {
-    "default_import_unit": "mm",
-    "conversions": {
-      "inch_to_mm": 25.4,
-      "mm_to_inch": 0.0393700787
+  "schema_version": 1,
+  "layer": {
+    "default": "0",
+    "max_len": 64,
+    "forbidden_chars_regex": "[\\u0000-\\u001F\\u007F<>:\"/\\\\|?*]",
+    "normalize": {
+      "trim": true,
+      "collapse_whitespace": true,
+      "replace_spaces_with": "_"
     },
-    "reason_code_on_assume": "IO_UNITS_ASSUMED_MM"
+    "aliases": {
+      "CUT": "CUT",
+      "ENGRAVE": "ENGRAVE",
+      "SCORE": "SCORE",
+      "GUIDE": "GUIDE",
+      "DEFAULT": "0"
+    }
+  },
+  "linetype": {
+    "default": "CONTINUOUS",
+    "max_len": 32,
+    "forbidden_chars_regex": "[\\u0000-\\u001F\\u007F<>:\"/\\\\|?*]",
+    "normalize": {
+      "trim": true,
+      "collapse_whitespace": true,
+      "replace_spaces_with": "_"
+    },
+    "aliases": {
+      "SOLID": "CONTINUOUS",
+      "DASH": "DASHED",
+      "DASHED": "DASHED",
+      "DOT": "DOTTED",
+      "DOTTED": "DOTTED"
+    }
+  },
+  "units": {
+    "supported": ["mm", "inch"],
+    "default": "mm",
+    "import_guess_order": ["explicit", "header", "viewbox", "fallback_mm"]
+  },
+  "export": {
+    "decimal_places": 4,
+    "force_locale": "C"
   }
 }
