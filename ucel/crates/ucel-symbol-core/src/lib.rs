@@ -8,6 +8,8 @@ pub mod market_meta;
 #[serde(rename_all = "snake_case")]
 pub enum Exchange {
     Bitbank,
+    Gmocoin,
+    Binance,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]

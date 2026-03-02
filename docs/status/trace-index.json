@@ -46,6 +46,30 @@
         "ucel/crates/ucel-sdk/src/lib.rs",
         "ucel/crates/ucel-sdk/src/market_meta.rs"
       ]
+    },
+    "RUST-UCEL-MARKETMETA-002": {
+      "branch": "feature/rust-ucel-marketmeta-002",
+      "pr_urls": [],
+      "commit_shas": [],
+      "verification_evidence": [
+        "docs/verification/RUST-UCEL-MARKETMETA-002.md"
+      ],
+      "artifacts": [
+        "docs/status/trace-index.json",
+        "docs/verification/RUST-UCEL-MARKETMETA-002.md",
+        "ucel/Cargo.toml",
+        "ucel/crates/ucel-symbol-core/src/lib.rs",
+        "ucel/crates/ucel-cex-gmocoin/Cargo.toml",
+        "ucel/crates/ucel-cex-gmocoin/src/lib.rs",
+        "ucel/crates/ucel-cex-gmocoin/src/market_meta.rs",
+        "ucel/crates/ucel-cex-gmocoin/tests/market_meta_parse_it.rs",
+        "ucel/crates/ucel-cex-binance/Cargo.toml",
+        "ucel/crates/ucel-cex-binance/src/lib.rs",
+        "ucel/crates/ucel-cex-binance/src/market_meta.rs",
+        "ucel/crates/ucel-cex-binance/tests/market_meta_parse_it.rs",
+        "ucel/fixtures/market_meta/gmocoin/public_v1_symbols.json",
+        "ucel/fixtures/market_meta/binance/spot_exchangeInfo.json"
+      ]
     }
   }
 }

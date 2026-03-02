@@ -1,0 +1,16 @@
+[package]
+name = "ucel-cex-gmocoin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait.workspace = true
+reqwest = { workspace = true, features = ["json", "rustls-tls"] }
+serde.workspace = true
+serde_json.workspace = true
+rust_decimal.workspace = true
+ucel-symbol-core = { path = "../ucel-symbol-core" }
+ucel-symbol-adapter = { path = "../ucel-symbol-adapter" }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }
