@@ -57,3 +57,53 @@ fn svg_is_deterministic_for_same_input() {
         );
     }
 }
+
+#[test]
+fn svg_is_deterministic_with_drawing_doc() {
+    use drawing_model::{
+        DimensionEntity, DimensionKind, DimensionType, DrawingDoc, GeometryRef, PlacementHint,
+        RefKind, RefSpace,
+    };
+
+    let root = repo_root();
+    let mut doc = DrawingDoc::new_minimal("DRW_DET_1");
+    doc.dimensions.push(DimensionEntity {
+        id: "DIM_DET_1".to_string(),
+        kind: DimensionKind {
+            ty: DimensionType::LinearSerial,
+        },
+        ref_geometry: vec![GeometryRef {
+            space: RefSpace::Sketch,
+            kind: RefKind::Segment,
+            stable_id: "SEG_TOP".to_string(),
+        }],
+        placement_hint: PlacementHint::default(),
+        overrides: Default::default(),
+    });
+
+    let req = ExportRequest {
+        style_preset_id: "default_v1".to_string(),
+        sheet_template_id: "a4_portrait_v1".to_string(),
+        print_preset_id: "a4_default_v1".to_string(),
+        meta: ProjectMeta {
+            project_title: "Demo".to_string(),
+            drawing_title: "Determinism+Doc".to_string(),
+            scale: "1:1".to_string(),
+            unit: "mm".to_string(),
+            date: "2026-03-02".to_string(),
+            author: "CraftCAD".to_string(),
+            revision: "A".to_string(),
+            schema_version: "doc_v10".to_string(),
+            app_version: "0.1.0".to_string(),
+        },
+    };
+
+    let mut hashes: Vec<u64> = vec![];
+    for _ in 0..10 {
+        let svg = DrawingExporter::export_svg(&root, Some(&doc), &req).expect("export failed");
+        hashes.push(hash_str(&normalize_svg_for_golden(&svg)));
+    }
+    for i in 1..hashes.len() {
+        assert_eq!(hashes[0], hashes[i], "hash mismatch at {}", i);
+    }
+}
