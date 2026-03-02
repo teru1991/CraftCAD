@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schema/templates/wizard_template.schema.json",
+  "title": "WizardTemplate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "template_id",
+    "template_version",
+    "schema_version",
+    "kind",
+    "required_presets",
+    "ui_inputs",
+    "generation_steps",
+    "determinism"
+  ],
+  "properties": {
+    "template_id": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9][a-z0-9_\\-]*$" },
+    "template_version": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "kind": { "type": "string", "enum": ["shelf", "box", "leather_pouch"] },
+    "display_name_key": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "required_presets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["material_preset_ids", "process_preset_ids", "output_preset_ids"],
+      "properties": {
+        "material_preset_ids": { "type": "array", "minItems": 0, "maxItems": 64, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_\\-]*$" } },
+        "process_preset_ids": { "type": "array", "minItems": 0, "maxItems": 64, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_\\-]*$" } },
+        "output_preset_ids": { "type": "array", "minItems": 0, "maxItems": 64, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_\\-]*$" } },
+        "hardware_preset_ids": { "type": "array", "minItems": 0, "maxItems": 64, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_\\-]*$" } }
+      }
+    },
+    "ui_inputs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 128,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "type", "unit", "default", "min", "max", "step"],
+        "properties": {
+          "key": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9][a-z0-9_\\-]*$" },
+          "type": { "type": "string", "enum": ["number", "integer", "bool", "enum"] },
+          "unit": { "type": "string", "enum": ["mm", "count", "deg", "none"] },
+          "default": {},
+          "min": {},
+          "max": {},
+          "step": {},
+          "enum_values": { "type": "array", "maxItems": 64, "items": { "type": "string", "minLength": 1, "maxLength": 64 } }
+        }
+      }
+    },
+    "generation_steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["op"],
+        "properties": {
+          "op": { "type": "string", "enum": ["add_part_rect", "add_hole_circle_array", "add_annotation", "recommend_nest"] },
+          "args": { "type": "object" }
+        }
+      }
+    },
+    "determinism": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seed_source"],
+      "properties": {
+        "seed_source": { "type": "string", "enum": ["explicit", "dataset", "ssot_default"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schema/presets/hardware_preset.schema.json",
+  "title": "HardwarePreset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "schema_version", "kind", "key_params", "tags"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "maxLength": 64, "pattern": "^[a-z0-9][a-z0-9_\\-]*$" },
+    "version": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "display_name_key": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "tags": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "type": "string", "minLength": 1, "maxLength": 64 }
+    },
+    "created_by": { "type": "string", "enum": ["builtin", "user", "project"] },
+    "updated_at": { "type": "string" },
+    "kind": { "type": "string", "enum": ["dowel", "screw", "bolt", "hinge", "other"] },
+    "key_params": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 32,
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "number" },
+          { "type": "string" },
+          { "type": "boolean" }
+        ]
+      }
+    },
+    "hole_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pilot_diameter_mm": { "type": "number", "minimum": 0.0, "maximum": 50.0 },
+        "countersink_diameter_mm": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "depth_mm": { "type": "number", "minimum": 0.0, "maximum": 500.0 }
+      }
+    }
+  }
+}
