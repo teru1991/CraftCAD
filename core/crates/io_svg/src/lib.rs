@@ -4,6 +4,8 @@ mod export;
 mod import;
 mod mapping;
 mod parse;
+mod pathdata;
+mod transform;
 
 use craftcad_io::model::InternalModel;
 use craftcad_io::options::{ExportOptions, ImportOptions};

@@ -4,30 +4,10 @@
   "directions": ["import", "export"],
   "levels": ["supported", "best_effort", "not_supported"],
   "matrix": [
-    {
-      "format": "dxf",
-      "direction": "import",
-      "feature": "entity_line",
-      "level": "supported"
-    },
-    {
-      "format": "dxf",
-      "direction": "import",
-      "feature": "entity_polyline",
-      "level": "supported"
-    },
-    {
-      "format": "dxf",
-      "direction": "import",
-      "feature": "entity_arc",
-      "level": "supported"
-    },
-    {
-      "format": "dxf",
-      "direction": "import",
-      "feature": "entity_circle",
-      "level": "supported"
-    },
+    { "format": "dxf", "direction": "import", "feature": "entity_line", "level": "supported" },
+    { "format": "dxf", "direction": "import", "feature": "entity_polyline", "level": "supported" },
+    { "format": "dxf", "direction": "import", "feature": "entity_arc", "level": "supported" },
+    { "format": "dxf", "direction": "import", "feature": "entity_circle", "level": "supported" },
     {
       "format": "dxf",
       "direction": "import",
@@ -44,7 +24,7 @@
       "level": "best_effort",
       "action": "approx",
       "reason_codes": ["IO_CURVE_APPROX_APPLIED", "IO_UNSUPPORTED_ENTITY_DXF_SPLINE"],
-      "notes": "SPLINE はポリライン近似で救済する（curve_approx_policy に従う）。"
+      "notes": "SPLINE は best-effort で曲線へ変換し、必要ならapproxで救済する。"
     },
     {
       "format": "dxf",
@@ -55,26 +35,21 @@
       "reason_codes": ["IO_HATCH_SIMPLIFIED"],
       "notes": "HATCH は未対応。必要なら別ツールで展開してから再試行。"
     },
-    {
-      "format": "svg",
-      "direction": "import",
-      "feature": "entity_path",
-      "level": "supported"
-    },
-    {
-      "format": "svg",
-      "direction": "import",
-      "feature": "entity_path_cubic_bezier",
-      "level": "supported"
-    },
+
+    { "format": "svg", "direction": "import", "feature": "entity_path", "level": "supported" },
+    { "format": "svg", "direction": "import", "feature": "entity_line", "level": "supported" },
+    { "format": "svg", "direction": "import", "feature": "entity_polyline", "level": "supported" },
+    { "format": "svg", "direction": "import", "feature": "entity_polygon", "level": "supported" },
+    { "format": "svg", "direction": "import", "feature": "entity_circle", "level": "supported" },
+    { "format": "svg", "direction": "import", "feature": "entity_path_cubic_bezier", "level": "supported" },
     {
       "format": "svg",
       "direction": "import",
       "feature": "entity_path_elliptical_arc",
       "level": "best_effort",
-      "action": "convert_or_approx",
+      "action": "convert_to_cubic_or_approx",
       "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
-      "notes": "SVG A は Arc へ変換できる場合は変換、難しい場合は近似。"
+      "notes": "SVG A は楕円弧→cubicへ決定的変換（<=90deg/seg）。さらに必要ならapprox。"
     },
     {
       "format": "svg",
@@ -88,23 +63,35 @@
     {
       "format": "svg",
       "direction": "import",
+      "feature": "attribute_transform",
+      "level": "supported",
+      "notes": "translate/scale/rotate/matrix を affine として適用する。"
+    },
+    {
+      "format": "svg",
+      "direction": "import",
       "feature": "external_reference",
       "level": "not_supported",
       "action": "drop",
       "reason_codes": ["IO_IMAGE_REFERENCE_DROPPED"],
       "notes": "xlink/href 等の外部参照はセキュリティ上遮断。"
     },
+
+    { "format": "json", "direction": "import", "feature": "internal_model_v1", "level": "supported" },
+    { "format": "json", "direction": "export", "feature": "internal_model_v1", "level": "supported" },
+
+    { "format": "dxf", "direction": "export", "feature": "entity_line", "level": "supported" },
+    { "format": "dxf", "direction": "export", "feature": "entity_polyline", "level": "supported" },
+    { "format": "dxf", "direction": "export", "feature": "entity_arc", "level": "supported" },
+    { "format": "dxf", "direction": "export", "feature": "entity_circle", "level": "supported" },
     {
-      "format": "json",
-      "direction": "import",
-      "feature": "internal_model_v1",
-      "level": "supported"
-    },
-    {
-      "format": "json",
+      "format": "dxf",
       "direction": "export",
-      "feature": "internal_model_v1",
-      "level": "supported"
+      "feature": "entity_text",
+      "level": "best_effort",
+      "action": "fallback",
+      "reason_codes": ["IO_TEXT_FALLBACK_FONT"],
+      "notes": "DXF TEXTはフォント環境差があるためbest-effort。"
     },
     {
       "format": "dxf",
@@ -116,10 +103,42 @@
       "notes": "DXF出力でBezierは近似。"
     },
     {
+      "format": "dxf",
+      "direction": "export",
+      "feature": "entity_path_unhandled_segment",
+      "level": "best_effort",
+      "action": "approx_or_split",
+      "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
+      "notes": "未対応segmentはenable_approx推奨。無効時はpolylineへ分割/近似。"
+    },
+
+    { "format": "svg", "direction": "export", "feature": "entity_path", "level": "supported" },
+    {
+      "format": "svg",
+      "direction": "export",
+      "feature": "entity_text",
+      "level": "best_effort",
+      "action": "fallback",
+      "reason_codes": ["IO_TEXT_FALLBACK_FONT"],
+      "notes": "SVG text はフォント埋め込み等を行わずhintとして扱う。"
+    },
+    {
       "format": "svg",
       "direction": "export",
       "feature": "entity_arc",
-      "level": "supported"
+      "level": "best_effort",
+      "action": "approx",
+      "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
+      "notes": "arcはapproxしてpathへ出力（enable_approx=true推奨）。"
+    },
+    {
+      "format": "svg",
+      "direction": "export",
+      "feature": "entity_circle",
+      "level": "best_effort",
+      "action": "approx",
+      "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
+      "notes": "circleはapproxしてpathへ出力（enable_approx=true推奨）。"
     }
   ]
 }

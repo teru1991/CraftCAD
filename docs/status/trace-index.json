@@ -10,6 +10,50 @@
         "preflight": [],
         "tests": []
       }
+    },
+    "S12-IO-SVG-002": {
+      "branch": "feature/s12-io-svg-002-001",
+      "artifacts": [
+        "docs/verification/S12-IO-SVG-002.md"
+      ],
+      "verification_evidence": {
+        "history": [],
+        "preflight": [],
+        "tests": []
+      }
+    },
+    "S12-IO-DXF-003": {
+      "branch": "feature/s12-io-dxf-003-001",
+      "artifacts": [
+        "docs/verification/S12-IO-DXF-003.md"
+      ],
+      "verification_evidence": {
+        "history": [],
+        "preflight": [],
+        "tests": []
+      }
+    },
+    "S12-IO-BRIDGE-004": {
+      "branch": "feature/s12-io-bridge-004-001",
+      "artifacts": [
+        "docs/verification/S12-IO-BRIDGE-004.md"
+      ],
+      "verification_evidence": {
+        "history": [],
+        "preflight": [],
+        "tests": []
+      }
+    },
+    "S12-IO-COMPAT-005": {
+      "branch": "feature/s12-io-compat-005-001",
+      "artifacts": [
+        "docs/verification/S12-IO-COMPAT-005.md"
+      ],
+      "verification_evidence": {
+        "history": [],
+        "preflight": [],
+        "tests": []
+      }
     }
   }
 }
