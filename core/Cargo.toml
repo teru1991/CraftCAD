@@ -15,6 +15,7 @@ members = [
   "crates/drawing_style",
   "crates/export_drawing",
   "crates/migration",
+  "crates/recovery",
   "crates/io_support",
   "crates/io",
   "crates/io_dxf",

@@ -41,6 +41,8 @@ run_step ssot_lint "${ROOT_DIR}" cargo run -q -p ssot_lint --bin ssot-lint --man
 run_step e2e_shelf_flow "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test flow_shelf_to_nest_to_export
 run_step determinism_wizard "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test wizard_determinism
 run_step compat_presets_templates "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test presets_templates_compat
+run_step recovery_tests "${ROOT_DIR}/core" cargo test -q -p recovery
+run_step e2e_crash_recovery "${ROOT_DIR}/core" cargo test -q -p craftcad_wizards --test project_crash_recovery
 
 if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
   run_step rust_ffi_desktop "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
