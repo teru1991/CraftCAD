@@ -13,6 +13,12 @@ pub struct SupportZipBuilder {
     consent: Option<ConsentState>,
 }
 
+impl Default for SupportZipBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SupportZipBuilder {
     pub fn new() -> Self {
         Self {

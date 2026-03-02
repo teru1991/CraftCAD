@@ -1,3 +1,10 @@
+#![allow(
+    clippy::default_constructed_unit_structs,
+    clippy::missing_safety_doc,
+    clippy::result_large_err,
+    dead_code
+)]
+
 mod editor_bridge;
 use craftcad_bom::{generate_bom, write_bom_csv, CsvOptions, RoundingPolicy, UnitPolicy};
 use craftcad_commands::commands::advanced_edit::{
@@ -578,8 +585,8 @@ pub unsafe extern "C" fn craftcad_geom_project_point(
         let eps: EpsilonPolicy = serde_json::from_str(&parse_cstr(eps_json, "eps")?)
             .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?;
         let h = project_point(&g, p, &eps)?;
-        Ok(serde_json::to_value(h)
-            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?)
+        serde_json::to_value(h)
+            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
     })() {
         Ok(v) => encode_ok(v),
         Err(r) => encode_err(r),
@@ -600,8 +607,8 @@ pub unsafe extern "C" fn craftcad_geom_intersect(
         let eps: EpsilonPolicy = serde_json::from_str(&parse_cstr(eps_json, "eps")?)
             .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?;
         let out = intersect(&a, &b, &eps)?;
-        Ok(serde_json::to_value(out)
-            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?)
+        serde_json::to_value(out)
+            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
     })() {
         Ok(v) => encode_ok(v),
         Err(r) => encode_err(r),
@@ -620,8 +627,8 @@ pub unsafe extern "C" fn craftcad_geom_split_at_t(
         let eps: EpsilonPolicy = serde_json::from_str(&parse_cstr(eps_json, "eps")?)
             .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?;
         let out = split_at(&g, SplitBy::T(t), &eps)?;
-        Ok(serde_json::to_value(out)
-            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))?)
+        serde_json::to_value(out)
+            .map_err(|_| Reason::from_code(ReasonCode::SerializePackageCorrupted))
     })() {
         Ok(v) => encode_ok(v),
         Err(r) => encode_err(r),

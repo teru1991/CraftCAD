@@ -1,3 +1,5 @@
+#![allow(clippy::result_large_err)]
+
 use craftcad_faces::Face;
 use craftcad_serialize::{Part, Polygon2D, Reason, ReasonCode, Result};
 

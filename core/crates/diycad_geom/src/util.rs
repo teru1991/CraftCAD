@@ -1,5 +1,6 @@
 use crate::Vec2;
 
+#[allow(dead_code)]
 pub fn is_finite_vec2(v: Vec2) -> bool {
     v.x.is_finite() && v.y.is_finite()
 }

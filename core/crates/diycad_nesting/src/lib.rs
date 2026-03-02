@@ -1,13 +1,14 @@
+#![allow(clippy::result_large_err)]
+
 pub mod constraints;
 pub mod model;
 pub mod pack;
 pub mod score;
 pub mod trace;
 
-use crate::model::{PartEval, PlacementRect};
+use crate::model::PlacementRect;
 use craftcad_serialize::{
-    Document, NestJob, NestResultV1, NestTraceV1, PartPlacementStatus, PartPlacementStatusKind,
-    Reason, ReasonCode, Result,
+    Document, NestJob, NestResultV1, NestTraceV1, PartPlacementStatus, Reason, ReasonCode, Result,
 };
 use diycad_geom::EpsilonPolicy;
 

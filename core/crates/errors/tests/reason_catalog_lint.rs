@@ -197,7 +197,7 @@ fn test_domain_code_prefix_consistency() {
 
         domain_code_map
             .entry(domain.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(code.to_string());
 
         // Verify code starts with domain_

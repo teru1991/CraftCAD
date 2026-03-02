@@ -1,6 +1,8 @@
 #include "snap_engine.h"
 #include "ffi/craftcad_ffi.h"
 #include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
 
 static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 
@@ -28,7 +30,7 @@ SnapResult computeSnap(const DocStore& store, const WVec2& pointerWorld, const s
             auto root = QJsonDocument::fromJson(take(craftcad_geom_intersect(ab.constData(), bb.constData(), eb.constData())).toUtf8()).object();
             if (!root.value("ok").toBool()) continue;
             for (auto p : root.value("data").toObject().value("points").toArray()) {
-                auto po=p.toObject(); add({po.value("x").toDouble(), po.value("y").toDouble()}, "Intersection", 1);
+                auto po=p.toObject(); add(WVec2{po.value("x").toDouble(), po.value("y").toDouble()}, "Intersection", 1);
             }
         }
     }

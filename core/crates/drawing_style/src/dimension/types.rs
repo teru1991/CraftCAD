@@ -36,19 +36,10 @@ impl Default for PlacementHint {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 pub struct DimensionOverrides {
     pub text_override: Option<String>,
     pub precision_override: Option<u8>,
-}
-
-impl Default for DimensionOverrides {
-    fn default() -> Self {
-        Self {
-            text_override: None,
-            precision_override: None,
-        }
-    }
 }
 
 #[derive(Debug, Clone)]

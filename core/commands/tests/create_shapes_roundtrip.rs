@@ -32,7 +32,7 @@ fn rect_roundtrip() {
     let (mut d, l) = doc();
     let before = serde_json::to_value(&d).unwrap();
     let mut c = CreateRectCommand::new(l);
-    c.begin(&CommandContext::default()).unwrap();
+    c.begin(&CommandContext).unwrap();
     c.update(CreateRectInput {
         params: RectParams::TwoPoint {
             p0: craftcad_serialize::Vec2 { x: 0.0, y: 0.0 },
@@ -58,7 +58,7 @@ fn circle_arc_polyline_roundtrip() {
     let mut h = History::new();
 
     let mut c1 = CreateCircleCommand::new(l);
-    c1.begin(&CommandContext::default()).unwrap();
+    c1.begin(&CommandContext).unwrap();
     c1.update(CreateCircleInput {
         params: CircleParams::CenterRadius {
             c: craftcad_serialize::Vec2 { x: 0.0, y: 0.0 },
@@ -71,7 +71,7 @@ fn circle_arc_polyline_roundtrip() {
     h.push(d1);
 
     let mut c2 = CreateArcCommand::new(l);
-    c2.begin(&CommandContext::default()).unwrap();
+    c2.begin(&CommandContext).unwrap();
     c2.update(CreateArcInput {
         params: ArcParams::Center {
             c: craftcad_serialize::Vec2 { x: 1.0, y: 1.0 },
@@ -87,7 +87,7 @@ fn circle_arc_polyline_roundtrip() {
     h.push(d2);
 
     let mut c3 = CreatePolylineCommand::new(l);
-    c3.begin(&CommandContext::default()).unwrap();
+    c3.begin(&CommandContext).unwrap();
     c3.update(CreatePolylineInput {
         params: PolylineParams {
             pts: vec![

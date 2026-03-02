@@ -1,3 +1,10 @@
+#![allow(
+    clippy::manual_is_multiple_of,
+    clippy::needless_range_loop,
+    clippy::ptr_arg,
+    clippy::result_large_err
+)]
+
 mod extract;
 pub mod winding;
 

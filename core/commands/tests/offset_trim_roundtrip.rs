@@ -67,7 +67,7 @@ fn offset_line_and_history_roundtrip() {
     let mut cmd = OffsetEntityCommand::new();
     let mut history = History::new();
 
-    cmd.begin(&CommandContext::default()).unwrap();
+    cmd.begin(&CommandContext).unwrap();
     cmd.update(OffsetEntityInput {
         entity_id: target_id,
         dist: 2.0,
@@ -92,7 +92,7 @@ fn trim_line_and_history_roundtrip() {
     let mut cmd = TrimEntityCommand::new();
     let mut history = History::new();
 
-    cmd.begin(&CommandContext::default()).unwrap();
+    cmd.begin(&CommandContext).unwrap();
     cmd.update(TrimEntityInput {
         entity_id: target_id,
         cutter_id,
@@ -134,7 +134,7 @@ fn trim_ambiguous_returns_candidates() {
     let cutter_id = doc.entities.last().unwrap().id;
 
     let mut cmd = TrimEntityCommand::new();
-    cmd.begin(&CommandContext::default()).unwrap();
+    cmd.begin(&CommandContext).unwrap();
     cmd.update(TrimEntityInput {
         entity_id: target_id,
         cutter_id,

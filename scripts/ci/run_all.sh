@@ -36,7 +36,9 @@ run_step rust_clippy "${ROOT_DIR}/core" cargo clippy --workspace --all-targets -
 run_step rust_test "${ROOT_DIR}/core" cargo test --workspace --all-targets
 
 if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
+  run_step rust_ffi_desktop "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
   DESKTOP_BUILD_DIR="${ROOT_DIR}/build/desktop"
+  run_step rust_ffi_build "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
   run_step cmake_configure "${ROOT_DIR}" cmake -S apps/desktop -B "${DESKTOP_BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release
   run_step cmake_build "${ROOT_DIR}" cmake --build "${DESKTOP_BUILD_DIR}" --parallel
 

@@ -48,9 +48,10 @@ pub struct GeometryRef {
     pub stable_id: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum PlacementSide {
+    #[default]
     Auto,
     Left,
     Right,
@@ -66,12 +67,6 @@ pub struct PlacementHint {
     pub offset_level: u32,
     #[serde(default)]
     pub manual_text_pos_mm: Option<Vec2Mm>,
-}
-
-impl Default for PlacementSide {
-    fn default() -> Self {
-        Self::Auto
-    }
 }
 
 impl Default for PlacementHint {

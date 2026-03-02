@@ -165,7 +165,7 @@ impl EditOp {
                 });
                 entities.push(Entity {
                     id: Uuid::new_v4(),
-                    layer_id: layer_id,
+                    layer_id,
                     geom: from_op(&ga)?,
                     style: serde_json::json!({}),
                     tags: vec!["fillet".into()],
@@ -209,7 +209,7 @@ impl EditOp {
                 });
                 entities.push(Entity {
                     id: Uuid::new_v4(),
-                    layer_id: layer_id,
+                    layer_id,
                     geom: from_op(&gc)?,
                     style: serde_json::json!({}),
                     tags: vec!["chamfer".into()],

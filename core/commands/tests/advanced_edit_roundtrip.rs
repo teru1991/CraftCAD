@@ -62,7 +62,7 @@ fn fillet_chamfer_mirror_pattern_roundtrip() {
     let mut h = History::new();
 
     let mut fc = FilletCommand::new();
-    fc.begin(&CommandContext::default()).unwrap();
+    fc.begin(&CommandContext).unwrap();
     fc.update(FilletInput {
         e1,
         e2,
@@ -77,7 +77,7 @@ fn fillet_chamfer_mirror_pattern_roundtrip() {
     h.redo(&mut d).unwrap();
 
     let mut mc = MirrorCommand::new();
-    mc.begin(&CommandContext::default()).unwrap();
+    mc.begin(&CommandContext).unwrap();
     mc.update(MirrorInput {
         selection_ids: vec![e1],
         axis_a: Vec2 { x: 0.0, y: 0.0 },
@@ -89,7 +89,7 @@ fn fillet_chamfer_mirror_pattern_roundtrip() {
     h.push(dm);
 
     let mut pc = PatternCommand::new();
-    pc.begin(&CommandContext::default()).unwrap();
+    pc.begin(&CommandContext).unwrap();
     pc.update(PatternInput {
         selection_ids: vec![e1],
         params: PatternParams::Linear {

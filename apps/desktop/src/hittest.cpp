@@ -1,6 +1,7 @@
 #include "hittest.h"
 #include "ffi/craftcad_ffi.h"
 #include <QJsonDocument>
+#include <QJsonObject>
 
 static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
 

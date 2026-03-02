@@ -44,6 +44,9 @@ $DesktopCmake = Join-Path $RootDir 'apps/desktop/CMakeLists.txt'
 if (Test-Path $DesktopCmake) {
     $DesktopBuildDir = Join-Path $RootDir 'build/desktop'
 
+    Invoke-Step -Name 'rust_ffi_desktop' -WorkingDirectory (Join-Path $RootDir 'core') -Command { cargo build -p craftcad_ffi_desktop }
+
+    Invoke-Step -Name 'rust_ffi_build' -WorkingDirectory (Join-Path $RootDir 'core') -Command { cargo build -p craftcad_ffi_desktop }
     Invoke-Step -Name 'cmake_configure' -WorkingDirectory $RootDir -Command { cmake -S apps/desktop -B $DesktopBuildDir -DCMAKE_BUILD_TYPE=Release }
     Invoke-Step -Name 'cmake_build' -WorkingDirectory $RootDir -Command { cmake --build $DesktopBuildDir --parallel }
 

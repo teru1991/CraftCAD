@@ -34,7 +34,7 @@ fn creates_an_entity_on_commit_apply() {
     let layer_id = doc.layers[0].id;
     let mut cmd = CreateLineCommand::new(layer_id);
 
-    cmd.begin(&CommandContext::default()).expect("begin");
+    cmd.begin(&CommandContext).expect("begin");
     cmd.update(CreateLineInput {
         a: Vec2 { x: 0.0, y: 0.0 },
         b: Vec2 { x: 10.0, y: 10.0 },
@@ -55,7 +55,7 @@ fn undo_redo_roundtrip_returns_exact_json_state() {
     let mut cmd = CreateLineCommand::new(layer_id);
     let mut history = History::new();
 
-    cmd.begin(&CommandContext::default()).expect("begin");
+    cmd.begin(&CommandContext).expect("begin");
     cmd.update(CreateLineInput {
         a: Vec2 { x: 1.0, y: 2.0 },
         b: Vec2 { x: 3.0, y: 4.0 },
@@ -83,7 +83,7 @@ fn grouped_changes_are_undone_in_one_step() {
     history.begin_group("drag");
     for idx in 0..2 {
         let mut cmd = CreateLineCommand::new(layer_id);
-        cmd.begin(&CommandContext::default()).expect("begin");
+        cmd.begin(&CommandContext).expect("begin");
         cmd.update(CreateLineInput {
             a: Vec2 {
                 x: idx as f64,

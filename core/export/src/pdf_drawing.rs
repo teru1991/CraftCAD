@@ -51,7 +51,7 @@ pub fn export_drawing_pdf(doc: &Document, options: &DrawingPdfOptions) -> Result
             .replace("\n", ") Tj T* (")
     );
     let mut pdf = b"%PDF-1.4\n".to_vec();
-    let objs = vec![
+    let objs = [
         "<< /Type /Catalog /Pages 2 0 R >>".to_string(),
         "<< /Type /Pages /Kids [4 0 R] /Count 1 >>".to_string(),
         "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>".to_string(),

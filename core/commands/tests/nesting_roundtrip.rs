@@ -86,7 +86,7 @@ fn run_nesting_undo_redo_roundtrip() {
     let (mut doc, job_id) = mk_doc();
     let before = serde_json::to_value(&doc).unwrap();
     let mut cmd = RunNestingCommand::new();
-    cmd.begin(&CommandContext::default()).unwrap();
+    cmd.begin(&CommandContext).unwrap();
     cmd.update(RunNestingInput {
         job_id,
         eps: EpsilonPolicy::default(),
