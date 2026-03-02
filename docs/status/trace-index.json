@@ -76,8 +76,47 @@
       ],
       "verification": "docs/verification/S13-WIZARDS-ENGINE-004.md",
       "evidence": {
-        "head_sha": "183c4af08ba65df02fba7cc68689a0c58b876b41",
-        "tests": "cargo test -p craftcad_wizards: pass; cargo test -p craftcad_serialize spec_ssot_lint_presets_templates_library: pass; cargo test -q: known existing fail compat_report_golden"
+        "head_sha": "see docs/verification/S13-WIZARDS-ENGINE-004.md",
+        "tests": "cargo test -p craftcad_wizards: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
+      }
+    },
+    "S13-LIBRARY-CRATE-003": {
+      "branch": "feature/s13-library-crate-003",
+      "artifacts": [
+        "core/crates/library/**"
+      ],
+      "verification": "docs/verification/S13-LIBRARY-CRATE-003.md",
+      "evidence": {
+        "head_sha": "see docs/verification/S13-LIBRARY-CRATE-003.md",
+        "tests": "cargo test -p craftcad_library: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
+      }
+    },
+    "S13-WIZARDS-IMPL-005": {
+      "branch": "feature/s13-wizards-impl-005",
+      "artifacts": [
+        "core/crates/wizards/**",
+        "tests/golden/wizards/**"
+      ],
+      "verification": "docs/verification/S13-WIZARDS-IMPL-005.md",
+      "evidence": {
+        "head_sha": "see docs/verification/S13-WIZARDS-IMPL-005.md",
+        "tests": "cargo test -p craftcad_wizards: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
+      }
+    },
+    "S13-DIYCAD-ASSETS-INTEGRATION-006": {
+      "branch": "feature/s13-diycad-assets-integration-006",
+      "artifacts": [
+        "docs/specs/schema/diycad/document.schema.json",
+        "core/serialize/**",
+        "core/crates/presets/**",
+        "core/crates/wizards/src/run_record.rs",
+        "tests/compat/diycad_document_migration.rs",
+        "tests/golden/diycad_document_v1.json"
+      ],
+      "verification": "docs/verification/S13-DIYCAD-ASSETS-INTEGRATION-006.md",
+      "evidence": {
+        "head_sha": "see docs/verification/S13-DIYCAD-ASSETS-INTEGRATION-006.md",
+        "tests": "cargo test -p craftcad_serialize: pass; cargo test -p craftcad_presets: pass; cargo test -p craftcad_diycad_format --test salvage_basic: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
       }
     }
   }

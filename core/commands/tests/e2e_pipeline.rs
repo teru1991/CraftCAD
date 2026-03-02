@@ -62,6 +62,9 @@ fn e2e_create_part_nest_export() {
         settings: ProjectSettings {
             bom_delimiter: None,
         },
+        used_presets: vec![],
+        used_templates: vec![],
+        wizard_runs: vec![],
     };
 
     let job = NestJob {

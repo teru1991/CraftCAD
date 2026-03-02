@@ -191,6 +191,30 @@ pub struct Material {
     pub notes: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct UsedPresetRef {
+    pub kind: String,
+    pub id: String,
+    pub version: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct UsedTemplateRef {
+    pub id: String,
+    pub version: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct WizardRunRecord {
+    pub run_id: String,
+    pub template_id: String,
+    pub template_version: String,
+    pub inputs_hash: String,
+    pub seed: u64,
+    pub outputs_part_ids: Vec<Uuid>,
+    pub created_at_unix_ms: i64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ProjectSettings {
     #[serde(default)]
@@ -210,6 +234,12 @@ pub struct Document {
     pub materials: Vec<Material>,
     #[serde(default)]
     pub settings: ProjectSettings,
+    #[serde(default)]
+    pub used_presets: Vec<UsedPresetRef>,
+    #[serde(default)]
+    pub used_templates: Vec<UsedTemplateRef>,
+    #[serde(default)]
+    pub wizard_runs: Vec<WizardRunRecord>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Layer {
@@ -476,6 +506,46 @@ pub fn normalize_document_json(mut val: serde_json::Value) -> serde_json::Value 
         }
         if !m.contains_key("settings") {
             m.insert("settings".to_string(), serde_json::json!({}));
+        }
+        if !m.contains_key("used_presets") {
+            m.insert("used_presets".to_string(), serde_json::json!([]));
+        }
+        if !m.contains_key("used_templates") {
+            m.insert("used_templates".to_string(), serde_json::json!([]));
+        }
+        if !m.contains_key("wizard_runs") {
+            m.insert("wizard_runs".to_string(), serde_json::json!([]));
+        }
+
+        if let Some(sv) = m.get("schema_version").and_then(|v| v.as_u64()) {
+            if sv == 1 {
+                m.insert("schema_version".to_string(), serde_json::json!(2));
+            }
+        }
+
+        if let Some(serde_json::Value::Array(arr)) = m.get_mut("used_presets") {
+            arr.sort_by(|a, b| {
+                serde_json::to_string(a)
+                    .unwrap_or_default()
+                    .cmp(&serde_json::to_string(b).unwrap_or_default())
+            });
+            arr.dedup();
+        }
+        if let Some(serde_json::Value::Array(arr)) = m.get_mut("used_templates") {
+            arr.sort_by(|a, b| {
+                serde_json::to_string(a)
+                    .unwrap_or_default()
+                    .cmp(&serde_json::to_string(b).unwrap_or_default())
+            });
+            arr.dedup();
+        }
+        if let Some(serde_json::Value::Array(arr)) = m.get_mut("wizard_runs") {
+            arr.sort_by(|a, b| {
+                serde_json::to_string(a)
+                    .unwrap_or_default()
+                    .cmp(&serde_json::to_string(b).unwrap_or_default())
+            });
+            arr.dedup();
         }
     }
     val

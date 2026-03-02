@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "parts": [
+    {
+      "part_id": "part:shelf_wizard:shelf_board",
+      "name": "shelf_board",
+      "outline": { "kind": "rect", "w_mm": 600.0, "h_mm": 300.0 },
+      "features": [
+        { "kind": "hole_circle", "cx_mm": 35.0, "cy_mm": 35.0, "diameter_mm": 8.0 },
+        { "kind": "hole_circle", "cx_mm": 35.0, "cy_mm": 265.0, "diameter_mm": 8.0 },
+        { "kind": "hole_circle", "cx_mm": 565.0, "cy_mm": 35.0, "diameter_mm": 8.0 },
+        { "kind": "hole_circle", "cx_mm": 565.0, "cy_mm": 265.0, "diameter_mm": 8.0 }
+      ],
+      "qty": 1,
+      "tags": ["shelf", "wizard"]
+    }
+  ],
+  "annotations": [
+    { "kind": "hole_callout", "part_id": "part:shelf_wizard:shelf_board", "diameter_mm": 8.0, "count": 4 }
+  ],
+  "recommended_nest_job": {
+    "material_preset_id": "plywood_18mm",
+    "process_preset_id": "saw_basic",
+    "kerf_mm": 1.0,
+    "margin_mm": 3.0,
+    "seed": 0,
+    "allow_rotate": true,
+    "grain": "dir_x"
+  }
+}

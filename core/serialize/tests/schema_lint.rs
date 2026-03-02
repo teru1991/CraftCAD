@@ -29,4 +29,8 @@ fn normalize_document_json_adds_defaults() {
     v = craftcad_serialize::normalize_document_json(v);
     assert!(v.get("materials").is_some());
     assert!(v.get("settings").is_some());
+    assert!(v.get("used_presets").is_some());
+    assert!(v.get("used_templates").is_some());
+    assert!(v.get("wizard_runs").is_some());
+    assert_eq!(v.get("schema_version").and_then(|x| x.as_u64()), Some(2));
 }

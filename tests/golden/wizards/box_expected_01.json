@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "parts": [
+    {
+      "part_id": "part:box_wizard:box_panel_front",
+      "name": "box_panel_front",
+      "outline": { "kind": "rect", "w_mm": 224.0, "h_mm": 144.0 },
+      "features": [],
+      "qty": 1,
+      "tags": ["box", "wizard"]
+    }
+  ],
+  "annotations": [],
+  "recommended_nest_job": {
+    "material_preset_id": "plywood_12mm",
+    "process_preset_id": "cnc_basic",
+    "kerf_mm": 0.0,
+    "margin_mm": 3.0,
+    "seed": 0,
+    "allow_rotate": true,
+    "grain": "dir_x"
+  }
+}

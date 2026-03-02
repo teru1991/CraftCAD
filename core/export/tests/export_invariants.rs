@@ -108,6 +108,9 @@ fn doc(units: &str) -> Document {
             notes: String::new(),
         }],
         settings: ProjectSettings::default(),
+        used_presets: vec![],
+        used_templates: vec![],
+        wizard_runs: vec![],
     }
 }
 

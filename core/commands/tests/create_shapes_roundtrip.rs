@@ -22,6 +22,9 @@ fn doc() -> (Document, Uuid) {
             jobs: vec![],
             materials: vec![],
             settings: ProjectSettings::default(),
+            used_presets: vec![],
+            used_templates: vec![],
+            wizard_runs: vec![],
         },
         l,
     )

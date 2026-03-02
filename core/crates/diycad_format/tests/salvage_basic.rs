@@ -20,11 +20,10 @@ fn test_salvage_document_valid_passes_through() {
 
     let (_salvaged_doc, report) = result.unwrap();
     assert!(report.recovered, "Report should indicate recovery");
-    assert_eq!(
-        report.normalized_fields.len(),
-        0,
-        "No fields should be normalized for valid document"
-    );
+    assert_eq!(report.normalized_fields.len(), 3);
+    assert!(report.normalized_fields.contains(&"used_presets".to_string()));
+    assert!(report.normalized_fields.contains(&"used_templates".to_string()));
+    assert!(report.normalized_fields.contains(&"wizard_runs".to_string()));
 }
 
 #[test]

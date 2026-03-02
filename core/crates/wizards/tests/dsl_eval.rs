@@ -19,7 +19,7 @@ fn repo_root_from_manifest() -> PathBuf {
 }
 
 #[test]
-fn eval_rejects_expressions_in_step4() {
+fn eval_accepts_safe_expressions_in_step5() {
     let repo = repo_root_from_manifest();
     let user_tmp = tempfile::tempdir().unwrap();
     let eng = WizardEngine::new(repo.clone(), user_tmp.path().to_path_buf()).unwrap();
@@ -36,8 +36,14 @@ fn eval_rejects_expressions_in_step4() {
         inputs,
         seed: None,
     };
-    let e = eng
+    let r = eng
         .run_template_draft("box_wizard.template.json", &wi)
-        .unwrap_err();
-    assert!(format!("{:?}", e).contains("expressions"));
+        .unwrap();
+    let rect = r
+        .evaluated_ops
+        .iter()
+        .find(|o| o.op == "add_part_rect")
+        .expect("rect op exists");
+    assert_eq!(rect.args.get("w_mm").and_then(|v| v.as_f64()), Some(224.0));
+    assert_eq!(rect.args.get("h_mm").and_then(|v| v.as_f64()), Some(144.0));
 }

@@ -199,6 +199,9 @@ mod tests {
             jobs: vec![],
             materials: vec![mk(mid1, "A"), mk(mid2, "B")],
             settings: ProjectSettings::default(),
+            used_presets: vec![],
+            used_templates: vec![],
+            wizard_runs: vec![],
             parts: vec![
                 Part {
                     id: Uuid::new_v4(),

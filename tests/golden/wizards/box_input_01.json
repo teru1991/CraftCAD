@@ -1,0 +1,11 @@
+{
+  "template_id": "box_wizard",
+  "inputs": {
+    "inner_w_mm": 200.0,
+    "inner_h_mm": 120.0,
+    "inner_d_mm": 120.0,
+    "thickness_mm": 12.0,
+    "lid": false
+  },
+  "seed": null
+}

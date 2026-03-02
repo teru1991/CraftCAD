@@ -21,6 +21,9 @@ fn sample_doc() -> Document {
         jobs: vec![],
         materials: vec![],
         settings: craftcad_serialize::ProjectSettings::default(),
+        used_presets: vec![],
+        used_templates: vec![],
+        wizard_runs: vec![],
     }
 }
 

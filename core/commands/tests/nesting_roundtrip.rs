@@ -77,6 +77,9 @@ fn mk_doc() -> (Document, Uuid) {
             notes: String::new(),
         }],
         settings: ProjectSettings::default(),
+        used_presets: vec![],
+        used_templates: vec![],
+        wizard_runs: vec![],
     };
     (doc, job_id)
 }
