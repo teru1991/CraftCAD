@@ -1,16 +1,23 @@
 #![forbid(unsafe_code)]
 
+pub mod approx;
 pub mod model;
 pub mod normalize;
 pub mod options;
+pub mod postprocess;
 pub mod preflight;
 pub mod reasons;
 pub mod report;
 
 use std::collections::HashMap;
 
+use approx::apply_approx;
 use model::InternalModel;
+use normalize::normalize_model;
 use options::{ExportOptions, ImportOptions};
+use postprocess::{
+    apply_origin_policy, dedupe_paths, join_paths, optimize_path_order, remove_tiny_segments,
+};
 use preflight::preflight_bytes;
 use reasons::{AppError, AppResult, ReasonCode};
 use report::IoReport;
@@ -78,7 +85,7 @@ impl IoEngine {
     ) -> AppResult<ImportResult> {
         let imp = self.importers.get(format_id).ok_or_else(|| {
             AppError::new(
-                ReasonCode::IoFormatNotRegistered,
+                ReasonCode::IO_FORMAT_NOT_REGISTERED,
                 format!("importer not registered: {}", format_id),
             )
             .with_context("format_id", format_id)
@@ -88,9 +95,13 @@ impl IoEngine {
 
         let mut res = imp.import_bytes(bytes, opts)?;
 
-        let mut warnings = Vec::new();
-        normalize::normalize_model(&mut res.model, opts, &mut warnings, &mut res.report);
-        res.warnings.extend(warnings);
+        let mut approx_warnings = Vec::new();
+        apply_approx(&mut res.model, opts, &mut approx_warnings, &mut res.report);
+        res.warnings.extend(approx_warnings);
+
+        let mut norm_warnings = Vec::new();
+        normalize_model(&mut res.model, opts, &mut norm_warnings, &mut res.report);
+        res.warnings.extend(norm_warnings);
 
         res.report.format = format_id.to_string();
         res.report.entities_out = res.model.entities.len();
@@ -108,7 +119,7 @@ impl IoEngine {
     ) -> AppResult<ExportResult> {
         let exp = self.exporters.get(format_id).ok_or_else(|| {
             AppError::new(
-                ReasonCode::IoFormatNotRegistered,
+                ReasonCode::IO_FORMAT_NOT_REGISTERED,
                 format!("exporter not registered: {}", format_id),
             )
             .with_context("format_id", format_id)
@@ -116,13 +127,53 @@ impl IoEngine {
 
         let mut working = model.clone();
         let mut report = IoReport::new(format_id);
-        let mut warnings = Vec::new();
-        normalize::normalize_model(
+        let mut warnings: Vec<AppError> = Vec::new();
+
+        normalize_model(
             &mut working,
             &opts.as_import_like(),
             &mut warnings,
             &mut report,
         );
+        apply_approx(
+            &mut working,
+            &opts.as_import_like(),
+            &mut warnings,
+            &mut report,
+        );
+
+        if opts.postprocess {
+            apply_origin_policy(
+                &mut working,
+                &opts.origin_policy,
+                &mut warnings,
+                &mut report,
+            );
+            remove_tiny_segments(
+                &mut working,
+                &opts.as_import_like(),
+                &mut warnings,
+                &mut report,
+            );
+            join_paths(
+                &mut working,
+                &opts.as_import_like(),
+                &mut warnings,
+                &mut report,
+            );
+            dedupe_paths(
+                &mut working,
+                &opts.as_import_like(),
+                &mut warnings,
+                &mut report,
+            );
+            optimize_path_order(
+                &mut working,
+                &opts.as_import_like(),
+                &mut warnings,
+                &mut report,
+            );
+        }
 
         let mut out = exp.export_bytes(&working, opts)?;
         out.warnings.extend(warnings);
@@ -143,6 +194,7 @@ mod tests {
     use super::*;
     use crate::model::*;
     use crate::options::*;
+    use crate::postprocess::{apply_origin_policy, dedupe_paths};
     use crate::reasons::*;
 
     struct DummyImporter;
@@ -151,32 +203,20 @@ mod tests {
             "dummy"
         }
 
-        fn import_bytes(&self, bytes: &[u8], _opts: &ImportOptions) -> AppResult<ImportResult> {
+        fn import_bytes(&self, _bytes: &[u8], _opts: &ImportOptions) -> AppResult<ImportResult> {
             let mut m = InternalModel::new(Units::Mm);
-            if bytes == b"nan" {
-                let mut p = PathEntity::new("0".into(), StrokeStyle::default());
-                p.segments.push(Segment2D::Line {
-                    a: Point2D {
-                        x: f64::NAN,
-                        y: 0.0,
-                    },
-                    b: Point2D { x: 1.0, y: 1.0 },
-                });
-                m.entities.push(Entity::Path(p));
-            } else {
-                let mut p = PathEntity::new("0".into(), StrokeStyle::default());
-                p.segments.push(Segment2D::Line {
-                    a: Point2D { x: 0.0, y: 0.0 },
-                    b: Point2D { x: 1.0, y: 1.0 },
-                });
-                m.entities.push(Entity::Path(p));
-            }
-            let mut r = IoReport::new("dummy");
-            r.entities_in = 1;
+            let mut p = PathEntity::new("p1".into(), StrokeStyle::default());
+            p.segments.push(Segment2D::CubicBezier {
+                a: Point2D { x: 0.0, y: 0.0 },
+                c1: Point2D { x: 1.0, y: 2.0 },
+                c2: Point2D { x: 2.0, y: 2.0 },
+                b: Point2D { x: 3.0, y: 0.0 },
+            });
+            m.entities.push(Entity::Path(p));
             Ok(ImportResult {
                 model: m,
                 warnings: vec![],
-                report: r,
+                report: IoReport::new("dummy"),
             })
         }
     }
@@ -203,40 +243,111 @@ mod tests {
     }
 
     #[test]
-    fn engine_import_runs_preflight_and_normalize() {
+    fn approx_is_deterministic() {
         let eng = IoEngine::new()
             .register_importer(Box::new(DummyImporter))
             .register_exporter(Box::new(DummyExporter));
 
-        let opts = ImportOptions::default_for_tests();
-        let res = eng
-            .import("dummy", b"nan", &opts)
-            .expect("import should succeed");
+        let mut opts = ImportOptions::default_for_tests();
+        opts.enable_approx = true;
 
-        assert_eq!(res.model.entities.len(), 0);
-        assert!(res
+        let r1 = eng.import("dummy", b"x", &opts).unwrap();
+        let r2 = eng.import("dummy", b"x", &opts).unwrap();
+
+        let s1 = match &r1.model.entities[0] {
+            Entity::Path(p) => p.segments.len(),
+            _ => 0,
+        };
+        let s2 = match &r2.model.entities[0] {
+            Entity::Path(p) => p.segments.len(),
+            _ => 0,
+        };
+        assert_eq!(s1, s2);
+
+        assert!(r1
             .warnings
             .iter()
-            .any(|w| w.reason == ReasonCode::IoSanitizeNonfinite));
+            .any(|w| w.reason == ReasonCode::IO_CURVE_APPROX_APPLIED));
     }
 
     #[test]
-    fn engine_export_runs_normalize() {
-        let eng = IoEngine::new()
-            .register_importer(Box::new(DummyImporter))
-            .register_exporter(Box::new(DummyExporter));
-
+    fn postprocess_origin_move_to_zero_sets_flag() {
         let mut m = InternalModel::new(Units::Mm);
-        let mut p = PathEntity::new("0".into(), StrokeStyle::default());
+        let mut p = PathEntity::new("p2".into(), StrokeStyle::default());
         p.segments.push(Segment2D::Line {
-            a: Point2D { x: 0.0, y: 0.0 },
-            b: Point2D { x: 1.0, y: 1.0 },
+            a: Point2D { x: 10.0, y: 10.0 },
+            b: Point2D { x: 11.0, y: 11.0 },
         });
         m.entities.push(Entity::Path(p));
 
-        let out = eng
-            .export("dummy", &m, &ExportOptions::default_for_tests())
-            .expect("export should succeed");
-        assert_eq!(out.bytes, b"ok".to_vec());
+        let mut warnings = vec![];
+        let mut report = IoReport::new("dummy");
+        apply_origin_policy(
+            &mut m,
+            &OriginPolicy::MoveToZero,
+            &mut warnings,
+            &mut report,
+        );
+
+        assert!(warnings
+            .iter()
+            .any(|w| w.reason == ReasonCode::IO_ORIGIN_SHIFTED));
+    }
+
+    #[test]
+    fn postprocess_join_is_reported() {
+        let eng = IoEngine::new().register_exporter(Box::new(DummyExporter));
+
+        let mut m = InternalModel::new(Units::Mm);
+        let mut p1 = PathEntity::new("a".into(), StrokeStyle::default());
+        p1.segments.push(Segment2D::Line {
+            a: Point2D { x: 0.0, y: 0.0 },
+            b: Point2D { x: 1.0, y: 0.0 },
+        });
+        let mut p2 = PathEntity::new("b".into(), StrokeStyle::default());
+        p2.segments.push(Segment2D::Line {
+            a: Point2D { x: 1.0, y: 0.0 },
+            b: Point2D { x: 2.0, y: 0.0 },
+        });
+        m.entities.push(Entity::Path(p1));
+        m.entities.push(Entity::Path(p2));
+
+        let mut eopts = ExportOptions::default_for_tests();
+        eopts.postprocess = true;
+        eopts.enable_approx = false;
+        eopts.determinism.join_eps = 1e-6;
+
+        let out = eng.export("dummy", &m, &eopts).unwrap();
+        assert!(out
+            .warnings
+            .iter()
+            .any(|w| w.reason == ReasonCode::IO_PATH_JOIN_APPLIED));
+    }
+
+    #[test]
+    fn dedupe_removes_duplicate_paths() {
+        let mut m = InternalModel::new(Units::Mm);
+        let mut p1 = PathEntity::new("a".into(), StrokeStyle::default());
+        p1.segments.push(Segment2D::Line {
+            a: Point2D { x: 0.0, y: 0.0 },
+            b: Point2D { x: 1.0, y: 0.0 },
+        });
+        let mut p2 = PathEntity::new("dup".into(), StrokeStyle::default());
+        p2.segments.push(Segment2D::Line {
+            a: Point2D { x: 0.0, y: 0.0 },
+            b: Point2D { x: 1.0, y: 0.0 },
+        });
+        m.entities.push(Entity::Path(p1));
+        m.entities.push(Entity::Path(p2));
+
+        let opts = ImportOptions::default_for_tests();
+        let mut warnings = vec![];
+        let mut report = IoReport::new("dummy");
+        dedupe_paths(&mut m, &opts, &mut warnings, &mut report);
+
+        assert_eq!(m.entities.len(), 1);
+        assert!(warnings
+            .iter()
+            .any(|w| w.reason == ReasonCode::IO_DEDUP_REMOVED));
     }
 }

@@ -3,13 +3,41 @@ use std::collections::BTreeMap;
 
 use thiserror::Error;
 
+#[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ReasonCode {
-    IoFormatNotRegistered,
-    IoLimitBytesExceeded,
-    IoSanitizeNonfinite,
-    IoPathClosedByEps,
-    IoNormalizeRounded,
+    IO_FORMAT_NOT_REGISTERED,
+    IO_LIMIT_BYTES_EXCEEDED,
+
+    IO_SANITIZE_NONFINITE,
+    IO_PATH_CLOSED_BY_EPS,
+    IO_NORMALIZE_ROUNDED,
+
+    // PR3: approx/postprocess
+    IO_CURVE_APPROX_APPLIED,
+    IO_ORIGIN_SHIFTED,
+    IO_PATH_JOIN_APPLIED,
+    IO_DEDUP_REMOVED,
+    IO_TINY_SEGMENT_REMOVED,
+    IO_PATH_ORDER_OPTIMIZED,
+
+    // PR4: io_json
+    IO_PARSE_JSON_MALFORMED,
+    IO_JSON_SCHEMA_INVALID,
+    IO_JSON_SCHEMA_UNSUPPORTED_VERSION,
+
+    IO_PARSE_SVG_MALFORMED,
+    IO_SVG_LIMIT_NODES_EXCEEDED,
+    IO_SVG_LIMIT_DEPTH_EXCEEDED,
+    IO_SVG_EXTERNAL_REFERENCE_BLOCKED,
+    IO_SVG_PATH_COMMAND_UNKNOWN,
+    IO_UNIT_GUESSED,
+
+    IO_PARSE_DXF_MALFORMED,
+    IO_DXF_LIMIT_LINES_EXCEEDED,
+    IO_DXF_LIMIT_GROUPS_EXCEEDED,
+    IO_DXF_LIMIT_STRING_EXCEEDED,
+    IO_DXF_ENTITY_UNKNOWN_DROPPED,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

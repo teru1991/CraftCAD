@@ -125,7 +125,7 @@ fn sanitize_and_round_entity(
                 if !s.is_finite() {
                     warnings.push(
                         AppError::new(
-                            ReasonCode::IoSanitizeNonfinite,
+                            ReasonCode::IO_SANITIZE_NONFINITE,
                             "non-finite values detected; entity dropped",
                         )
                         .with_context("entity_kind", "path")
@@ -184,7 +184,7 @@ fn sanitize_and_round_entity(
                 if d <= opts.determinism.close_eps && !p.closed {
                     p.closed = true;
                     warnings.push(
-                        AppError::new(ReasonCode::IoPathClosedByEps, "path closed by eps")
+                        AppError::new(ReasonCode::IO_PATH_CLOSED_BY_EPS, "path closed by eps")
                             .with_context("id", p.id.clone())
                             .with_context("close_eps", opts.determinism.close_eps.to_string())
                             .with_context("distance", d.to_string()),
@@ -196,7 +196,7 @@ fn sanitize_and_round_entity(
             if !t.pos.is_finite() || !t.rotation_rad.is_finite() || !(t.size as f64).is_finite() {
                 warnings.push(
                     AppError::new(
-                        ReasonCode::IoSanitizeNonfinite,
+                        ReasonCode::IO_SANITIZE_NONFINITE,
                         "non-finite values detected; text dropped",
                     )
                     .with_context("entity_kind", "text")
@@ -215,7 +215,7 @@ fn sanitize_and_round_entity(
     if rounded_any {
         warnings.push(
             AppError::new(
-                ReasonCode::IoNormalizeRounded,
+                ReasonCode::IO_NORMALIZE_ROUNDED,
                 "coordinates rounded by round_step",
             )
             .with_context("round_step", opts.determinism.round_step.to_string()),
