@@ -2,21 +2,11 @@ use super::leader::leader_ir;
 use super::types::*;
 use crate::annotation::{chamfer::chamfer_text, hole::hole_text};
 use crate::render_ir::*;
+use crate::sheet::KeepOutZones;
 use crate::ssot::DrawingSsotBundle;
 
 fn mmpt(x: f64, y: f64) -> Pt2 {
     Pt2 { x: Mm(x), y: Mm(y) }
-}
-
-fn text_bbox_at(pos: (f64, f64), text: &str, size_mm: f64, pad_mm: f64) -> Rect {
-    let w = (text.chars().count() as f64) * size_mm * 0.6;
-    let h = size_mm * 1.2;
-    Rect {
-        x: Mm(pos.0 - pad_mm),
-        y: Mm(pos.1 - h - pad_mm),
-        w: Mm(w + 2.0 * pad_mm),
-        h: Mm(h + 2.0 * pad_mm),
-    }
 }
 
 pub fn place_annotation(
@@ -25,6 +15,8 @@ pub fn place_annotation(
     _kind: AnnotationKind,
     anchor: (f64, f64),
     payload: &AnnotationPayload,
+    keepouts: &KeepOutZones,
+    other_text_bboxes: &[Rect],
 ) -> (Vec<StyledPrimitive>, Option<Rect>) {
     let st = &bundle.style;
     let dim = &st.dimension;
@@ -60,20 +52,37 @@ pub fn place_annotation(
         anchor.0 + dim.dim_line_offset_mm,
         anchor.1 - dim.dim_line_offset_mm,
     ));
-    let bbox = text_bbox_at(tpos, &text, st.fonts.size_mm, dim.text_box_padding_mm);
+    let bbox = estimate_text_bbox_mm(
+        mmpt(tpos.0, tpos.1),
+        &text,
+        st.fonts.size_mm,
+        "start",
+        dim.text_box_padding_mm,
+    );
     let mut items = vec![];
 
-    if let Some(lh) = leader_hint {
-        let bend = lh.bend_mm.unwrap_or_else(|| {
-            let ang = lh.default_angle_deg.to_radians();
-            (
-                anchor.0 + ang.cos() * dim.dim_line_offset_mm,
-                anchor.1 - ang.sin() * dim.dim_line_offset_mm,
-            )
-        });
-        items.extend(leader_ir(bundle, stable_id, anchor, bend, tpos));
+    if leader_hint.is_some() {
+        items.extend(leader_ir(
+            bundle,
+            stable_id,
+            anchor,
+            tpos,
+            bbox,
+            keepouts,
+            other_text_bboxes,
+        ));
     }
 
+    items.push(StyledPrimitive {
+        z: 44,
+        stable_id: format!("{}_BG", stable_id),
+        stroke: None,
+        fill: Some(FillStyle {
+            color_hex: "#ffffff".to_string(),
+        }),
+        text: None,
+        prim: Primitive::Rect { rect: bbox },
+    });
     items.push(StyledPrimitive {
         z: 45,
         stable_id: format!("{}_TEXT", stable_id),

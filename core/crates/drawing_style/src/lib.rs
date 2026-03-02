@@ -2,6 +2,7 @@ pub mod annotation;
 pub mod dimension;
 pub mod print;
 pub mod render_ir;
+pub mod render_pdf;
 pub mod render_svg;
 pub mod sheet;
 pub mod ssot;
@@ -13,10 +14,11 @@ pub use annotation::{
 };
 pub use dimension::{
     apply_edit, measure_angle, measure_linear, measure_radius, place_dimension, DimensionEditOp,
-    DimensionKind, DimensionOverrides, MeasuredDimension, PlacementHint, PlacedDimensionIr, Side,
+    DimensionKind, DimensionOverrides, MeasuredDimension, PlacedDimensionIr, PlacementHint, Side,
 };
 pub use print::*;
 pub use render_ir::*;
+pub use render_pdf::*;
 pub use render_svg::*;
 pub use sheet::*;
 pub use ssot::*;

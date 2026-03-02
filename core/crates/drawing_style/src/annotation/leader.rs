@@ -1,4 +1,6 @@
+use super::leader_layout::{solve_leader_layout, LeaderLayoutInput};
 use crate::render_ir::*;
+use crate::sheet::KeepOutZones;
 use crate::ssot::DrawingSsotBundle;
 
 fn mmpt(x: f64, y: f64) -> Pt2 {
@@ -9,8 +11,10 @@ pub fn leader_ir(
     bundle: &DrawingSsotBundle,
     stable_prefix: &str,
     anchor: (f64, f64),
-    bend: (f64, f64),
     text_pos: (f64, f64),
+    text_bbox: Rect,
+    keepouts: &KeepOutZones,
+    other_text_bboxes: &[Rect],
 ) -> Vec<StyledPrimitive> {
     let st = &bundle.style;
     let stroke = StrokeStyle {
@@ -21,6 +25,16 @@ pub fn leader_ir(
         color_hex: st.colors.default_stroke_hex.clone(),
         dash_pattern_mm: vec![],
     };
+    let out = solve_leader_layout(&LeaderLayoutInput {
+        ann_id: stable_prefix.to_string(),
+        anchor: mmpt(anchor.0, anchor.1),
+        text_pos: mmpt(text_pos.0, text_pos.1),
+        text_bbox,
+        other_text_bboxes: other_text_bboxes.to_vec(),
+        keepouts: keepouts.clone(),
+        max_variants: 20,
+    });
+    let _congested = out.congested;
     vec![
         StyledPrimitive {
             z: 35,
@@ -30,7 +44,7 @@ pub fn leader_ir(
             text: None,
             prim: Primitive::Line {
                 a: mmpt(anchor.0, anchor.1),
-                b: mmpt(bend.0, bend.1),
+                b: out.elbow,
             },
         },
         StyledPrimitive {
@@ -40,7 +54,7 @@ pub fn leader_ir(
             fill: None,
             text: None,
             prim: Primitive::Line {
-                a: mmpt(bend.0, bend.1),
+                a: out.elbow,
                 b: mmpt(text_pos.0, text_pos.1),
             },
         },

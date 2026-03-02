@@ -5,11 +5,12 @@ use drawing_style::{
     annotation::{
         AnnotationKind as AKind, AnnotationPayload, ChamferInfo, ChamferType, HoleInfo, LeaderHint,
     },
-    apply_bw_mode, apply_line_weight_scale, build_sheet_ir, load_bundle, measure_angle,
-    measure_linear, measure_radius, place_annotation, place_dimension, render_svg,
-    DimensionKind as DKind, DimensionOverrides as DOverrides, DrawingSsotBundle, Mm,
-    PlacementHint as DPlacementHint, Primitive, ProjectMeta, Pt2, Side, SsotError, SsotPaths,
-    StrokeStyle, StyledPrimitive, SvgError,
+    apply_bw_mode, apply_line_weight_scale, build_sheet_ir, compute_keepouts,
+    compute_print_placement, load_bundle, measure_angle, measure_linear, measure_radius,
+    place_annotation, place_dimension, render_svg, DimensionKind as DKind,
+    DimensionOverrides as DOverrides, DrawingSsotBundle, Mm, PlacementHint as DPlacementHint,
+    Primitive, ProjectMeta, Pt2, Rect, Side, SsotError, SsotPaths, StrokeStyle, StyledPrimitive,
+    SvgError,
 };
 use serde_json::Value;
 use std::path::Path;
@@ -39,6 +40,10 @@ fn pt(x: f64, y: f64) -> Pt2 {
     Pt2 { x: Mm(x), y: Mm(y) }
 }
 
+fn transform_xy(scale: f64, tr: (f64, f64), p: (f64, f64)) -> (f64, f64) {
+    (p.0 * scale + tr.0, p.1 * scale + tr.1)
+}
+
 impl DrawingExporter {
     pub fn export_svg(
         repo_root: &Path,
@@ -54,7 +59,16 @@ impl DrawingExporter {
         )?;
 
         let mut ir = build_sheet_ir(&bundle, &req.meta);
+        let keepouts = compute_keepouts(&bundle);
         let resolver = SampleBoardResolver;
+        let model_bbox = Rect {
+            x: Mm(30.0),
+            y: Mm(30.0),
+            w: Mm(150.0),
+            h: Mm(100.0),
+        };
+        let place = compute_print_placement(&bundle, model_bbox);
+
         let st = &bundle.style;
         let model_stroke = StrokeStyle {
             width_mm: st
@@ -65,10 +79,10 @@ impl DrawingExporter {
             dash_pattern_mm: vec![],
         };
 
-        let a = (30.0, 30.0);
-        let b = (180.0, 30.0);
-        let c = (180.0, 130.0);
-        let d = (30.0, 130.0);
+        let a = transform_xy(place.scale, place.translate_mm, (30.0, 30.0));
+        let b = transform_xy(place.scale, place.translate_mm, (180.0, 30.0));
+        let c = transform_xy(place.scale, place.translate_mm, (180.0, 130.0));
+        let d = transform_xy(place.scale, place.translate_mm, (30.0, 130.0));
         ir.push(StyledPrimitive {
             z: 10,
             stable_id: "MODEL_BOARD".to_string(),
@@ -80,6 +94,7 @@ impl DrawingExporter {
                 closed: true,
             },
         });
+        let hc = transform_xy(place.scale, place.translate_mm, (90.0, 80.0));
         ir.push(StyledPrimitive {
             z: 11,
             stable_id: "MODEL_HOLE1".to_string(),
@@ -87,10 +102,12 @@ impl DrawingExporter {
             fill: None,
             text: None,
             prim: Primitive::Circle {
-                c: pt(90.0, 80.0),
-                r: Mm(5.0),
+                c: pt(hc.0, hc.1),
+                r: Mm(5.0 * place.scale),
             },
         });
+        let c0 = transform_xy(place.scale, place.translate_mm, (30.0, 35.0));
+        let c1 = transform_xy(place.scale, place.translate_mm, (35.0, 30.0));
         ir.push(StyledPrimitive {
             z: 12,
             stable_id: "MODEL_CHAMFER_A".to_string(),
@@ -98,12 +115,14 @@ impl DrawingExporter {
             fill: None,
             text: None,
             prim: Primitive::Line {
-                a: pt(30.0, 35.0),
-                b: pt(35.0, 30.0),
+                a: pt(c0.0, c0.1),
+                b: pt(c1.0, c1.1),
             },
         });
 
         if let Some(drw) = drawing {
+            let mut used_bboxes: Vec<Rect> = vec![];
+
             for de in &drw.dimensions {
                 let hint = DPlacementHint {
                     side: match de.placement_hint.side {
@@ -118,7 +137,7 @@ impl DrawingExporter {
                         .placement_hint
                         .manual_text_pos_mm
                         .as_ref()
-                        .map(|p| (p.x, p.y)),
+                        .map(|p| transform_xy(place.scale, place.translate_mm, (p.x, p.y))),
                 };
                 let ov = DOverrides {
                     text_override: de.overrides.text_override.clone(),
@@ -136,6 +155,8 @@ impl DrawingExporter {
                                 None
                             }
                         }) {
+                            let sa = transform_xy(place.scale, place.translate_mm, sa);
+                            let sb = transform_xy(place.scale, place.translate_mm, sb);
                             measure_linear(
                                 sa,
                                 sb,
@@ -147,34 +168,16 @@ impl DrawingExporter {
                             )
                             .ok()
                         } else {
-                            let pts: Vec<(f64, f64)> = resolved
-                                .iter()
-                                .filter_map(|g| match g {
-                                    ResolvedGeom::Point { p } => Some(*p),
-                                    _ => None,
-                                })
-                                .collect();
-                            if pts.len() >= 2 {
-                                measure_linear(
-                                    pts[0],
-                                    pts[1],
-                                    if de.kind.ty == DimensionType::LinearBaseline {
-                                        DKind::LinearBaseline
-                                    } else {
-                                        DKind::LinearSerial
-                                    },
-                                )
-                                .ok()
-                            } else {
-                                None
-                            }
+                            None
                         }
                     }
                     DimensionType::Angular => {
                         let pts: Vec<(f64, f64)> = resolved
                             .iter()
                             .filter_map(|g| match g {
-                                ResolvedGeom::Point { p } => Some(*p),
+                                ResolvedGeom::Point { p } => {
+                                    Some(transform_xy(place.scale, place.translate_mm, *p))
+                                }
                                 _ => None,
                             })
                             .collect();
@@ -189,7 +192,8 @@ impl DrawingExporter {
                             ResolvedGeom::Circle { c, r_mm } => Some((*c, *r_mm)),
                             _ => None,
                         }) {
-                            let on = (c.0 + r_mm, c.1);
+                            let c = transform_xy(place.scale, place.translate_mm, c);
+                            let on = (c.0 + r_mm * place.scale, c.1);
                             measure_radius(
                                 c,
                                 on,
@@ -206,7 +210,12 @@ impl DrawingExporter {
                     }
                 };
                 if let Some(m) = measured {
-                    for mut item in place_dimension(&bundle, &m, &hint, &ov).items {
+                    let placed =
+                        place_dimension(&bundle, &de.id, &m, &hint, &ov, &keepouts, &used_bboxes);
+                    if let Some(bb) = placed.text_bbox_mm {
+                        used_bboxes.push(bb);
+                    }
+                    for mut item in placed.items {
                         item.stable_id = format!("DIM_{}_{}", de.id, item.stable_id);
                         ir.push(item);
                     }
@@ -219,7 +228,9 @@ impl DrawingExporter {
                     .iter()
                     .filter_map(|r| resolver.resolve(r))
                     .find_map(|g| match g {
-                        ResolvedGeom::Point { p } => Some(p),
+                        ResolvedGeom::Point { p } => {
+                            Some(transform_xy(place.scale, place.translate_mm, p))
+                        }
                         _ => None,
                     });
                 let Some(anchor) = anchor else {
@@ -231,7 +242,7 @@ impl DrawingExporter {
                     .placement_hint
                     .manual_text_pos_mm
                     .as_ref()
-                    .map(|p| (p.x, p.y));
+                    .map(|p| transform_xy(place.scale, place.translate_mm, (p.x, p.y)));
                 let payload = match ae.kind.ty {
                     AnnotationType::Text => AnnotationPayload::Text {
                         text: value
@@ -240,25 +251,21 @@ impl DrawingExporter {
                             .unwrap_or_default()
                             .to_string(),
                     },
-                    AnnotationType::Leader => {
-                        let text = value
+                    AnnotationType::Leader => AnnotationPayload::LeaderText {
+                        text: value
                             .get("text")
                             .and_then(Value::as_str)
                             .unwrap_or_default()
-                            .to_string();
-                        let ang = value
-                            .get("leader_default_angle_deg")
-                            .and_then(Value::as_f64)
-                            .unwrap_or(bundle.style.dimension.leader.default_angle_deg);
-                        AnnotationPayload::LeaderText {
-                            text,
-                            leader: LeaderHint {
-                                default_angle_deg: ang,
-                                bend_mm: None,
-                                text_pos_mm: text_pos,
-                            },
-                        }
-                    }
+                            .to_string(),
+                        leader: LeaderHint {
+                            default_angle_deg: value
+                                .get("leader_default_angle_deg")
+                                .and_then(Value::as_f64)
+                                .unwrap_or(bundle.style.dimension.leader.default_angle_deg),
+                            bend_mm: None,
+                            text_pos_mm: text_pos,
+                        },
+                    },
                     AnnotationType::HoleCallout => AnnotationPayload::Hole {
                         info: HoleInfo {
                             diameter_mm: value
@@ -303,8 +310,18 @@ impl DrawingExporter {
                     AnnotationType::HoleCallout => AKind::HoleCallout,
                     AnnotationType::ChamferCallout => AKind::ChamferCallout,
                 };
-                let (items, _) =
-                    place_annotation(&bundle, &format!("ANN_{}", ae.id), kind, anchor, &payload);
+                let (items, bbox) = place_annotation(
+                    &bundle,
+                    &format!("ANN_{}", ae.id),
+                    kind,
+                    anchor,
+                    &payload,
+                    &keepouts,
+                    &used_bboxes,
+                );
+                if let Some(bb) = bbox {
+                    used_bboxes.push(bb);
+                }
                 for item in items {
                     ir.push(item);
                 }
@@ -321,7 +338,6 @@ impl DrawingExporter {
             bundle.style.line_weights.min_line_weight_mm,
         );
 
-        let svg = render_svg(&ir, bundle.print.export.svg_precision)?;
-        Ok(svg)
+        Ok(render_svg(&ir, bundle.print.export.svg_precision)?)
     }
 }

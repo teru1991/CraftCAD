@@ -14,12 +14,49 @@ pub struct ProjectMeta {
     pub app_version: String,
 }
 
+#[derive(Debug, Clone)]
+pub struct KeepOutZones {
+    pub title_block: Rect,
+    pub outside_border: Rect,
+    pub model_view: Rect,
+    pub page: Rect,
+    pub border: Rect,
+}
+
 fn rect_from_mm(r: &RectMm) -> Rect {
     Rect {
         x: Mm(r.x_mm),
         y: Mm(r.y_mm),
         w: Mm(r.w_mm),
         h: Mm(r.h_mm),
+    }
+}
+
+pub fn compute_keepouts(bundle: &DrawingSsotBundle) -> KeepOutZones {
+    let page = &bundle.sheet.page;
+    let m = &page.margin_mm;
+    let border = Rect {
+        x: Mm(m.left),
+        y: Mm(m.top),
+        w: Mm(page.width_mm - m.left - m.right),
+        h: Mm(page.height_mm - m.top - m.bottom),
+    };
+    KeepOutZones {
+        title_block: rect_from_mm(&page.title_block.bbox_mm),
+        outside_border: Rect {
+            x: Mm(0.0),
+            y: Mm(0.0),
+            w: Mm(page.width_mm),
+            h: Mm(page.height_mm),
+        },
+        model_view: rect_from_mm(&bundle.sheet.viewports.model_view_region),
+        page: Rect {
+            x: Mm(0.0),
+            y: Mm(0.0),
+            w: Mm(page.width_mm),
+            h: Mm(page.height_mm),
+        },
+        border,
     }
 }
 
@@ -37,13 +74,7 @@ pub fn build_sheet_ir(bundle: &DrawingSsotBundle, meta: &ProjectMeta) -> RenderI
         dash_pattern_mm: vec![],
     };
 
-    let m = &page.margin_mm;
-    let border = Rect {
-        x: Mm(m.left),
-        y: Mm(m.top),
-        w: Mm(page.width_mm - m.left - m.right),
-        h: Mm(page.height_mm - m.top - m.bottom),
-    };
+    let keepouts = compute_keepouts(bundle);
 
     ir.push(StyledPrimitive {
         z: 0,
@@ -51,17 +82,20 @@ pub fn build_sheet_ir(bundle: &DrawingSsotBundle, meta: &ProjectMeta) -> RenderI
         stroke: Some(stroke.clone()),
         fill: None,
         text: None,
-        prim: Primitive::Rect { rect: border },
+        prim: Primitive::Rect {
+            rect: keepouts.border,
+        },
     });
 
-    let tb = rect_from_mm(&page.title_block.bbox_mm);
     ir.push(StyledPrimitive {
         z: 0,
         stable_id: "TITLE_BLOCK_BORDER".to_string(),
         stroke: Some(stroke.clone()),
         fill: None,
         text: None,
-        prim: Primitive::Rect { rect: tb },
+        prim: Primitive::Rect {
+            rect: keepouts.title_block,
+        },
     });
 
     let fs = page.title_block.field_font_size_mm;
@@ -74,8 +108,8 @@ pub fn build_sheet_ir(bundle: &DrawingSsotBundle, meta: &ProjectMeta) -> RenderI
     };
 
     let line_h = fs * 1.35;
-    let mut cursor_y = tb.y.0 + fs * 1.2;
-    let left_x = tb.x.0 + fs * 0.8;
+    let mut cursor_y = keepouts.title_block.y.0 + fs * 1.2;
+    let left_x = keepouts.title_block.x.0 + fs * 0.8;
 
     for f in &page.title_block.fields {
         let val = match f.key.as_str() {
@@ -105,7 +139,17 @@ pub fn build_sheet_ir(bundle: &DrawingSsotBundle, meta: &ProjectMeta) -> RenderI
             }
         }
 
-        if cursor_y <= tb.y.0 + tb.h.0 - fs * 0.6 {
+        if cursor_y <= keepouts.title_block.y.0 + keepouts.title_block.h.0 - fs * 0.6 {
+            let bbox = estimate_text_bbox_mm(
+                Pt2 {
+                    x: Mm(left_x),
+                    y: Mm(cursor_y),
+                },
+                &s,
+                fs,
+                "start",
+                0.0,
+            );
             ir.push(StyledPrimitive {
                 z: 1,
                 stable_id: format!("TITLE_{}", f.key),
@@ -120,14 +164,13 @@ pub fn build_sheet_ir(bundle: &DrawingSsotBundle, meta: &ProjectMeta) -> RenderI
                     text: s,
                     rotation_deg: 0.0,
                     anchor: "start".to_string(),
-                    bbox_hint_mm: None,
+                    bbox_hint_mm: Some(bbox),
                 },
             });
         }
         cursor_y += line_h;
     }
 
-    let mv = &bundle.sheet.viewports.model_view_region;
     ir.push(StyledPrimitive {
         z: 0,
         stable_id: "MODEL_VIEW_CLIP".to_string(),
@@ -135,12 +178,7 @@ pub fn build_sheet_ir(bundle: &DrawingSsotBundle, meta: &ProjectMeta) -> RenderI
         fill: None,
         text: None,
         prim: Primitive::ClipRect {
-            rect: Rect {
-                x: Mm(mv.x_mm),
-                y: Mm(mv.y_mm),
-                w: Mm(mv.w_mm),
-                h: Mm(mv.h_mm),
-            },
+            rect: keepouts.model_view,
         },
     });
 
