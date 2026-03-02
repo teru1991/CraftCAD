@@ -5,11 +5,20 @@ use thiserror::Error;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum ReasonCode {
-    IoFormatNotRegistered,
-    IoLimitBytesExceeded,
-    IoSanitizeNonfinite,
-    IoPathClosedByEps,
-    IoNormalizeRounded,
+    IO_FORMAT_NOT_REGISTERED,
+    IO_LIMIT_BYTES_EXCEEDED,
+
+    IO_SANITIZE_NONFINITE,
+    IO_PATH_CLOSED_BY_EPS,
+    IO_NORMALIZE_ROUNDED,
+
+    // PR3: approx/postprocess
+    IO_CURVE_APPROX_APPLIED,
+    IO_ORIGIN_SHIFTED,
+    IO_PATH_JOIN_APPLIED,
+    IO_DEDUP_REMOVED,
+    IO_TINY_SEGMENT_REMOVED,
+    IO_PATH_ORDER_OPTIMIZED,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
