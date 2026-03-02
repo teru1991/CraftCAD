@@ -108,6 +108,33 @@ pub fn render_svg(ir: &RenderIr, precision: u32) -> Result<String, SvgError> {
                 fmt_f(r.0, precision),
                 attrs.join(" ")
             )),
+            Primitive::Arc {
+                c,
+                r,
+                start_deg,
+                sweep_deg,
+            } => {
+                let start_rad = start_deg.to_radians();
+                let end_rad = (start_deg + sweep_deg).to_radians();
+                let sx = c.x.0 + r.0 * start_rad.cos();
+                let sy = c.y.0 + r.0 * start_rad.sin();
+                let ex = c.x.0 + r.0 * end_rad.cos();
+                let ey = c.y.0 + r.0 * end_rad.sin();
+                let large_arc = if sweep_deg.abs() > 180.0 { 1 } else { 0 };
+                let sweep_flag = if sweep_deg >= 0.0 { 1 } else { 0 };
+                out.push_str(&format!(
+                    r#"<path d="M {} {} A {} {} 0 {} {} {} {}" {} />"#,
+                    fmt_f(sx, precision),
+                    fmt_f(sy, precision),
+                    fmt_f(r.0, precision),
+                    fmt_f(r.0, precision),
+                    large_arc,
+                    sweep_flag,
+                    fmt_f(ex, precision),
+                    fmt_f(ey, precision),
+                    attrs.join(" ")
+                ))
+            }
             Primitive::Polyline { pts, closed } => {
                 let mut p = pts
                     .iter()
