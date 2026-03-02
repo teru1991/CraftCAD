@@ -1,19 +1,6 @@
 {
   "entities": [
     {
-      "font_hint": "Arial",
-      "id": "t1",
-      "layer": "GUIDE",
-      "pos": {
-        "x": 5.0,
-        "y": 5.0
-      },
-      "rotation_rad": 0.0,
-      "size": 12.0,
-      "text": "hello",
-      "type": "text"
-    },
-    {
       "closed": false,
       "id": "p1",
       "segments": [
@@ -47,6 +34,19 @@
         "weight": 0.25
       },
       "type": "path"
+    },
+    {
+      "font_hint": "Arial",
+      "id": "t1",
+      "layer": "GUIDE",
+      "pos": {
+        "x": 5.0,
+        "y": 5.0
+      },
+      "rotation_rad": 0.0,
+      "size": 12.0,
+      "text": "hello",
+      "type": "text"
     }
   ],
   "metadata": {

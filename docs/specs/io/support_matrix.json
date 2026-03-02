@@ -94,13 +94,24 @@
       "notes": "DXF TEXTはフォント環境差があるためbest-effort。"
     },
     {
+      "format": "dxf",
+      "direction": "export",
+      "feature": "entity_path_unhandled_segment",
+      "level": "best_effort",
+      "action": "approx_or_split",
+      "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
+      "notes": "未対応segmentはenable_approx推奨。無効時はpolylineへ分割/近似。"
+    },
+
+    { "format": "svg", "direction": "export", "feature": "entity_path", "level": "supported" },
+    {
       "format": "svg",
       "direction": "export",
-      "feature": "entity_circle",
+      "feature": "entity_text",
       "level": "best_effort",
-      "action": "approx",
-      "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
-      "notes": "circle は approx で polyline 化して path として出力する（enable_approx=true推奨）。"
+      "action": "fallback",
+      "reason_codes": ["IO_TEXT_FALLBACK_FONT"],
+      "notes": "SVG text はフォント埋め込み等を行わずhintとして扱う。"
     },
     {
       "format": "dxf",
