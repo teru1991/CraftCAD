@@ -29,6 +29,7 @@ members = [
   "crates/presets",
   "crates/wizards",
   "crates/library",
+  "crates/ssot_lint",
   "serialize",
   "commands",
   "edit_ops",

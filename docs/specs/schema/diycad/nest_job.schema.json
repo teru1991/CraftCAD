@@ -1,44 +1,33 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://craftcad.local/schemas/diycad_nest_job.schema.json",
+  "$id": "diycad://schema/nest_job.schema.json",
+  "title": "DIYCAD Nest Job",
   "type": "object",
-  "required": ["id", "schema_version", "created_by", "updated_at", "inputs", "sheet", "params", "result"],
+  "additionalProperties": true,
+  "required": ["id", "status", "inputs"],
   "properties": {
-    "id": { "type": "string", "format": "uuid" },
-    "schema_version": { "type": "integer", "minimum": 1 },
-    "created_by": { "type": "string" },
+    "id": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["pending", "running", "done", "failed"] },
+    "created_at": { "type": "string", "format": "date-time" },
     "updated_at": { "type": "string", "format": "date-time" },
-    "inputs": { "type": "array", "items": { "type": "string", "pattern": "^parts/.+\\.json$" } },
-    "sheet": {
+    "inputs": {
       "type": "object",
-      "required": ["width", "height"],
+      "additionalProperties": true,
+      "required": ["parts"],
       "properties": {
-        "width": { "type": "number", "minimum": 0 },
-        "height": { "type": "number", "minimum": 0 }
-      },
-      "additionalProperties": false
+        "parts": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "maxItems": 200000
+        }
+      }
     },
-    "params": {
+    "results": {
       "type": "object",
+      "additionalProperties": true,
       "properties": {
-        "kerf": { "type": "number", "minimum": 0 },
-        "margin": { "type": "number", "minimum": 0 },
-        "allow_rotate": { "type": "boolean" },
-        "seed": { "type": "integer" },
-        "epsilon": { "type": "number", "minimum": 0 }
-      },
-      "additionalProperties": true
-    },
-    "result": {
-      "type": "object",
-      "required": ["status"],
-      "properties": {
-        "status": { "type": "string", "enum": ["none", "ok", "failed"] },
-        "placements": { "type": "array" },
-        "reason_codes": { "type": "array", "items": { "type": "string" } }
-      },
-      "additionalProperties": true
+        "placements": { "type": "array", "items": { "type": "object" } }
+      }
     }
-  },
-  "additionalProperties": false
+  }
 }

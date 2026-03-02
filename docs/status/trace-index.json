@@ -133,6 +133,20 @@
         "head_sha": "see docs/verification/S13-QUALITY-GATES-E2E-007.md",
         "tests": "cargo test -p craftcad_serialize --test spec_ssot_lint: pass; cargo test -p craftcad_wizards --test flow_shelf_to_nest_to_export: pass; cargo test -p craftcad_wizards --test wizard_determinism: pass; cargo test -p craftcad_wizards --test presets_templates_compat: pass; cargo test --workspace --all-targets: fails at existing craftcad_io_bridge compat_matrix_golden ordering mismatch"
       }
+    },
+    "SPRINT14-STEP1": {
+      "branch": "feature/sprint14-step1-001",
+      "artifacts": [
+        "docs/specs/schema/diycad/*",
+        "core/crates/ssot_lint/**",
+        "scripts/ci/run_all.sh",
+        "docs/verification/SPRINT14-STEP1.md"
+      ],
+      "verification": "docs/verification/SPRINT14-STEP1.md",
+      "evidence": {
+        "head_sha": "see docs/verification/SPRINT14-STEP1.md",
+        "tests": "cargo test -p ssot_lint: pass; cargo run -p ssot_lint --bin ssot-lint: pass; scripts/ci/run_all.sh: ssot_lint/e2e/determinism/compat/ffi pass, existing rust_clippy/rust_test/cmake steps fail"
+      }
     }
   }
 }
