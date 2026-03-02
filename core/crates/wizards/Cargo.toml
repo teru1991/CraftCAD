@@ -20,3 +20,16 @@ ordered-float = "4"
 
 [dev-dependencies]
 tempfile = "3"
+
+
+[[test]]
+name = "flow_shelf_to_nest_to_export"
+path = "../../../tests/e2e/flow_shelf_to_nest_to_export.rs"
+
+[[test]]
+name = "wizard_determinism"
+path = "../../../tests/determinism/wizard_determinism.rs"
+
+[[test]]
+name = "presets_templates_compat"
+path = "../../../tests/compat/presets_templates_compat.rs"

@@ -34,6 +34,9 @@ run_step() {
 run_step rust_fmt "${ROOT_DIR}/core" cargo fmt --all -- --check
 run_step rust_clippy "${ROOT_DIR}/core" cargo clippy --workspace --all-targets -- -D warnings
 run_step rust_test "${ROOT_DIR}/core" cargo test --workspace --all-targets
+run_step e2e_shelf_flow "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test flow_shelf_to_nest_to_export
+run_step determinism_wizard "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test wizard_determinism
+run_step compat_presets_templates "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test presets_templates_compat
 
 if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
   run_step rust_ffi_desktop "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop

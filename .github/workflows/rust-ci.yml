@@ -40,6 +40,15 @@ jobs:
       - name: Test
         run: cargo test --all
 
+      - name: E2E shelf flow gate
+        run: cargo test -p craftcad_wizards --test flow_shelf_to_nest_to_export
+
+      - name: Determinism wizard gate
+        run: cargo test -p craftcad_wizards --test wizard_determinism
+
+      - name: Compat presets/templates gate
+        run: cargo test -p craftcad_wizards --test presets_templates_compat
+
       - name: Perf smoke
         run: |
           cargo test -p diycad_geom --test perf_threshold
