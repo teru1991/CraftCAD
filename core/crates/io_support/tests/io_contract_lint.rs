@@ -1,3 +1,4 @@
+use regex::Regex;
 use std::collections::HashSet;
 use std::fs;
 
@@ -25,7 +26,8 @@ fn test_io_support_matrix_consistency() {
     let matrix_abs_path = root_path.join("docs/specs/io/support_matrix.json");
     assert!(
         matrix_abs_path.exists(),
-        "support_matrix.json not found at {matrix_abs_path:?}"
+        "support_matrix.json not found at {:?}",
+        matrix_abs_path
     );
 
     let matrix_content =
@@ -59,12 +61,14 @@ fn test_io_support_matrix_consistency() {
                 if let Some(code_str) = code.as_str() {
                     if !code_str.is_empty() && !catalog_codes_set.contains(code_str) {
                         errors.push(format!(
-                            "Format '{format_name}' feature '{feature_name}' references reason_code '{code_str}' which is NOT in catalog.json"
+                            "Format '{}' feature '{}' references reason_code '{}' which is NOT in catalog.json",
+                            format_name, feature_name, code_str
                         ));
                     }
                 } else {
                     errors.push(format!(
-                        "Format '{format_name}' feature '{feature_name}' has non-string reason_code"
+                        "Format '{}' feature '{}' has non-string reason_code",
+                        format_name, feature_name
                     ));
                 }
             }
@@ -72,7 +76,8 @@ fn test_io_support_matrix_consistency() {
 
         if level == "best_effort" && !cell["reason_codes"].is_array() {
             errors.push(format!(
-                "Format '{format_name}' feature '{feature_name}' has level='best_effort' but no reason_codes array"
+                "Format '{}' feature '{}' has level='best_effort' but no reason_codes array",
+                format_name, feature_name
             ));
         }
     }
@@ -111,7 +116,8 @@ fn test_io_reason_codes_domain() {
                 if let Some(code_str) = code.as_str() {
                     if !code_str.is_empty() && !code_str.starts_with("IO_") {
                         errors.push(format!(
-                            "Format '{format_name}' feature '{feature_name}' has reason_code '{code_str}' which doesn't start with 'IO_'"
+                            "Format '{}' feature '{}' has reason_code '{}' which doesn't start with 'IO_'",
+                            format_name, feature_name, code_str
                         ));
                     }
                 }
@@ -127,9 +133,9 @@ fn test_io_reason_codes_domain() {
     }
 }
 
-/// Test mapping_rules.json references valid reason_codes
+/// Test mapping_rules.json invariants match current SSOT shape
 #[test]
-fn test_mapping_rules_reason_codes() {
+fn test_mapping_rules_schema_invariants() {
     let root_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent() // -> core/crates
         .unwrap()
@@ -141,45 +147,53 @@ fn test_mapping_rules_reason_codes() {
     let rules_abs_path = root_path.join("docs/specs/io/mapping_rules.json");
     assert!(
         rules_abs_path.exists(),
-        "mapping_rules.json not found at {rules_abs_path:?}"
+        "mapping_rules.json not found at {:?}",
+        rules_abs_path
     );
 
     let rules_content =
         fs::read_to_string(&rules_abs_path).expect("Failed to read mapping_rules.json");
-    let rules_value: serde_json::Value =
+    let v: serde_json::Value =
         serde_json::from_str(&rules_content).expect("Failed to parse mapping_rules.json");
 
-    // Load catalog.json
-    let catalog_abs_path = root_path.join("docs/specs/errors/catalog.json");
-    let catalog_content =
-        fs::read_to_string(&catalog_abs_path).expect("Failed to read catalog.json");
-    let catalog_value: serde_json::Value =
-        serde_json::from_str(&catalog_content).expect("Failed to parse catalog.json");
+    assert_eq!(
+        v["schema_version"].as_i64(),
+        Some(1),
+        "schema_version must be 1"
+    );
 
-    let mut catalog_codes_set = HashSet::new();
-    if let Some(items) = catalog_value["items"].as_array() {
-        for item in items {
-            if let Some(code) = item["code"].as_str() {
-                catalog_codes_set.insert(code.to_string());
-            }
-        }
-    }
+    for key in ["layer", "linetype"] {
+        let section = &v[key];
+        let default = section["default"].as_str().unwrap_or("");
+        let max_len = section["max_len"].as_u64().unwrap_or(0);
+        let re = section["forbidden_chars_regex"].as_str().unwrap_or("");
+        assert!(!default.is_empty(), "{key}.default must be non-empty");
+        assert!(max_len > 0, "{key}.max_len must be > 0");
+        Regex::new(re).expect(&format!("{key}.forbidden_chars_regex must be valid regex"));
 
-    let mut errors = Vec::new();
-
-    // Check unit_rules.reason_code_on_assume
-    if let Some(code) = rules_value["unit_rules"]["reason_code_on_assume"].as_str() {
-        if !code.is_empty() && !catalog_codes_set.contains(code) {
-            errors.push(format!(
-                "unit_rules.reason_code_on_assume='{code}' is NOT in catalog.json"
-            ));
-        }
-    }
-
-    if !errors.is_empty() {
-        panic!(
-            "Mapping rules reason codes check failed:\n{}",
-            errors.join("\n")
+        // aliases object must be present
+        assert!(
+            section["aliases"].is_object(),
+            "{key}.aliases must be object"
         );
     }
+
+    // units.default must be in units.supported
+    let units_default = v["units"]["default"].as_str().unwrap_or("");
+    assert!(!units_default.is_empty(), "units.default must be non-empty");
+    let supported = v["units"]["supported"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    assert!(
+        supported.iter().any(|x| x.as_str() == Some(units_default)),
+        "units.default must be in units.supported"
+    );
+
+    // export section sanity
+    assert!(v["export"].is_object(), "export must be object");
+    let dp = v["export"]["decimal_places"].as_u64().unwrap_or(0);
+    assert!(dp <= 10, "export.decimal_places too large");
+    let locale = v["export"]["force_locale"].as_str().unwrap_or("");
+    assert!(!locale.is_empty(), "export.force_locale must be non-empty");
 }

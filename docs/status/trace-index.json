@@ -1,3 +1,15 @@
 {
-  "tasks": {}
+  "tasks": {
+    "S12-IO-SSOT-001": {
+      "branch": "feature/s12-io-ssot-001-001",
+      "artifacts": [
+        "docs/verification/S12-IO-SSOT-001.md"
+      ],
+      "verification_evidence": {
+        "history": [],
+        "preflight": [],
+        "tests": []
+      }
+    }
+  }
 }
