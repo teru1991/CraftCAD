@@ -96,11 +96,22 @@
     {
       "format": "dxf",
       "direction": "export",
-      "feature": "entity_cubic_bezier",
+      "feature": "entity_path_unhandled_segment",
       "level": "best_effort",
-      "action": "approx",
+      "action": "approx_or_split",
       "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
-      "notes": "DXF出力でBezierは近似。"
+      "notes": "未対応segmentはenable_approx推奨。無効時はpolylineへ分割/近似。"
+    },
+
+    { "format": "svg", "direction": "export", "feature": "entity_path", "level": "supported" },
+    {
+      "format": "svg",
+      "direction": "export",
+      "feature": "entity_text",
+      "level": "best_effort",
+      "action": "fallback",
+      "reason_codes": ["IO_TEXT_FALLBACK_FONT"],
+      "notes": "SVG text はフォント埋め込み等を行わずhintとして扱う。"
     },
     {
       "format": "dxf",
