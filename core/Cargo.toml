@@ -26,6 +26,8 @@ members = [
   "crates/diagnostics",
   "crates/drawing_model",
   "crates/diycad_document",
+  "crates/presets",
+  "crates/wizards",
   "serialize",
   "commands",
   "edit_ops",
