@@ -1,0 +1,59 @@
+{
+  "entities": [
+    {
+      "font_hint": "Arial",
+      "id": "t1",
+      "layer": "GUIDE",
+      "pos": {
+        "x": 5.0,
+        "y": 5.0
+      },
+      "rotation_rad": 0.0,
+      "size": 12.0,
+      "text": "hello",
+      "type": "text"
+    },
+    {
+      "closed": false,
+      "id": "p1",
+      "segments": [
+        {
+          "a": {
+            "x": 0.0,
+            "y": 0.0
+          },
+          "b": {
+            "x": 10.0,
+            "y": 0.0
+          },
+          "kind": "line"
+        },
+        {
+          "a": {
+            "x": 10.0,
+            "y": 0.0
+          },
+          "b": {
+            "x": 10.0,
+            "y": 10.0
+          },
+          "kind": "line"
+        }
+      ],
+      "stroke": {
+        "color_policy": "by_layer",
+        "layer": "CUT",
+        "linetype": "CONTINUOUS",
+        "weight": 0.25
+      },
+      "type": "path"
+    }
+  ],
+  "metadata": {
+    "determinism_tag": "seed=0;round_step=0.000001000000;close_eps=0.000001000000;approx_eps=0.001000000000",
+    "source_format": "json",
+    "unit_guess": null
+  },
+  "schema_version": 1,
+  "units": "mm"
+}
