@@ -76,8 +76,19 @@
       ],
       "verification": "docs/verification/S13-WIZARDS-ENGINE-004.md",
       "evidence": {
-        "head_sha": "183c4af08ba65df02fba7cc68689a0c58b876b41",
-        "tests": "cargo test -p craftcad_wizards: pass; cargo test -p craftcad_serialize spec_ssot_lint_presets_templates_library: pass; cargo test -q: known existing fail compat_report_golden"
+        "head_sha": "see docs/verification/S13-WIZARDS-ENGINE-004.md",
+        "tests": "cargo test -p craftcad_wizards: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
+      }
+    },
+    "S13-LIBRARY-CRATE-003": {
+      "branch": "feature/s13-library-crate-003",
+      "artifacts": [
+        "core/crates/library/**"
+      ],
+      "verification": "docs/verification/S13-LIBRARY-CRATE-003.md",
+      "evidence": {
+        "head_sha": "see docs/verification/S13-LIBRARY-CRATE-003.md",
+        "tests": "cargo test -p craftcad_library: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
       }
     },
     "S13-LIBRARY-CRATE-003": {
