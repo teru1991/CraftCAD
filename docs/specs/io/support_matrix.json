@@ -24,7 +24,7 @@
       "level": "best_effort",
       "action": "approx",
       "reason_codes": ["IO_CURVE_APPROX_APPLIED", "IO_UNSUPPORTED_ENTITY_DXF_SPLINE"],
-      "notes": "SPLINE は cubic へ変換し、必要ならapproxでポリライン化する（curve_approx_policy に従う）。"
+      "notes": "SPLINE は best-effort で曲線へ変換し、必要ならapproxで救済する。"
     },
     {
       "format": "dxf",
@@ -41,21 +41,15 @@
     { "format": "svg", "direction": "import", "feature": "entity_polyline", "level": "supported" },
     { "format": "svg", "direction": "import", "feature": "entity_polygon", "level": "supported" },
     { "format": "svg", "direction": "import", "feature": "entity_circle", "level": "supported" },
-    {
-      "format": "svg",
-      "direction": "import",
-      "feature": "entity_path_quadratic_bezier",
-      "level": "supported",
-      "notes": "Q/T は cubic へ決定的に変換して保持する（形状は保持される）。"
-    },
+    { "format": "svg", "direction": "import", "feature": "entity_path_cubic_bezier", "level": "supported" },
     {
       "format": "svg",
       "direction": "import",
       "feature": "entity_path_elliptical_arc",
       "level": "best_effort",
-      "action": "convert_to_cubic",
+      "action": "convert_to_cubic_or_approx",
       "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
-      "notes": "SVG A は楕円弧→cubic（<=90deg/seg）に決定的変換して保持。さらに必要ならapproxでポリライン化。"
+      "notes": "SVG A は楕円弧→cubicへ決定的変換（<=90deg/seg）。さらに必要ならapprox。"
     },
     {
       "format": "svg",
@@ -86,14 +80,36 @@
     { "format": "json", "direction": "import", "feature": "internal_model_v1", "level": "supported" },
     { "format": "json", "direction": "export", "feature": "internal_model_v1", "level": "supported" },
 
+    { "format": "dxf", "direction": "export", "feature": "entity_line", "level": "supported" },
+    { "format": "dxf", "direction": "export", "feature": "entity_polyline", "level": "supported" },
+    { "format": "dxf", "direction": "export", "feature": "entity_arc", "level": "supported" },
+    { "format": "dxf", "direction": "export", "feature": "entity_circle", "level": "supported" },
     {
       "format": "dxf",
       "direction": "export",
-      "feature": "entity_cubic_bezier",
+      "feature": "entity_text",
+      "level": "best_effort",
+      "action": "fallback",
+      "reason_codes": ["IO_TEXT_FALLBACK_FONT"],
+      "notes": "DXF TEXTはフォント環境差があるためbest-effort。"
+    },
+    {
+      "format": "svg",
+      "direction": "export",
+      "feature": "entity_circle",
       "level": "best_effort",
       "action": "approx",
       "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
-      "notes": "DXF出力でBezierは近似。"
+      "notes": "circle は approx で polyline 化して path として出力する（enable_approx=true推奨）。"
+    },
+    {
+      "format": "dxf",
+      "direction": "export",
+      "feature": "entity_path_unhandled_segment",
+      "level": "best_effort",
+      "action": "approx_or_split",
+      "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
+      "notes": "未対応segmentはenable_approx推奨。無効時はpolylineへ分割/近似。"
     },
 
     { "format": "svg", "direction": "export", "feature": "entity_path", "level": "supported" },
@@ -109,29 +125,20 @@
     {
       "format": "svg",
       "direction": "export",
-      "feature": "entity_circle",
-      "level": "best_effort",
-      "action": "approx",
-      "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
-      "notes": "circle は approx で polyline 化して path として出力する（enable_approx=true推奨）。"
-    },
-    {
-      "format": "svg",
-      "direction": "export",
       "feature": "entity_arc",
       "level": "best_effort",
       "action": "approx",
       "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
-      "notes": "arc は approx で polyline 化して path として出力する（enable_approx=true推奨）。"
+      "notes": "arcはapproxしてpathへ出力（enable_approx=true推奨）。"
     },
     {
       "format": "svg",
       "direction": "export",
-      "feature": "entity_path_unhandled_segment",
+      "feature": "entity_circle",
       "level": "best_effort",
       "action": "approx",
       "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
-      "notes": "未対応segmentは enable_approx で救済する。"
+      "notes": "circleはapproxしてpathへ出力（enable_approx=true推奨）。"
     }
   ]
 }

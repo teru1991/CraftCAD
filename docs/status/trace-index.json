@@ -2,25 +2,18 @@
   "tasks": {
     "S12-IO-SSOT-001": {
       "branch": "feature/s12-io-ssot-001-001",
-      "artifacts": [
-        "docs/verification/S12-IO-SSOT-001.md"
-      ],
-      "verification_evidence": {
-        "history": [],
-        "preflight": [],
-        "tests": []
-      }
+      "artifacts": ["docs/verification/S12-IO-SSOT-001.md"],
+      "verification_evidence": { "history": [], "preflight": [], "tests": [] }
     },
     "S12-IO-SVG-002": {
       "branch": "feature/s12-io-svg-002-001",
-      "artifacts": [
-        "docs/verification/S12-IO-SVG-002.md"
-      ],
-      "verification_evidence": {
-        "history": [],
-        "preflight": [],
-        "tests": []
-      }
+      "artifacts": ["docs/verification/S12-IO-SVG-002.md"],
+      "verification_evidence": { "history": [], "preflight": [], "tests": [] }
+    },
+    "S12-IO-DXF-003": {
+      "branch": "feature/s12-io-dxf-003-001",
+      "artifacts": ["docs/verification/S12-IO-DXF-003.md"],
+      "verification_evidence": { "history": [], "preflight": [], "tests": [] }
     }
   }
 }

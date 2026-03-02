@@ -11,14 +11,14 @@
 
 ## Best-effort の約束
 - 必ず reason_codes を列挙（警告に出す）
-- 必ず action を明記（approx/fallback/convert_to_cubic 等）
-- 実装は reason_codes を warnings に積む（contextを付ける）
+- 必ず action を明記（approx/fallback/convert_to_cubic_or_approx 等）
+- 実装は reason_codes をそのまま warnings に積む（contextを付ける）
 
 ## Not supported の約束
 - action: drop / replace を明記
 - 必ず reason_codes を列挙（落とさないための説明）
 
-## SVG（import）補足
-- path d は相対/省略/主要コマンドに対応し、A(楕円弧)は cubic へ決定的に変換して保持する
-- transform は affine として適用する（translate/scale/rotate/matrix）
-- 外部参照（href/xlink:href）は遮断し、ReasonCodeで説明する
+## DXF（export）補足
+- LINE/LWPOLYLINE/ARC/CIRCLE/TEXT を出力できること（support_matrixに従う）
+- CubicBezier は best-effort で polyline 近似（enable_approx=true 推奨）
+- 未対応segmentは best-effort で近似/分割（ReasonCodeで説明）
