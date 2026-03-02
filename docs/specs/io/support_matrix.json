@@ -94,13 +94,13 @@
       "notes": "DXF TEXTはフォント環境差があるためbest-effort。"
     },
     {
-      "format": "dxf",
+      "format": "svg",
       "direction": "export",
-      "feature": "entity_cubic_bezier",
+      "feature": "entity_circle",
       "level": "best_effort",
       "action": "approx",
       "reason_codes": ["IO_CURVE_APPROX_APPLIED"],
-      "notes": "DXF出力でBezierは近似。"
+      "notes": "circle は approx で polyline 化して path として出力する（enable_approx=true推奨）。"
     },
     {
       "format": "dxf",
