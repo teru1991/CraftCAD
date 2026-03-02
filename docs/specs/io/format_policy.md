@@ -6,6 +6,9 @@ Machine-readable SSOT:
 - `docs/specs/io/support_matrix.json`
 - `docs/specs/io/mapping_rules.json`
 
+Related acceptance gate:
+- `docs/specs/io/compat_policy.md`
+
 ## Terminology
 - **Importer**: parses bytes into `InternalModel` + `warnings` + `IoReport`
 - **Exporter**: converts `InternalModel` into bytes + `warnings` + `IoReport`
@@ -41,7 +44,7 @@ Exporters MUST:
 ## Path Optimization Contract
 - dedup: remove duplicate segments (exact or within eps)
 - join: merge contiguous collinear lines within eps
-- order: stable sort by (layer, linetype, entity_kind, bbox_min, bbox_max, id) using deterministic tie-breakers
+- order: stable sort by deterministic tie-breakers
 - MUST NOT change shape beyond `determinism.close_eps`
 
 ## Curve Approx Policy

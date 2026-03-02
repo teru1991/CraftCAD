@@ -15,4 +15,5 @@ serde_json = "1.0"
 thiserror = "1.0"
 
 [dev-dependencies]
+craftcad_io_support = { path = "../io_support" }
 md5 = "0.7"

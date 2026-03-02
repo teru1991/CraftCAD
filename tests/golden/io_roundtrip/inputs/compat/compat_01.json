@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "units": "mm",
+  "metadata": {
+    "source_format": "json",
+    "unit_guess": null,
+    "determinism_tag": ""
+  },
+  "entities": [
+    {
+      "type": "path",
+      "id": "c_path_0",
+      "stroke": {
+        "layer": "CUT",
+        "linetype": "solid",
+        "weight": 0.2,
+        "color_policy": "by_layer"
+      },
+      "closed": false,
+      "segments": [
+        { "kind": "line", "a": { "x": 0.0, "y": 0.0 }, "b": { "x": 20.0, "y": 0.0 } },
+        { "kind": "arc", "center": { "x": 20.0, "y": 10.0 }, "radius": 10.0, "start_rad": -1.57079632679, "end_rad": 0.0, "ccw": true },
+        { "kind": "circle", "center": { "x": 35.0, "y": 8.0 }, "radius": 3.0 },
+        { "kind": "cubic_bezier", "a": { "x": 30.0, "y": 10.0 }, "c1": { "x": 34.0, "y": 10.0 }, "c2": { "x": 34.0, "y": 14.0 }, "b": { "x": 30.0, "y": 14.0 } }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "c_text_0",
+      "layer": "GUIDE",
+      "pos": { "x": 5.0, "y": 5.0 },
+      "text": "compat",
+      "size": 12.0,
+      "font_hint": null,
+      "rotation_rad": 0.0
+    }
+  ]
+}
