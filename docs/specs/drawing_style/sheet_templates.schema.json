@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/specs/drawing_style/sheet_templates.schema.json",
+  "title": "CraftCAD Sheet Templates SSOT",
+  "type": "object",
+  "required": ["schema_version", "templates"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "templates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/template" }
+    }
+  },
+  "$defs": {
+    "id_v": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*_v[0-9]+$"
+    },
+    "label_i18n": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "ja": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "en": { "type": "string", "minLength": 1, "maxLength": 128 }
+      }
+    },
+    "rect_mm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x_mm", "y_mm", "w_mm", "h_mm"],
+      "properties": {
+        "x_mm": { "type": "number", "minimum": 0.0, "maximum": 2000.0 },
+        "y_mm": { "type": "number", "minimum": 0.0, "maximum": 2000.0 },
+        "w_mm": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 2000.0 },
+        "h_mm": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 2000.0 }
+      }
+    },
+    "margins_mm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["top", "right", "bottom", "left"],
+      "properties": {
+        "top": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "right": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "bottom": { "type": "number", "minimum": 0.0, "maximum": 100.0 },
+        "left": { "type": "number", "minimum": 0.0, "maximum": 100.0 }
+      }
+    },
+    "title_block_field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key", "label", "required"],
+      "properties": {
+        "key": {
+          "enum": [
+            "project_title",
+            "drawing_title",
+            "scale",
+            "unit",
+            "date",
+            "author",
+            "revision",
+            "schema_version",
+            "app_version"
+          ]
+        },
+        "label": { "$ref": "#/$defs/label_i18n" },
+        "required": { "type": "boolean" },
+        "max_chars": { "type": "integer", "minimum": 4, "maximum": 256 }
+      }
+    },
+    "title_block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "bbox_mm", "fields", "field_font_size_mm"],
+      "properties": {
+        "position": { "enum": ["bottom_right", "bottom_left", "top_right", "top_left"] },
+        "bbox_mm": { "$ref": "#/$defs/rect_mm" },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/title_block_field" }
+        },
+        "field_font_size_mm": { "type": "number", "minimum": 1.5, "maximum": 8.0 }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size", "width_mm", "height_mm", "margin_mm", "title_block"],
+      "properties": {
+        "size": { "enum": ["A4", "A3"] },
+        "width_mm": { "type": "number", "minimum": 100.0, "maximum": 2000.0 },
+        "height_mm": { "type": "number", "minimum": 100.0, "maximum": 2000.0 },
+        "margin_mm": { "$ref": "#/$defs/margins_mm" },
+        "title_block": { "$ref": "#/$defs/title_block" }
+      }
+    },
+    "viewports": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_view_region"],
+      "properties": {
+        "model_view_region": { "$ref": "#/$defs/rect_mm" },
+        "notes_region": { "$ref": "#/$defs/rect_mm" }
+      }
+    },
+    "template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "page", "viewports"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id_v" },
+        "label": { "$ref": "#/$defs/label_i18n" },
+        "page": { "$ref": "#/$defs/page" },
+        "viewports": { "$ref": "#/$defs/viewports" }
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "presets": [
+    {
+      "id": "a4_default_v1",
+      "label": { "ja": "A4 標準（印刷向け）", "en": "A4 Default (Print)" },
+      "target_template_id": "a4_portrait_v1",
+      "margins_mm": { "top": 10.0, "right": 10.0, "bottom": 10.0, "left": 10.0 },
+      "scale_policy": { "mode": "fit_to_page" },
+      "min_readable_text_height_mm": 2.2,
+      "line_weight_scale": 1.0,
+      "color_mode": "bw",
+      "text_hinting": { "prefer_outlines": false, "kerning": true },
+      "export": { "svg_precision": 4, "pdf_embed_fonts": true, "pdf_page_rotation_deg": 0 }
+    },
+    {
+      "id": "a3_default_v1",
+      "label": { "ja": "A3 標準（印刷向け）", "en": "A3 Default (Print)" },
+      "target_template_id": "a3_portrait_v1",
+      "margins_mm": { "top": 10.0, "right": 10.0, "bottom": 10.0, "left": 10.0 },
+      "scale_policy": { "mode": "fit_to_page" },
+      "min_readable_text_height_mm": 2.2,
+      "line_weight_scale": 1.0,
+      "color_mode": "bw",
+      "text_hinting": { "prefer_outlines": false, "kerning": true },
+      "export": { "svg_precision": 4, "pdf_embed_fonts": true, "pdf_page_rotation_deg": 0 }
+    }
+  ]
+}

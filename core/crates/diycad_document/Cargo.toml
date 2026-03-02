@@ -1,0 +1,13 @@
+[package]
+name = "diycad_document"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+serde_json = { version = "1", features = ["preserve_order"] }
+thiserror = "1"
+drawing_model = { path = "../drawing_model" }
+
+[dev-dependencies]
+jsonschema = "0.17"
