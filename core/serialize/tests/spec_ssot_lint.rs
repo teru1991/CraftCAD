@@ -623,3 +623,301 @@ fn ssot_lint_io_policy_docs_have_ssot_meta_and_required_keys() {
     lint_policy_md_required_keys(CURVE_APPROX_POLICY_MD);
     lint_policy_md_required_keys(POSTPROCESS_POLICY_MD);
 }
+
+use semver::Version;
+
+fn repo_root_from_manifest_s13() -> PathBuf {
+    let start = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    for up in 0..=6usize {
+        let mut p = start.clone();
+        for _ in 0..up {
+            p = p.parent().unwrap_or(&p).to_path_buf();
+        }
+        if p.join("docs").join("specs").exists() {
+            return p;
+        }
+    }
+    panic!("repo root not found from CARGO_MANIFEST_DIR={}", start.display());
+}
+
+fn resolve_local_refs_s13(value: &mut Value, schema_root: &Path) {
+    match value {
+        Value::Object(map) => {
+            if let Some(Value::String(r)) = map.get("$ref") {
+                if !r.contains("://") && !r.starts_with('#') {
+                    let target = schema_root.join(r);
+                    let mut inlined = read_json(&target);
+                    resolve_local_refs_s13(&mut inlined, schema_root);
+                    *value = inlined;
+                    return;
+                }
+            }
+            for v in map.values_mut() {
+                resolve_local_refs_s13(v, schema_root);
+            }
+        }
+        Value::Array(arr) => {
+            for v in arr {
+                resolve_local_refs_s13(v, schema_root);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn compile_schema_with_root_s13(schema_path: &Path, schema_root: &Path) -> JSONSchema {
+    let mut schema_json = read_json(schema_path);
+    resolve_local_refs_s13(&mut schema_json, schema_root);
+    JSONSchema::options()
+        .with_draft(jsonschema::Draft::Draft7)
+        .compile(&schema_json)
+        .unwrap_or_else(|e| panic!("schema compile failed: {}: {}", schema_path.display(), e))
+}
+
+fn semver_must_parse_s13(v: &str, ctx: &str) {
+    Version::parse(v).unwrap_or_else(|e| panic!("semver invalid ({}): {} ({})", ctx, v, e));
+}
+
+fn id_must_match_s13(re: &Regex, id: &str, ctx: &str) {
+    if !re.is_match(id) {
+        panic!("id invalid ({}): {}", ctx, id);
+    }
+    let lower = id.to_ascii_lowercase();
+    let reserved = [
+        "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7",
+        "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9",
+    ];
+    if reserved.contains(&lower.as_str()) {
+        panic!("id is reserved word ({}): {}", ctx, id);
+    }
+}
+
+fn collect_builtin_preset_ids_s13(bundle: &Value) -> BTreeSet<String> {
+    let mut set = BTreeSet::new();
+    for key in ["materials", "processes", "outputs", "hardware"] {
+        let arr = bundle
+            .get(key)
+            .and_then(|v| v.as_array())
+            .unwrap_or_else(|| panic!("bundle missing array: {}", key));
+        for item in arr {
+            let id = item
+                .get("id")
+                .and_then(|v| v.as_str())
+                .unwrap_or_else(|| panic!("preset missing id in {}", key));
+            set.insert(id.to_string());
+        }
+    }
+    set
+}
+
+fn validate_tags_policy_s13(tags_policy: &Value) {
+    let schema_version = tags_policy
+        .get("schema_version")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(-1);
+    if schema_version < 1 {
+        panic!("tags.schema.json: schema_version must be >=1");
+    }
+
+    let max_len = tags_policy
+        .get("max_len")
+        .and_then(|v| v.as_i64())
+        .unwrap_or(-1);
+    if max_len != 32 {
+        panic!("tags.schema.json: max_len must be 32 (got {})", max_len);
+    }
+
+    let normalize = tags_policy
+        .get("normalize")
+        .and_then(|v| v.as_object())
+        .unwrap_or_else(|| panic!("tags.schema.json: normalize missing"));
+    let expect_true = |k: &str| {
+        let b = normalize.get(k).and_then(|v| v.as_bool()).unwrap_or(false);
+        if !b {
+            panic!("tags.schema.json: normalize.{} must be true", k);
+        }
+    };
+    expect_true("lowercase");
+    expect_true("trim");
+    expect_true("collapse_spaces");
+    expect_true("remove_zenkaku_spaces");
+
+    let forb = tags_policy
+        .get("forbidden_patterns")
+        .and_then(|v| v.as_array())
+        .unwrap_or_else(|| panic!("tags.schema.json: forbidden_patterns missing"));
+    let patterns: BTreeSet<String> = forb
+        .iter()
+        .filter_map(|v| v.as_str().map(|s| s.to_string()))
+        .collect();
+    let must = ["/", "\\\\", "\\.\\.", ":", "\\0"];
+    for m in must {
+        if !patterns.contains(m) {
+            panic!("tags.schema.json: forbidden_patterns must include '{}'", m);
+        }
+    }
+}
+
+fn validate_template_required_presets_s13(template: &Value, builtin_ids: &BTreeSet<String>) {
+    let req = template
+        .get("required_presets")
+        .and_then(|v| v.as_object())
+        .unwrap_or_else(|| panic!("template.required_presets missing"));
+    let keys = [
+        "material_preset_ids",
+        "process_preset_ids",
+        "output_preset_ids",
+        "hardware_preset_ids",
+    ];
+    for k in keys {
+        if let Some(arr) = req.get(k).and_then(|v| v.as_array()) {
+            for idv in arr {
+                let id = idv
+                    .as_str()
+                    .unwrap_or_else(|| panic!("template.required_presets.{} contains non-string", k));
+                if !builtin_ids.contains(id) {
+                    panic!("template requires missing preset: {} (field={})", id, k);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn spec_ssot_lint_presets_templates_library() {
+    let root = repo_root_from_manifest_s13();
+
+    let presets_dir = root.join("docs").join("specs").join("presets");
+    let templates_dir = root.join("docs").join("specs").join("templates");
+    let library_dir = root.join("docs").join("specs").join("library");
+
+    let material_schema = presets_dir.join("material_preset.schema.json");
+    let process_schema = presets_dir.join("process_preset.schema.json");
+    let output_schema = presets_dir.join("output_preset.schema.json");
+    let hardware_schema = presets_dir.join("hardware_preset.schema.json");
+    let bundle_schema = presets_dir.join("presets_bundle.schema.json");
+    let template_schema = templates_dir.join("wizard_template.schema.json");
+    let tags_schema = library_dir.join("tags.schema.json");
+
+    for p in [
+        &material_schema,
+        &process_schema,
+        &output_schema,
+        &hardware_schema,
+        &bundle_schema,
+        &template_schema,
+        &tags_schema,
+    ] {
+        assert!(p.exists(), "missing SSOT file: {}", p.display());
+    }
+
+    let _ = compile_schema_with_root_s13(&material_schema, &presets_dir);
+    let _ = compile_schema_with_root_s13(&process_schema, &presets_dir);
+    let _ = compile_schema_with_root_s13(&output_schema, &presets_dir);
+    let _ = compile_schema_with_root_s13(&hardware_schema, &presets_dir);
+    let _ = compile_schema_with_root_s13(&bundle_schema, &presets_dir);
+    let compiled_template_schema = compile_schema_with_root_s13(&template_schema, &templates_dir);
+    let _ = compile_schema_with_root_s13(&tags_schema, &library_dir);
+
+    let tags_policy = read_json(&tags_schema);
+    validate_tags_policy_s13(&tags_policy);
+
+    let built_in = presets_dir.join("built_in_presets.json");
+    assert!(built_in.exists(), "missing: {}", built_in.display());
+    let bundle = read_json(&built_in);
+
+    let compiled_bundle_schema = compile_schema_with_root_s13(&bundle_schema, &presets_dir);
+    if let Err(errors) = compiled_bundle_schema.validate(&bundle) {
+        let mut msg = String::new();
+        for e in errors {
+            msg.push_str(&format!("- {} at {}\n", e, e.instance_path));
+        }
+        panic!("built_in_presets.json schema validation failed:\n{}", msg);
+    }
+
+    let id_re = Regex::new(r"^[a-z0-9][a-z0-9_\-]*$").unwrap();
+    let mut seen_ids = BTreeSet::new();
+
+    for (group, key) in [
+        ("materials", "materials"),
+        ("processes", "processes"),
+        ("outputs", "outputs"),
+        ("hardware", "hardware"),
+    ] {
+        let arr = bundle.get(key).and_then(|v| v.as_array()).unwrap();
+        for item in arr {
+            let id = item.get("id").and_then(|v| v.as_str()).unwrap();
+            let ver = item.get("version").and_then(|v| v.as_str()).unwrap();
+            id_must_match_s13(&id_re, id, group);
+            semver_must_parse_s13(ver, &format!("preset:{}:{}", group, id));
+            if !seen_ids.insert(id.to_string()) {
+                panic!("duplicate preset id across bundle: {}", id);
+            }
+            if let Some(t) = item.get("thickness_mm").and_then(|v| v.as_f64()) {
+                if t <= 0.0 {
+                    panic!("thickness_mm must be > 0: {}", id);
+                }
+            }
+            if let Some(k) = item.get("kerf_mm").and_then(|v| v.as_f64()) {
+                if k < 0.0 {
+                    panic!("kerf_mm must be >= 0: {}", id);
+                }
+            }
+            if let Some(m) = item.get("margin_mm").and_then(|v| v.as_f64()) {
+                if m < 0.0 {
+                    panic!("margin_mm must be >= 0: {}", id);
+                }
+            }
+        }
+    }
+
+    let builtin_ids = collect_builtin_preset_ids_s13(&bundle);
+
+    let template_files = [
+        templates_dir.join("shelf_wizard.template.json"),
+        templates_dir.join("box_wizard.template.json"),
+        templates_dir.join("leather_pouch_wizard.template.json"),
+    ];
+    for tf in template_files {
+        assert!(tf.exists(), "missing template: {}", tf.display());
+        let t = read_json(&tf);
+
+        if let Err(errors) = compiled_template_schema.validate(&t) {
+            let mut msg = String::new();
+            for e in errors {
+                msg.push_str(&format!("- {} at {}\n", e, e.instance_path));
+            }
+            panic!("template schema validation failed: {}\n{}", tf.display(), msg);
+        }
+
+        let tid = t.get("template_id").and_then(|v| v.as_str()).unwrap();
+        let tver = t
+            .get("template_version")
+            .and_then(|v| v.as_str())
+            .unwrap();
+        id_must_match_s13(&id_re, tid, "template_id");
+        semver_must_parse_s13(tver, &format!("template:{}", tid));
+
+        validate_template_required_presets_s13(&t, &builtin_ids);
+    }
+
+    let processes: BTreeSet<String> = bundle
+        .get("processes")
+        .and_then(|v| v.as_array())
+        .unwrap()
+        .iter()
+        .map(|x| x.get("id").and_then(|v| v.as_str()).unwrap().to_string())
+        .collect();
+
+    for m in bundle.get("materials").and_then(|v| v.as_array()).unwrap() {
+        if let Some(arr) = m.get("recommended_process_ids").and_then(|v| v.as_array()) {
+            let mid = m.get("id").and_then(|v| v.as_str()).unwrap();
+            for pidv in arr {
+                let pid = pidv.as_str().unwrap();
+                if !processes.contains(pid) {
+                    panic!("material {} recommends missing process preset: {}", mid, pid);
+                }
+            }
+        }
+    }
+}

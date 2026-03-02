@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "bundle_version": "1.0.0",
+  "materials": [
+    {
+      "id": "plywood_12mm",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.material.plywood_12mm",
+      "tags": ["wood", "plywood", "12mm", "sheet"],
+      "created_by": "builtin",
+      "kind": "wood",
+      "thickness_mm": 12.0,
+      "grain": "dir_x",
+      "shrink_allowance_mm": 0.5,
+      "recommended_process_ids": ["saw_basic", "cnc_basic"]
+    },
+    {
+      "id": "plywood_18mm",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.material.plywood_18mm",
+      "tags": ["wood", "plywood", "18mm", "sheet"],
+      "created_by": "builtin",
+      "kind": "wood",
+      "thickness_mm": 18.0,
+      "grain": "dir_x",
+      "shrink_allowance_mm": 0.5,
+      "recommended_process_ids": ["saw_basic", "cnc_basic"]
+    },
+    {
+      "id": "cedar_12mm",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.material.cedar_12mm",
+      "tags": ["wood", "cedar", "12mm", "board"],
+      "created_by": "builtin",
+      "kind": "wood",
+      "thickness_mm": 12.0,
+      "grain": "dir_x",
+      "shrink_allowance_mm": 1.0,
+      "recommended_process_ids": ["saw_basic"]
+    },
+    {
+      "id": "mdf_9mm",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.material.mdf_9mm",
+      "tags": ["wood", "mdf", "9mm", "sheet"],
+      "created_by": "builtin",
+      "kind": "wood",
+      "thickness_mm": 9.0,
+      "grain": "none",
+      "shrink_allowance_mm": 0.3,
+      "recommended_process_ids": ["laser_basic", "cnc_basic", "saw_basic"]
+    },
+    {
+      "id": "leather_1_5mm",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.material.leather_1_5mm",
+      "tags": ["leather", "1.5mm"],
+      "created_by": "builtin",
+      "kind": "leather",
+      "thickness_mm": 1.5,
+      "grain": "none",
+      "shrink_allowance_mm": 0.0,
+      "recommended_process_ids": ["knife_basic", "laser_basic"]
+    },
+    {
+      "id": "leather_2_0mm",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.material.leather_2_0mm",
+      "tags": ["leather", "2.0mm"],
+      "created_by": "builtin",
+      "kind": "leather",
+      "thickness_mm": 2.0,
+      "grain": "none",
+      "shrink_allowance_mm": 0.0,
+      "recommended_process_ids": ["knife_basic", "laser_basic"]
+    }
+  ],
+  "processes": [
+    {
+      "id": "saw_basic",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.process.saw_basic",
+      "tags": ["process", "saw"],
+      "created_by": "builtin",
+      "tool_kind": "saw",
+      "kerf_mm": 1.0,
+      "margin_mm": 3.0,
+      "min_feature_mm": 2.0,
+      "joinery_defaults": { "tabs_enabled": false, "dogbone_enabled": false }
+    },
+    {
+      "id": "laser_basic",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.process.laser_basic",
+      "tags": ["process", "laser"],
+      "created_by": "builtin",
+      "tool_kind": "laser",
+      "kerf_mm": 0.2,
+      "margin_mm": 2.0,
+      "min_feature_mm": 0.6,
+      "joinery_defaults": { "tabs_enabled": false, "dogbone_enabled": false }
+    },
+    {
+      "id": "cnc_basic",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.process.cnc_basic",
+      "tags": ["process", "cnc"],
+      "created_by": "builtin",
+      "tool_kind": "cnc",
+      "kerf_mm": 0.0,
+      "margin_mm": 3.0,
+      "min_feature_mm": 1.0,
+      "joinery_defaults": { "tabs_enabled": true, "dogbone_enabled": true }
+    },
+    {
+      "id": "knife_basic",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.process.knife_basic",
+      "tags": ["process", "knife"],
+      "created_by": "builtin",
+      "tool_kind": "knife",
+      "kerf_mm": 0.0,
+      "margin_mm": 1.0,
+      "min_feature_mm": 0.8,
+      "joinery_defaults": { "tabs_enabled": false, "dogbone_enabled": false }
+    }
+  ],
+  "outputs": [
+    {
+      "id": "export_svg_laser",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.output.export_svg_laser",
+      "tags": ["output", "svg", "laser"],
+      "created_by": "builtin",
+      "preferred_formats": ["svg"],
+      "origin_policy": "move_to_zero",
+      "postprocess_policy_id": "post_svg_laser_v1",
+      "bw_mode_default": true
+    },
+    {
+      "id": "export_dxf_cnc",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.output.export_dxf_cnc",
+      "tags": ["output", "dxf", "cnc"],
+      "created_by": "builtin",
+      "preferred_formats": ["dxf"],
+      "origin_policy": "move_to_zero",
+      "postprocess_policy_id": "post_dxf_cnc_v1",
+      "bw_mode_default": false
+    },
+    {
+      "id": "export_json_internal",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.output.export_json_internal",
+      "tags": ["output", "json", "internal"],
+      "created_by": "builtin",
+      "preferred_formats": ["json"],
+      "origin_policy": "keep",
+      "postprocess_policy_id": "post_json_internal_v1",
+      "bw_mode_default": false
+    }
+  ],
+  "hardware": [
+    {
+      "id": "dowel_8mm",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.hardware.dowel_8mm",
+      "tags": ["hardware", "dowel", "8mm"],
+      "created_by": "builtin",
+      "kind": "dowel",
+      "key_params": { "dowel_diameter_mm": 8.0, "dowel_length_mm": 30.0 },
+      "hole_rules": { "pilot_diameter_mm": 8.0, "depth_mm": 15.0 }
+    },
+    {
+      "id": "screw_3_5x30",
+      "version": "1.0.0",
+      "schema_version": 1,
+      "display_name_key": "preset.hardware.screw_3_5x30",
+      "tags": ["hardware", "screw", "3.5mm", "30mm"],
+      "created_by": "builtin",
+      "kind": "screw",
+      "key_params": { "screw_diameter_mm": 3.5, "screw_length_mm": 30.0 },
+      "hole_rules": { "pilot_diameter_mm": 2.5, "countersink_diameter_mm": 6.0, "depth_mm": 30.0 }
+    }
+  ]
+}

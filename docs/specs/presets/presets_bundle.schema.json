@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schema/presets/presets_bundle.schema.json",
+  "title": "PresetsBundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "bundle_version", "materials", "processes", "outputs", "hardware"],
+  "properties": {
+    "schema_version": { "type": "integer", "minimum": 1 },
+    "bundle_version": { "type": "string", "minLength": 1, "maxLength": 32 },
+    "materials": { "type": "array", "items": { "$ref": "material_preset.schema.json" } },
+    "processes": { "type": "array", "items": { "$ref": "process_preset.schema.json" } },
+    "outputs": { "type": "array", "items": { "$ref": "output_preset.schema.json" } },
+    "hardware": { "type": "array", "items": { "$ref": "hardware_preset.schema.json" } }
+  }
+}

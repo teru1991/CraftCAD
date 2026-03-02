@@ -54,6 +54,20 @@
         "preflight": [],
         "tests": []
       }
+    },
+    "S13-PRESETS-SSOT-LINT-001": {
+      "branch": "feature/s13-presets-ssot-lint-001",
+      "artifacts": [
+        "docs/specs/presets/*",
+        "docs/specs/templates/*",
+        "docs/specs/library/*",
+        "docs/specs/determinism/*"
+      ],
+      "verification": "docs/verification/S13-PRESETS-SSOT-LINT-001.md",
+      "evidence": {
+        "head_sha": "53c2b6c95b56c03b0a75bda5b2ce351e9de36f89",
+        "tests": "cargo test -p craftcad_serialize spec_ssot_lint_presets_templates_library: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
+      }
     }
   }
 }
