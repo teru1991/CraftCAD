@@ -46,6 +46,22 @@
         "ucel/crates/ucel-sdk/src/lib.rs",
         "ucel/crates/ucel-sdk/src/market_meta.rs"
       ]
+    },
+    "RUST-WARN-ERR-ZERO-001": {
+      "branch": "feature/rust-warn-err-zero-001",
+      "artifacts": [
+        ".github/workflows/rust-quality.yml",
+        "docs/runbooks/rust_quality.md",
+        "docs/status/trace-index.json",
+        "docs/verification/RUST-WARN-ERR-ZERO-001.md",
+        "scripts/rust_quality.ps1",
+        "scripts/rust_quality.sh",
+        "ucel/crates/ucel-symbol-core/src/market_meta.rs",
+        "ucel/crates/ucel-symbol-store/src/market_meta_store.rs"
+      ],
+      "verification_evidence": [
+        "docs/verification/RUST-WARN-ERR-ZERO-001.md"
+      ]
     }
   }
 }

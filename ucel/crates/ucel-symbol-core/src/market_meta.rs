@@ -35,18 +35,13 @@ impl MarketMetaId {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TickStepRounding {
     Down,
     Up,
+    #[default]
     Nearest,
-}
-
-impl Default for TickStepRounding {
-    fn default() -> Self {
-        Self::Nearest
-    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -445,5 +440,10 @@ mod tests {
     #[test]
     fn decimal_compare_helper_normalizes_scale() {
         assert!(cmp_decimal(Decimal::new(10, 1), Decimal::new(100, 2)).is_eq());
+    }
+
+    #[test]
+    fn tick_step_rounding_default_is_nearest() {
+        assert_eq!(TickStepRounding::default(), TickStepRounding::Nearest);
     }
 }

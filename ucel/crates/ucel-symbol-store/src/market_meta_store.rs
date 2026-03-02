@@ -16,28 +16,28 @@ pub struct MarketMetaRegistrySnapshot {
 pub enum MarketMetaEvent {
     Added {
         id: MarketMetaId,
-        meta: MarketMeta,
+        meta: Box<MarketMeta>,
         ts_recv: SystemTime,
         store_version: u64,
     },
     Updated {
         id: MarketMetaId,
         changed_fields: Vec<String>,
-        before: MarketMeta,
-        after: MarketMeta,
+        before: Box<MarketMeta>,
+        after: Box<MarketMeta>,
         ts_recv: SystemTime,
         store_version: u64,
     },
     Removed {
         id: MarketMetaId,
-        last_known: Option<MarketMeta>,
+        last_known: Option<Box<MarketMeta>>,
         reason: &'static str,
         ts_recv: SystemTime,
         store_version: u64,
     },
     Expired {
         id: MarketMetaId,
-        last_known: Option<MarketMeta>,
+        last_known: Option<Box<MarketMeta>>,
         ts_recv: SystemTime,
         store_version: u64,
     },
@@ -98,7 +98,7 @@ impl MarketMetaStore {
                 let ver = self.bump_version();
                 events.push(MarketMetaEvent::Expired {
                     id: k,
-                    last_known: Some(entry.meta),
+                    last_known: Some(Box::new(entry.meta)),
                     ts_recv: SystemTime::now(),
                     store_version: ver,
                 });
@@ -140,7 +140,7 @@ impl MarketMetaStore {
                     let ver = self.bump_version();
                     events.push(MarketMetaEvent::Removed {
                         id: k,
-                        last_known: Some(entry.meta),
+                        last_known: Some(Box::new(entry.meta)),
                         reason: "snapshot_missing",
                         ts_recv: SystemTime::now(),
                         store_version: ver,
@@ -167,8 +167,8 @@ impl MarketMetaStore {
                     events.push(MarketMetaEvent::Updated {
                         id,
                         changed_fields,
-                        before,
-                        after: meta,
+                        before: Box::new(before),
+                        after: Box::new(meta),
                         ts_recv: SystemTime::now(),
                         store_version: ver,
                     });
@@ -192,7 +192,7 @@ impl MarketMetaStore {
                 let ver = self.bump_version();
                 events.push(MarketMetaEvent::Added {
                     id,
-                    meta,
+                    meta: Box::new(meta),
                     ts_recv: SystemTime::now(),
                     store_version: ver,
                 });
