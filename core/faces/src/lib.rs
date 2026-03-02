@@ -1,5 +1,5 @@
 #![allow(
-    clippy::manual_is_multiple_of,
+    clippy::manual_is_finite,
     clippy::needless_range_loop,
     clippy::ptr_arg,
     clippy::result_large_err

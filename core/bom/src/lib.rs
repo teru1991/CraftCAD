@@ -154,7 +154,7 @@ pub fn write_bom_csv(bom: &BomTable, options: CsvOptions) -> Result<Vec<u8>> {
             format!("{:.2}", r.bbox_h),
             format!("{:.2}", r.area),
             format!("{:.2}", r.perimeter),
-            r.grain_dir.map(|v| format!("{:.1}", v)).unwrap_or_default(),
+            r.grain_dir.map(|v| format!("{v:.1}")).unwrap_or_default(),
             r.allow_rotate.to_string(),
             format!("{:.2}", r.margin),
             format!("{:.2}", r.kerf),

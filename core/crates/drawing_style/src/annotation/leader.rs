@@ -38,7 +38,7 @@ pub fn leader_ir(
     vec![
         StyledPrimitive {
             z: 35,
-            stable_id: format!("{}_L0", stable_prefix),
+            stable_id: format!("{stable_prefix}_L0"),
             stroke: Some(stroke.clone()),
             fill: None,
             text: None,
@@ -49,7 +49,7 @@ pub fn leader_ir(
         },
         StyledPrimitive {
             z: 35,
-            stable_id: format!("{}_L1", stable_prefix),
+            stable_id: format!("{stable_prefix}_L1"),
             stroke: Some(stroke),
             fill: None,
             text: None,

@@ -43,30 +43,41 @@ Invoke-Step -Name 'rust_test' -WorkingDirectory (Join-Path $RootDir 'core') -Com
 $DesktopCmake = Join-Path $RootDir 'apps/desktop/CMakeLists.txt'
 if (Test-Path $DesktopCmake) {
     $DesktopBuildDir = Join-Path $RootDir 'build/desktop'
+    $HasCmake = [bool](Get-Command cmake -ErrorAction SilentlyContinue)
 
     Invoke-Step -Name 'rust_ffi_desktop' -WorkingDirectory (Join-Path $RootDir 'core') -Command { cargo build -p craftcad_ffi_desktop }
 
     Invoke-Step -Name 'rust_ffi_build' -WorkingDirectory (Join-Path $RootDir 'core') -Command { cargo build -p craftcad_ffi_desktop }
-    Invoke-Step -Name 'cmake_configure' -WorkingDirectory $RootDir -Command { cmake -S apps/desktop -B $DesktopBuildDir -DCMAKE_BUILD_TYPE=Release }
-    Invoke-Step -Name 'cmake_build' -WorkingDirectory $RootDir -Command { cmake --build $DesktopBuildDir --parallel }
+    if ($HasCmake) {
+        Invoke-Step -Name 'cmake_configure' -WorkingDirectory $RootDir -Command { cmake -S apps/desktop -B $DesktopBuildDir -DCMAKE_BUILD_TYPE=Release }
+        Invoke-Step -Name 'cmake_build' -WorkingDirectory $RootDir -Command { cmake --build $DesktopBuildDir --parallel }
 
-    if ((Test-Path (Join-Path $DesktopBuildDir 'CTestTestfile.cmake')) -or (Test-Path (Join-Path $DesktopBuildDir 'Testing'))) {
-        Invoke-Step -Name 'ctest' -WorkingDirectory $RootDir -Command { ctest --test-dir $DesktopBuildDir --output-on-failure }
+        if ((Test-Path (Join-Path $DesktopBuildDir 'CTestTestfile.cmake')) -or (Test-Path (Join-Path $DesktopBuildDir 'Testing'))) {
+            Invoke-Step -Name 'ctest' -WorkingDirectory $RootDir -Command { ctest --test-dir $DesktopBuildDir --output-on-failure }
+        }
+        else {
+            "==> ctest`n[SKIP] ctest metadata not found in $DesktopBuildDir" | Out-File -FilePath (Join-Path $LogDir 'ctest.log') -Encoding utf8
+        }
     }
     else {
-        "==> ctest`n[SKIP] ctest metadata not found in $DesktopBuildDir" | Out-File -FilePath (Join-Path $LogDir 'ctest.log') -Encoding utf8
+        "==> cmake_configure`n[SKIP] cmake not found on PATH" | Out-File -FilePath (Join-Path $LogDir 'cmake_configure.log') -Encoding utf8
+        "==> cmake_build`n[SKIP] cmake not found on PATH" | Out-File -FilePath (Join-Path $LogDir 'cmake_build.log') -Encoding utf8
+        "==> ctest`n[SKIP] cmake not found on PATH" | Out-File -FilePath (Join-Path $LogDir 'ctest.log') -Encoding utf8
     }
 }
 
-$pythonCmd = if (Get-Command python -ErrorAction SilentlyContinue) {
-    'python'
+$pythonCmd = $null
+$pythonArgs = @()
+if (Get-Command python -ErrorAction SilentlyContinue) {
+    $pythonCmd = 'python'
 } elseif (Get-Command py -ErrorAction SilentlyContinue) {
-    'py -3'
+    $pythonCmd = 'py'
+    $pythonArgs = @('-3')
 } else {
     throw 'Python interpreter not found (python/py).'
 }
 
-Invoke-Expression "$pythonCmd \"$SummaryScript\" --log-dir \"$LogDir\" --out \"$SummaryFile\""
+& $pythonCmd @pythonArgs $SummaryScript --log-dir $LogDir --out $SummaryFile
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 if ($script:OverallStatus -eq 0) {

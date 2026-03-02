@@ -12,6 +12,12 @@ use craftcad_io::{ExportResult, Exporter, ImportResult, Importer};
 
 pub struct SvgIo;
 
+impl Default for SvgIo {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SvgIo {
     pub fn new() -> Self {
         Self

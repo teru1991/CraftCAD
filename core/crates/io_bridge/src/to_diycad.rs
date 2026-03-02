@@ -75,7 +75,7 @@ pub fn save_internal_model_to_diycad(
                                         "non-line segment dropped for diycad save",
                                     )
                                     .with_context("path_id", p.id.clone())
-                                    .with_context("segment_kind", format!("{:?}", other))
+                                    .with_context("segment_kind", format!("{other:?}"))
                                     .with_hint("enable_approx=true で事前Line化すると保存品質が向上します。"),
                                 );
                             } else {

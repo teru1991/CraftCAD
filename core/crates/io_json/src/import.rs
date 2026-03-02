@@ -246,7 +246,7 @@ fn parse_entity(v: &Value) -> AppResult<Entity> {
 fn migrate_if_needed(
     doc: Value,
     _opts: &ImportOptions,
-    _warnings: &mut Vec<AppError>,
+    _warnings: &mut [AppError],
     _report: &mut IoReport,
 ) -> AppResult<Value> {
     Ok(doc)

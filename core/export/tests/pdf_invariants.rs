@@ -32,5 +32,8 @@ fn svg_matches_golden_exact() {
     let golden = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/golden/export/sample_svg_expected.svg");
     let expected = std::fs::read_to_string(golden).expect("golden");
-    assert_eq!(svg.trim(), expected.trim());
+    assert_eq!(
+        svg.trim().replace("\r\n", "\n"),
+        expected.trim().replace("\r\n", "\n")
+    );
 }

@@ -165,7 +165,7 @@ pub fn export_tiled_pdf(doc: &Document, options: &TiledPdfOptions) -> Result<Vec
         next_id += 1;
         let page_id = next_id;
         next_id += 1;
-        page_refs.push(format!("{} 0 R", page_id));
+        page_refs.push(format!("{page_id} 0 R"));
 
         let mut stream = String::new();
         stream.push_str("BT /F1 10 Tf 20 20 Td ");
@@ -194,8 +194,7 @@ pub fn export_tiled_pdf(doc: &Document, options: &TiledPdfOptions) -> Result<Vec
             stream
         ));
         page_objs.push(format!(
-            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {} {}] /Resources << /Font << /F1 3 0 R >> >> /Contents {} 0 R >>",
-            page_w_pt, page_h_pt, content_id
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {page_w_pt} {page_h_pt}] /Resources << /Font << /F1 3 0 R >> >> /Contents {content_id} 0 R >>"
         ));
     }
 
@@ -241,7 +240,7 @@ pub fn export_tiled_pdf(doc: &Document, options: &TiledPdfOptions) -> Result<Vec
         format!("xref\n0 {}\n0000000000 65535 f \n", objects.len() + 1).as_bytes(),
     );
     for off in offsets.iter().skip(1) {
-        pdf.extend_from_slice(format!("{:010} 00000 n \n", off).as_bytes());
+        pdf.extend_from_slice(format!("{off:010} 00000 n \n").as_bytes());
     }
     let info_id = objects.len();
     pdf.extend_from_slice(

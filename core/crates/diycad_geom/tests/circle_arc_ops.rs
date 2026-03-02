@@ -143,7 +143,7 @@ fn seeded_line_arc_configs_are_deterministic() {
         signatures_b.push(s);
     }
 
-    assert_eq!(signatures_a, signatures_b, "seed={seed} eps={:?}", eps);
+    assert_eq!(signatures_a, signatures_b, "seed={seed} eps={eps:?}");
 }
 
 #[test]

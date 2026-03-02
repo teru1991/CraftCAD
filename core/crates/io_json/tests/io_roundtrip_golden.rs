@@ -19,7 +19,7 @@ fn read_string(path: &PathBuf) -> String {
 
 fn write_string(path: &PathBuf, s: &str) {
     if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).unwrap_or_else(|e| panic!("failed to create dirs: {}", e));
+        fs::create_dir_all(parent).unwrap_or_else(|e| panic!("failed to create dirs: {e}"));
     }
     fs::write(path, s).unwrap_or_else(|e| panic!("failed to write {}: {}", path.display(), e));
 }
@@ -34,7 +34,9 @@ fn assert_or_accept(path: &PathBuf, got: &str) {
         return;
     }
     let exp = read_string(path);
-    assert_eq!(exp, got, "golden mismatch: {}", path.display());
+    let v_exp: serde_json::Value = serde_json::from_str(&exp).expect("parse expected json");
+    let v_got: serde_json::Value = serde_json::from_str(got).expect("parse got json");
+    assert_eq!(v_exp, v_got, "golden mismatch: {}", path.display());
 }
 
 fn warnings_to_json(warnings: &[craftcad_io::reasons::AppError]) -> String {

@@ -75,7 +75,7 @@ pub fn place_annotation(
 
     items.push(StyledPrimitive {
         z: 44,
-        stable_id: format!("{}_BG", stable_id),
+        stable_id: format!("{stable_id}_BG"),
         stroke: None,
         fill: Some(FillStyle {
             color_hex: "#ffffff".to_string(),
@@ -85,7 +85,7 @@ pub fn place_annotation(
     });
     items.push(StyledPrimitive {
         z: 45,
-        stable_id: format!("{}_TEXT", stable_id),
+        stable_id: format!("{stable_id}_TEXT"),
         stroke: None,
         fill: None,
         text: Some(text_style),

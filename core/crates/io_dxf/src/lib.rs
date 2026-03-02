@@ -11,6 +11,12 @@ use craftcad_io::reasons::AppResult;
 use craftcad_io::{ExportResult, Exporter, ImportResult, Importer};
 
 pub struct DxfIo;
+impl Default for DxfIo {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DxfIo {
     pub fn new() -> Self {
         Self

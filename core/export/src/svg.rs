@@ -18,7 +18,7 @@ impl Default for SvgExportOptions {
 }
 
 fn fmt(v: f64, p: usize) -> String {
-    format!("{:.1$}", v, p)
+    format!("{v:.p$}")
 }
 fn poly_path(pts: &[Vec2], closed: bool, prec: usize) -> String {
     let mut out = String::new();

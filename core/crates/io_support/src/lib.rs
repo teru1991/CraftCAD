@@ -105,13 +105,6 @@ impl SupportMatrix {
             .find(|e| e.format == format && e.feature == feature && e.direction == direction)
             .and_then(|e| e.action.clone())
     }
-
-    pub fn action(&self, format: &str, feature: &str, direction: &str) -> Option<String> {
-        self.entries
-            .iter()
-            .find(|e| e.format == format && e.feature == feature && e.direction == direction)
-            .and_then(|e| e.action.clone())
-    }
 }
 
 impl MappingRules {

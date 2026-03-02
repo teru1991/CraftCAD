@@ -37,5 +37,5 @@ fn main() {
     };
     let manifest = create_manifest("CraftCAD", "0.1.0");
     save_diycad(Path::new(&out), &manifest, &doc).expect("save sample");
-    println!("wrote {}", out);
+    println!("wrote {out}");
 }

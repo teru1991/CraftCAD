@@ -131,7 +131,7 @@ pub fn build_sheet_ir(bundle: &DrawingSsotBundle, meta: &ProjectMeta) -> RenderI
             .as_deref()
             .or(f.label.en.as_deref())
             .unwrap_or(&f.key);
-        let mut s = format!("{}: {}", label, val);
+        let mut s = format!("{label}: {val}");
 
         if let Some(maxc) = f.max_chars {
             if s.chars().count() as u32 > maxc {

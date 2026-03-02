@@ -62,7 +62,7 @@ pub fn resolve_user_message(
         .unwrap_or_else(|| user_msg_key.to_string());
 
     for (k, v) in params {
-        let ph = format!("{{{}}}", k);
+        let ph = format!("{{{k}}}");
         let rv = if let Some(s) = v.as_str() {
             s.to_string()
         } else {

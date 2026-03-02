@@ -37,10 +37,14 @@ pub fn import_dxf(
 
     for e in ents {
         let kind = e.kind.to_uppercase();
-        let mut stroke = StrokeStyle::default();
-        stroke.layer = e.layer.clone();
-        stroke.linetype = e.linetype.clone();
-        stroke = map_stroke(&mr, stroke);
+        let stroke = map_stroke(
+            &mr,
+            StrokeStyle {
+                layer: e.layer.clone(),
+                linetype: e.linetype.clone(),
+                ..Default::default()
+            },
+        );
         let g2: Vec<(i32, String)> = e.groups.iter().map(|g| (g.code, g.value.clone())).collect();
 
         match kind.as_str() {

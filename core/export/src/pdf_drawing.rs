@@ -67,7 +67,7 @@ pub fn export_drawing_pdf(doc: &Document, options: &DrawingPdfOptions) -> Result
     let xref = pdf.len();
     pdf.extend_from_slice(format!("xref\n0 {}\n0000000000 65535 f \n", objs.len() + 1).as_bytes());
     for o in offs.iter().skip(1) {
-        pdf.extend_from_slice(format!("{:010} 00000 n \n", o).as_bytes());
+        pdf.extend_from_slice(format!("{o:010} 00000 n \n").as_bytes());
     }
     pdf.extend_from_slice(
         format!(

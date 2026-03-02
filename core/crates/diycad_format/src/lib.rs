@@ -113,7 +113,7 @@ pub fn salvage_document(document_value: &Value) -> AppResult<(Value, SalvageRepo
         return Err(AppError::new(
             ReasonCode::new("SALVAGE_DOCUMENT_MALFORMED"),
             Severity::Error,
-            format!("document missing required fields: {:?}", missing_required),
+            format!("document missing required fields: {missing_required:?}"),
         ));
     }
 

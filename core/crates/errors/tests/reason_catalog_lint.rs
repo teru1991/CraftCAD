@@ -15,8 +15,7 @@ fn test_reason_codes_catalog_consistency() {
 
     assert!(
         abs_path.exists(),
-        "reason_codes.json not found at {:?}",
-        abs_path
+        "reason_codes.json not found at {abs_path:?}"
     );
 
     let reason_codes_content =
@@ -45,8 +44,7 @@ fn test_reason_codes_catalog_consistency() {
         .join("docs/specs/errors/catalog.json");
     assert!(
         catalog_abs_path.exists(),
-        "catalog.json not found at {:?}",
-        catalog_abs_path
+        "catalog.json not found at {catalog_abs_path:?}"
     );
 
     let catalog_content =
@@ -69,37 +67,35 @@ fn test_reason_codes_catalog_consistency() {
 
         // Check that 'domain' field exists
         if item["domain"].is_null() {
-            errors.push(format!("Code '{}' is missing 'domain' field", code));
+            errors.push(format!("Code '{code}' is missing 'domain' field"));
         } else {
             let domain = item["domain"].as_str().expect("domain must be string");
             // Check domain matches code prefix (e.g., domain=IO → code starts with IO_)
-            if !code.starts_with(&format!("{}_", domain)) {
+            if !code.starts_with(&format!("{domain}_")) {
                 errors.push(format!(
-                    "Code '{}' has domain '{}' but code doesn't start with '{}_'",
-                    code, domain, domain
+                    "Code '{code}' has domain '{domain}' but code doesn't start with '{domain}_'"
                 ));
             }
         }
 
         // Check that 'severity' field exists
         if item["severity"].is_null() {
-            errors.push(format!("Code '{}' is missing 'severity' field", code));
+            errors.push(format!("Code '{code}' is missing 'severity' field"));
         }
 
         // Check that 'user_actions' exists and is not empty
         if item["user_actions"].is_null() {
-            errors.push(format!("Code '{}' is missing 'user_actions' field", code));
+            errors.push(format!("Code '{code}' is missing 'user_actions' field"));
         } else if let Some(actions) = item["user_actions"].as_array() {
             if actions.is_empty() {
-                errors.push(format!("Code '{}' has empty 'user_actions' array", code));
+                errors.push(format!("Code '{code}' has empty 'user_actions' array"));
             } else {
                 // Check that no action is empty string or too short
                 for (idx, action) in actions.iter().enumerate() {
                     if let Some(action_str) = action.as_str() {
                         if action_str.is_empty() {
                             errors.push(format!(
-                                "Code '{}' has empty user_action at index {}",
-                                code, idx
+                                "Code '{code}' has empty user_action at index {idx}"
                             ));
                         } else if action_str.len() < 5 {
                             errors.push(format!(
@@ -112,8 +108,7 @@ fn test_reason_codes_catalog_consistency() {
                         }
                     } else {
                         errors.push(format!(
-                            "Code '{}' has non-string user_action at index {}",
-                            code, idx
+                            "Code '{code}' has non-string user_action at index {idx}"
                         ));
                     }
                 }
@@ -122,18 +117,16 @@ fn test_reason_codes_catalog_consistency() {
 
         // Check that 'doc_link' exists and only references docs/ (no ..)
         if item["doc_link"].is_null() {
-            errors.push(format!("Code '{}' is missing 'doc_link' field", code));
+            errors.push(format!("Code '{code}' is missing 'doc_link' field"));
         } else if let Some(doc_link) = item["doc_link"].as_str() {
             if doc_link.contains("..") {
                 errors.push(format!(
-                    "Code '{}' has doc_link with '..' (path traversal): '{}'",
-                    code, doc_link
+                    "Code '{code}' has doc_link with '..' (path traversal): '{doc_link}'"
                 ));
             }
             if !doc_link.starts_with("docs/") {
                 errors.push(format!(
-                    "Code '{}' has doc_link not in docs/: '{}'",
-                    code, doc_link
+                    "Code '{code}' has doc_link not in docs/: '{doc_link}'"
                 ));
             }
         }
@@ -143,8 +136,7 @@ fn test_reason_codes_catalog_consistency() {
     for code in reason_codes_set.iter() {
         if !catalog_codes_set.contains(code) {
             errors.push(format!(
-                "Code '{}' is in reason_codes.json but NOT in catalog.json",
-                code
+                "Code '{code}' is in reason_codes.json but NOT in catalog.json"
             ));
         }
     }
@@ -153,8 +145,7 @@ fn test_reason_codes_catalog_consistency() {
     for code in catalog_codes_set.iter() {
         if !reason_codes_set.contains(code) {
             errors.push(format!(
-                "Code '{}' is in catalog.json but NOT in reason_codes.json",
-                code
+                "Code '{code}' is in catalog.json but NOT in reason_codes.json"
             ));
         }
     }
@@ -201,10 +192,9 @@ fn test_domain_code_prefix_consistency() {
             .push(code.to_string());
 
         // Verify code starts with domain_
-        if !code.starts_with(&format!("{}_", domain)) {
+        if !code.starts_with(&format!("{domain}_")) {
             errors.push(format!(
-                "Domain/code mismatch: '{}' has domain '{}' but doesn't start with '{}_'",
-                code, domain, domain
+                "Domain/code mismatch: '{code}' has domain '{domain}' but doesn't start with '{domain}_'"
             ));
         }
     }
@@ -255,14 +245,12 @@ fn test_fatal_severity_non_crash_policy() {
             if let Some(actions) = item["user_actions"].as_array() {
                 if actions.is_empty() {
                     errors.push(format!(
-                        "FATAL code '{}' has empty user_actions (violates non-crash policy)",
-                        code
+                        "FATAL code '{code}' has empty user_actions (violates non-crash policy)"
                     ));
                 }
             } else {
                 errors.push(format!(
-                    "FATAL code '{}' is missing user_actions (violates non-crash policy)",
-                    code
+                    "FATAL code '{code}' is missing user_actions (violates non-crash policy)"
                 ));
             }
         }

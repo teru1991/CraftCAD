@@ -69,7 +69,7 @@ pub fn render_svg(ir: &RenderIr, precision: u32) -> Result<String, SvgError> {
     }
 
     if let Some(c) = &model_clip {
-        out.push_str(&format!(r#"<g clip-path="url(#{})">"#, c));
+        out.push_str(&format!(r#"<g clip-path="url(#{c})">"#));
         out.push('\n');
     }
 
@@ -97,7 +97,7 @@ pub fn render_svg(ir: &RenderIr, precision: u32) -> Result<String, SvgError> {
                     .map(|x| fmt_f(*x, precision))
                     .collect::<Vec<_>>()
                     .join(",");
-                attrs.push(format!(r#"stroke-dasharray="{}""#, pat));
+                attrs.push(format!(r#"stroke-dasharray="{pat}""#));
             }
         }
 

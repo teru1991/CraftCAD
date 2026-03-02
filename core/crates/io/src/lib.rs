@@ -86,7 +86,7 @@ impl IoEngine {
         let imp = self.importers.get(format_id).ok_or_else(|| {
             AppError::new(
                 ReasonCode::IO_FORMAT_NOT_REGISTERED,
-                format!("importer not registered: {}", format_id),
+                format!("importer not registered: {format_id}"),
             )
             .with_context("format_id", format_id)
         })?;
@@ -120,7 +120,7 @@ impl IoEngine {
         let exp = self.exporters.get(format_id).ok_or_else(|| {
             AppError::new(
                 ReasonCode::IO_FORMAT_NOT_REGISTERED,
-                format!("exporter not registered: {}", format_id),
+                format!("exporter not registered: {format_id}"),
             )
             .with_context("format_id", format_id)
         })?;

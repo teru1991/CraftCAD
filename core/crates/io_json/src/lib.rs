@@ -11,6 +11,12 @@ use craftcad_io::{ExportResult, Exporter, ImportResult, Importer};
 
 pub struct JsonIo;
 
+impl Default for JsonIo {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl JsonIo {
     pub fn new() -> Self {
         Self
@@ -30,7 +36,7 @@ impl Importer for JsonIo {
 
         Ok(ImportResult {
             model,
-            warnings: warnings.drain(..).collect(),
+            warnings: std::mem::take(&mut warnings),
             report,
         })
     }
@@ -46,7 +52,7 @@ impl Exporter for JsonIo {
         report.format = "json".to_string();
         Ok(ExportResult {
             bytes,
-            warnings: warnings.drain(..).collect(),
+            warnings: std::mem::take(&mut warnings),
             report,
         })
     }

@@ -5,7 +5,7 @@ use craftcad_io::report::IoReport;
 use craftcad_io_support::{SupportLevel, SupportMatrix};
 
 fn fmt(v: f64) -> String {
-    format!("{:.6}", v)
+    format!("{v:.6}")
 }
 fn header_units(units: Units) -> i32 {
     match units {

@@ -104,6 +104,6 @@ fn svg_is_deterministic_with_drawing_doc() {
         hashes.push(hash_str(&normalize_svg_for_golden(&svg)));
     }
     for i in 1..hashes.len() {
-        assert_eq!(hashes[0], hashes[i], "hash mismatch at {}", i);
+        assert_eq!(hashes[0], hashes[i], "hash mismatch at {i}");
     }
 }

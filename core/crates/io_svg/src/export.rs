@@ -5,7 +5,7 @@ use craftcad_io::report::IoReport;
 use craftcad_io_support::{SupportLevel, SupportMatrix};
 
 fn fmt_f(v: f64, places: usize) -> String {
-    format!("{:.*}", places, v)
+    format!("{v:.places$}")
 }
 fn seg_to_path_cmd(s: &Segment2D, places: usize) -> Option<String> {
     match s {
@@ -95,10 +95,7 @@ pub fn export_svg(
         }
     }
 
-    let svg = format!(
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n{}\n</svg>",
-        body
-    );
+    let svg = format!("<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">\n{body}\n</svg>");
     report.entities_in = model.entities.len();
     report.entities_out = model.entities.len();
     report.determinism_tag = opts.determinism_tag();

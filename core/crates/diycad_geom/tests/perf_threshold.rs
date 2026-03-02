@@ -25,7 +25,6 @@ fn intersect_perf_threshold_smoke() {
     assert!(hits > 0);
     assert!(
         elapsed.as_millis() < 2500,
-        "perf threshold exceeded: {:?}",
-        elapsed
+        "perf threshold exceeded: {elapsed:?}"
     );
 }

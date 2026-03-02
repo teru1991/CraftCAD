@@ -14,7 +14,7 @@ pub fn build_repro_template(
     ));
     out.push_str("actions:\n");
     for a in actions {
-        out.push_str(&format!("- {:?}\n", a));
+        out.push_str(&format!("- {a:?}\n"));
     }
     out
 }

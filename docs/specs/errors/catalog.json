@@ -2196,7 +2196,7 @@
       "retryable": true
     },
     {
-      "code": "PERF_BUDGET_EXCEEDED",
+      "code": "IO_PERF_BUDGET_EXCEEDED",
       "domain": "IO",
       "severity": "WARN",
       "summary": "PERF_BUDGET_EXCEEDED",
@@ -2211,7 +2211,7 @@
       "retryable": true
     },
     {
-      "code": "SAVE_DIYCAD_WRITE_FAILED",
+      "code": "IO_SAVE_DIYCAD_WRITE_FAILED",
       "domain": "IO",
       "severity": "ERROR",
       "summary": "SAVE_DIYCAD_WRITE_FAILED",
@@ -2226,7 +2226,7 @@
       "retryable": true
     },
     {
-      "code": "SAVE_PART_IMPORT_FAILED",
+      "code": "IO_SAVE_PART_IMPORT_FAILED",
       "domain": "IO",
       "severity": "ERROR",
       "summary": "SAVE_PART_IMPORT_FAILED",
@@ -2241,7 +2241,7 @@
       "retryable": true
     },
     {
-      "code": "SAVE_GEOM_DROPPED",
+      "code": "IO_SAVE_GEOM_DROPPED",
       "domain": "IO",
       "severity": "WARN",
       "summary": "SAVE_GEOM_DROPPED",
@@ -2256,7 +2256,7 @@
       "retryable": true
     },
     {
-      "code": "SAVE_TEXT_BEST_EFFORT",
+      "code": "IO_SAVE_TEXT_BEST_EFFORT",
       "domain": "IO",
       "severity": "WARN",
       "summary": "SAVE_TEXT_BEST_EFFORT",
@@ -2271,7 +2271,7 @@
       "retryable": true
     },
     {
-      "code": "LOAD_DIYCAD_READ_FAILED",
+      "code": "IO_LOAD_DIYCAD_READ_FAILED",
       "domain": "IO",
       "severity": "ERROR",
       "summary": "LOAD_DIYCAD_READ_FAILED",
@@ -2286,7 +2286,7 @@
       "retryable": true
     },
     {
-      "code": "LOAD_PART_EXPORT_FAILED",
+      "code": "IO_LOAD_PART_EXPORT_FAILED",
       "domain": "IO",
       "severity": "WARN",
       "summary": "LOAD_PART_EXPORT_FAILED",
@@ -2301,7 +2301,7 @@
       "retryable": true
     },
     {
-      "code": "LOAD_DIYCAD_EMPTY",
+      "code": "IO_LOAD_DIYCAD_EMPTY",
       "domain": "IO",
       "severity": "WARN",
       "summary": "LOAD_DIYCAD_EMPTY",

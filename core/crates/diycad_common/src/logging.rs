@@ -27,9 +27,9 @@ pub fn log_info(message: &str) -> io::Result<()> {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0);
-    let line = format!("[{}] INFO {}\n", now, message);
+    let line = format!("[{now}] INFO {message}\n");
 
-    print!("{}", line);
+    print!("{line}");
 
     if let Some(file) = LOG_FILE.get() {
         let mut guard = file

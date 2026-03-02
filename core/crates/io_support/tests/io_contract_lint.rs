@@ -25,8 +25,7 @@ fn test_io_support_matrix_consistency() {
     let matrix_abs_path = root_path.join("docs/specs/io/support_matrix.json");
     assert!(
         matrix_abs_path.exists(),
-        "support_matrix.json not found at {:?}",
-        matrix_abs_path
+        "support_matrix.json not found at {matrix_abs_path:?}"
     );
 
     let matrix_content =
@@ -60,14 +59,12 @@ fn test_io_support_matrix_consistency() {
                 if let Some(code_str) = code.as_str() {
                     if !code_str.is_empty() && !catalog_codes_set.contains(code_str) {
                         errors.push(format!(
-                            "Format '{}' feature '{}' references reason_code '{}' which is NOT in catalog.json",
-                            format_name, feature_name, code_str
+                            "Format '{format_name}' feature '{feature_name}' references reason_code '{code_str}' which is NOT in catalog.json"
                         ));
                     }
                 } else {
                     errors.push(format!(
-                        "Format '{}' feature '{}' has non-string reason_code",
-                        format_name, feature_name
+                        "Format '{format_name}' feature '{feature_name}' has non-string reason_code"
                     ));
                 }
             }
@@ -75,8 +72,7 @@ fn test_io_support_matrix_consistency() {
 
         if level == "best_effort" && !cell["reason_codes"].is_array() {
             errors.push(format!(
-                "Format '{}' feature '{}' has level='best_effort' but no reason_codes array",
-                format_name, feature_name
+                "Format '{format_name}' feature '{feature_name}' has level='best_effort' but no reason_codes array"
             ));
         }
     }
@@ -115,8 +111,7 @@ fn test_io_reason_codes_domain() {
                 if let Some(code_str) = code.as_str() {
                     if !code_str.is_empty() && !code_str.starts_with("IO_") {
                         errors.push(format!(
-                            "Format '{}' feature '{}' has reason_code '{}' which doesn't start with 'IO_'",
-                            format_name, feature_name, code_str
+                            "Format '{format_name}' feature '{feature_name}' has reason_code '{code_str}' which doesn't start with 'IO_'"
                         ));
                     }
                 }
@@ -146,8 +141,7 @@ fn test_mapping_rules_reason_codes() {
     let rules_abs_path = root_path.join("docs/specs/io/mapping_rules.json");
     assert!(
         rules_abs_path.exists(),
-        "mapping_rules.json not found at {:?}",
-        rules_abs_path
+        "mapping_rules.json not found at {rules_abs_path:?}"
     );
 
     let rules_content =
@@ -177,8 +171,7 @@ fn test_mapping_rules_reason_codes() {
     if let Some(code) = rules_value["unit_rules"]["reason_code_on_assume"].as_str() {
         if !code.is_empty() && !catalog_codes_set.contains(code) {
             errors.push(format!(
-                "unit_rules.reason_code_on_assume='{}' is NOT in catalog.json",
-                code
+                "unit_rules.reason_code_on_assume='{code}' is NOT in catalog.json"
             ));
         }
     }

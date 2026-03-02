@@ -166,14 +166,14 @@ fn rect_inside_page(rect: (f64, f64, f64, f64), page_w: f64, page_h: f64) -> boo
 fn get_f64(v: &Value, p: &str) -> f64 {
     v.pointer(p)
         .and_then(|x| x.as_f64())
-        .unwrap_or_else(|| panic!("missing or non-number at json pointer: {}", p))
+        .unwrap_or_else(|| panic!("missing or non-number at json pointer: {p}"))
 }
 
 fn get_str(v: &Value, p: &str) -> String {
     v.pointer(p)
         .and_then(|x| x.as_str())
         .map(|s| s.to_string())
-        .unwrap_or_else(|| panic!("missing or non-string at json pointer: {}", p))
+        .unwrap_or_else(|| panic!("missing or non-string at json pointer: {p}"))
 }
 
 #[test]
@@ -213,12 +213,8 @@ fn ssot_lint_drawing_style_specs() {
         .expect("style_ssot.json: /styles must be array");
     for s in styles {
         let id = s.get("id").and_then(|x| x.as_str()).unwrap_or("");
-        assert!(id_re.is_match(id), "style id must match *_vN: {}", id);
-        assert!(
-            style_ids.insert(id.to_string()),
-            "duplicate style id: {}",
-            id
-        );
+        assert!(id_re.is_match(id), "style id must match *_vN: {id}");
+        assert!(style_ids.insert(id.to_string()), "duplicate style id: {id}");
     }
 
     let mut template_ids = HashSet::<String>::new();
@@ -228,11 +224,10 @@ fn ssot_lint_drawing_style_specs() {
         .expect("sheet_templates.json: /templates must be array");
     for t in templates {
         let id = t.get("id").and_then(|x| x.as_str()).unwrap_or("");
-        assert!(id_re.is_match(id), "template id must match *_vN: {}", id);
+        assert!(id_re.is_match(id), "template id must match *_vN: {id}");
         assert!(
             template_ids.insert(id.to_string()),
-            "duplicate template id: {}",
-            id
+            "duplicate template id: {id}"
         );
     }
 
@@ -243,15 +238,10 @@ fn ssot_lint_drawing_style_specs() {
         .expect("print_presets.json: /presets must be array");
     for p in presets {
         let id = p.get("id").and_then(|x| x.as_str()).unwrap_or("");
-        assert!(
-            id_re.is_match(id),
-            "print preset id must match *_vN: {}",
-            id
-        );
+        assert!(id_re.is_match(id), "print preset id must match *_vN: {id}");
         assert!(
             preset_ids.insert(id.to_string()),
-            "duplicate print preset id: {}",
-            id
+            "duplicate print preset id: {id}"
         );
     }
 
@@ -269,37 +259,26 @@ fn ssot_lint_drawing_style_specs() {
             "A4" => {
                 assert!(
                     (page_w - 210.0).abs() < 1e-6 && (page_h - 297.0).abs() < 1e-6,
-                    "A4 size must be 210x297mm: {} = {}x{}",
-                    id,
-                    page_w,
-                    page_h
+                    "A4 size must be 210x297mm: {id} = {page_w}x{page_h}"
                 );
             }
             "A3" => {
                 assert!(
                     (page_w - 297.0).abs() < 1e-6 && (page_h - 420.0).abs() < 1e-6,
-                    "A3 size must be 297x420mm: {} = {}x{}",
-                    id,
-                    page_w,
-                    page_h
+                    "A3 size must be 297x420mm: {id} = {page_w}x{page_h}"
                 );
             }
-            _ => panic!("unknown page.size for template {}: {}", id, size),
+            _ => panic!("unknown page.size for template {id}: {size}"),
         }
 
         let m_top = get_f64(t, "/page/margin_mm/top");
         let m_right = get_f64(t, "/page/margin_mm/right");
         let m_bottom = get_f64(t, "/page/margin_mm/bottom");
         let m_left = get_f64(t, "/page/margin_mm/left");
-        assert!(
-            m_left + m_right < page_w,
-            "margins exceed page width: {}",
-            id
-        );
+        assert!(m_left + m_right < page_w, "margins exceed page width: {id}");
         assert!(
             m_top + m_bottom < page_h,
-            "margins exceed page height: {}",
-            id
+            "margins exceed page height: {id}"
         );
 
         let tb_x = get_f64(t, "/page/title_block/bbox_mm/x_mm");
@@ -308,30 +287,25 @@ fn ssot_lint_drawing_style_specs() {
         let tb_h = get_f64(t, "/page/title_block/bbox_mm/h_mm");
         assert!(
             rect_inside_page((tb_x, tb_y, tb_w, tb_h), page_w, page_h),
-            "title_block bbox out of page: {}",
-            id
+            "title_block bbox out of page: {id}"
         );
 
         // title_block は “margin内” に収める（印刷で必須）
         assert!(
             tb_x + 1e-9 >= m_left,
-            "title_block must be inside left margin region: {}",
-            id
+            "title_block must be inside left margin region: {id}"
         );
         assert!(
             tb_y + 1e-9 >= m_top,
-            "title_block must be inside top margin region: {}",
-            id
+            "title_block must be inside top margin region: {id}"
         );
         assert!(
             tb_x + tb_w <= page_w - m_right + 1e-9,
-            "title_block must be inside right margin region: {}",
-            id
+            "title_block must be inside right margin region: {id}"
         );
         assert!(
             tb_y + tb_h <= page_h - m_bottom + 1e-9,
-            "title_block must be inside bottom margin region: {}",
-            id
+            "title_block must be inside bottom margin region: {id}"
         );
 
         // viewport
@@ -341,30 +315,25 @@ fn ssot_lint_drawing_style_specs() {
         let vh = get_f64(t, "/viewports/model_view_region/h_mm");
         assert!(
             rect_inside_page((vx, vy, vw, vh), page_w, page_h),
-            "model_view_region out of page: {}",
-            id
+            "model_view_region out of page: {id}"
         );
 
         // viewportはmargin内に収める（図枠外には描かない）
         assert!(
             vx + 1e-9 >= m_left,
-            "model_view_region must be inside left margin region: {}",
-            id
+            "model_view_region must be inside left margin region: {id}"
         );
         assert!(
             vy + 1e-9 >= m_top,
-            "model_view_region must be inside top margin region: {}",
-            id
+            "model_view_region must be inside top margin region: {id}"
         );
         assert!(
             vx + vw <= page_w - m_right + 1e-9,
-            "model_view_region must be inside right margin region: {}",
-            id
+            "model_view_region must be inside right margin region: {id}"
         );
         assert!(
             vy + vh <= page_h - m_bottom + 1e-9,
-            "model_view_region must be inside bottom margin region: {}",
-            id
+            "model_view_region must be inside bottom margin region: {id}"
         );
 
         // viewport と title_block の重なりは禁止（ここでは厳格に禁止）
@@ -372,8 +341,7 @@ fn ssot_lint_drawing_style_specs() {
         let overlap_y = (vy.max(tb_y)) < ((vy + vh).min(tb_y + tb_h));
         assert!(
             !(overlap_x && overlap_y),
-            "model_view_region must not overlap title_block: {}",
-            id
+            "model_view_region must not overlap title_block: {id}"
         );
 
         template_map.insert(id.clone(), (page_w, page_h, t.clone()));
@@ -388,9 +356,7 @@ fn ssot_lint_drawing_style_specs() {
             .unwrap_or("");
         assert!(
             template_map.contains_key(target),
-            "print preset {} targets unknown template_id: {}",
-            pid,
-            target
+            "print preset {pid} targets unknown template_id: {target}"
         );
 
         let (_w, _h, t) = template_map.get(target).unwrap();
@@ -407,53 +373,43 @@ fn ssot_lint_drawing_style_specs() {
         // 最初は“テンプレと同じmargin”を必須（ズレると印刷で事故るため）
         assert!(
             (pm_top - tm_top).abs() < 1e-6,
-            "preset margin(top) must match template margin: {}",
-            pid
+            "preset margin(top) must match template margin: {pid}"
         );
         assert!(
             (pm_right - tm_right).abs() < 1e-6,
-            "preset margin(right) must match template margin: {}",
-            pid
+            "preset margin(right) must match template margin: {pid}"
         );
         assert!(
             (pm_bottom - tm_bottom).abs() < 1e-6,
-            "preset margin(bottom) must match template margin: {}",
-            pid
+            "preset margin(bottom) must match template margin: {pid}"
         );
         assert!(
             (pm_left - tm_left).abs() < 1e-6,
-            "preset margin(left) must match template margin: {}",
-            pid
+            "preset margin(left) must match template margin: {pid}"
         );
 
         let mode = get_str(p, "/scale_policy/mode");
         if mode == "fixed" {
             let fixed_scale = get_f64(p, "/scale_policy/fixed_scale");
-            assert!(fixed_scale > 0.0, "fixed_scale must be > 0: {}", pid);
+            assert!(fixed_scale > 0.0, "fixed_scale must be > 0: {pid}");
         }
 
         let min_text = get_f64(p, "/min_readable_text_height_mm");
         assert!(
             (2.0..=6.0).contains(&min_text),
-            "min_readable_text_height_mm should be practical (2..6): {} => {}",
-            pid,
-            min_text
+            "min_readable_text_height_mm should be practical (2..6): {pid} => {min_text}"
         );
 
         let lw = get_f64(p, "/line_weight_scale");
         assert!(
             (0.2..=5.0).contains(&lw),
-            "line_weight_scale should be practical (0.2..5): {} => {}",
-            pid,
-            lw
+            "line_weight_scale should be practical (0.2..5): {pid} => {lw}"
         );
 
         let color_mode = get_str(p, "/color_mode");
         assert!(
             color_mode == "color" || color_mode == "grayscale" || color_mode == "bw",
-            "invalid color_mode: {} => {}",
-            pid,
-            color_mode
+            "invalid color_mode: {pid} => {color_mode}"
         );
 
         let svg_prec = p
@@ -462,9 +418,7 @@ fn ssot_lint_drawing_style_specs() {
             .unwrap_or(-1);
         assert!(
             (0..=8).contains(&svg_prec),
-            "svg_precision out of range: {} => {}",
-            pid,
-            svg_prec
+            "svg_precision out of range: {pid} => {svg_prec}"
         );
     }
 }
@@ -482,7 +436,7 @@ fn read_repo_file(path: &str) -> String {
 
 fn load_json(path: &str) -> Value {
     let s = read_repo_file(path);
-    serde_json::from_str(&s).unwrap_or_else(|e| panic!("invalid json {}: {}", path, e))
+    serde_json::from_str(&s).unwrap_or_else(|e| panic!("invalid json {path}: {e}"))
 }
 
 fn read_text(path: &str) -> String {
@@ -494,19 +448,19 @@ fn lint_policy_md_required_keys(path: &str) {
 
     let meta_pos = text
         .find("ssot_meta:")
-        .unwrap_or_else(|| panic!("{}: missing 'ssot_meta:' block", path));
+        .unwrap_or_else(|| panic!("{path}: missing 'ssot_meta:' block"));
 
     let req_pos = text[meta_pos..]
         .find("required_keys:")
-        .unwrap_or_else(|| panic!("{}: missing 'required_keys' in ssot_meta", path));
+        .unwrap_or_else(|| panic!("{path}: missing 'required_keys' in ssot_meta"));
 
     let after = &text[meta_pos + req_pos..];
     let lb = after
         .find('[')
-        .unwrap_or_else(|| panic!("{}: required_keys must be array: [..]", path));
+        .unwrap_or_else(|| panic!("{path}: required_keys must be array: [..]"));
     let rb = after
         .find(']')
-        .unwrap_or_else(|| panic!("{}: required_keys must be array: [..]", path));
+        .unwrap_or_else(|| panic!("{path}: required_keys must be array: [..]"));
     let inside = &after[lb + 1..rb];
 
     let keys: Vec<String> = inside
@@ -516,15 +470,12 @@ fn lint_policy_md_required_keys(path: &str) {
         .collect();
 
     if keys.is_empty() {
-        panic!("{}: required_keys is empty", path);
+        panic!("{path}: required_keys is empty");
     }
 
     for k in keys {
         if !text.contains(&k) {
-            panic!(
-                "{}: required key '{}' not mentioned anywhere in the document body",
-                path, k
-            );
+            panic!("{path}: required key '{k}' not mentioned anywhere in the document body");
         }
     }
 }
@@ -553,15 +504,14 @@ fn ssot_lint_io_support_matrix_best_effort_has_reason_codes_and_catalog_exists()
         }
     } else {
         panic!(
-            "{}: unknown ReasonCatalog structure (expected 'items' array, 'reasons' array or 'codes' object)",
-            REASON_CATALOG_JSON
+            "{REASON_CATALOG_JSON}: unknown ReasonCatalog structure (expected 'items' array, 'reasons' array or 'codes' object)"
         );
     }
 
     let matrix = sm
         .get("matrix")
         .and_then(|v| v.as_array())
-        .unwrap_or_else(|| panic!("{}: missing 'matrix' array", SUPPORT_MATRIX_JSON));
+        .unwrap_or_else(|| panic!("{SUPPORT_MATRIX_JSON}: missing 'matrix' array"));
 
     for entry in matrix {
         let format = entry.get("format").and_then(|v| v.as_str()).unwrap_or("");
@@ -574,16 +524,12 @@ fn ssot_lint_io_support_matrix_best_effort_has_reason_codes_and_catalog_exists()
 
         if format.is_empty() || direction.is_empty() || feature.is_empty() || level.is_empty() {
             panic!(
-                "{}: matrix entry must have format/direction/feature/level: {:?}",
-                SUPPORT_MATRIX_JSON, entry
+                "{SUPPORT_MATRIX_JSON}: matrix entry must have format/direction/feature/level: {entry:?}"
             );
         }
 
         if direction != "import" && direction != "export" {
-            panic!(
-                "{}: invalid direction '{}', must be import|export",
-                SUPPORT_MATRIX_JSON, direction
-            );
+            panic!("{SUPPORT_MATRIX_JSON}: invalid direction '{direction}', must be import|export");
         }
 
         if level == "best_effort" || level == "not_supported" {
@@ -592,29 +538,23 @@ fn ssot_lint_io_support_matrix_best_effort_has_reason_codes_and_catalog_exists()
                 .and_then(|v| v.as_array())
                 .unwrap_or_else(|| {
                     panic!(
-                        "{}: {} {} {}: '{}' requires reason_codes array",
-                        SUPPORT_MATRIX_JSON, format, direction, feature, level
+                        "{SUPPORT_MATRIX_JSON}: {format} {direction} {feature}: '{level}' requires reason_codes array"
                     )
                 });
 
             if reasons.is_empty() {
                 panic!(
-                    "{}: {} {} {}: reason_codes must not be empty",
-                    SUPPORT_MATRIX_JSON, format, direction, feature
+                    "{SUPPORT_MATRIX_JSON}: {format} {direction} {feature}: reason_codes must not be empty"
                 );
             }
 
             for r in reasons {
                 let code = r.as_str().unwrap_or_else(|| {
-                    panic!(
-                        "{}: reason_codes must be string: {:?}",
-                        SUPPORT_MATRIX_JSON, r
-                    )
+                    panic!("{SUPPORT_MATRIX_JSON}: reason_codes must be string: {r:?}")
                 });
                 if !known.contains(code) {
                     panic!(
-                        "{}: unknown ReasonCode '{}' (not found in {})",
-                        SUPPORT_MATRIX_JSON, code, REASON_CATALOG_JSON
+                        "{SUPPORT_MATRIX_JSON}: unknown ReasonCode '{code}' (not found in {REASON_CATALOG_JSON})"
                     );
                 }
             }
@@ -624,8 +564,7 @@ fn ssot_lint_io_support_matrix_best_effort_has_reason_codes_and_catalog_exists()
             let action = entry.get("action").and_then(|v| v.as_str()).unwrap_or("");
             if action.is_empty() {
                 panic!(
-                    "{}: {} {} {}: best_effort requires 'action'",
-                    SUPPORT_MATRIX_JSON, format, direction, feature
+                    "{SUPPORT_MATRIX_JSON}: {format} {direction} {feature}: best_effort requires 'action'"
                 );
             }
         }
@@ -634,8 +573,7 @@ fn ssot_lint_io_support_matrix_best_effort_has_reason_codes_and_catalog_exists()
             let action = entry.get("action").and_then(|v| v.as_str()).unwrap_or("");
             if action.is_empty() {
                 panic!(
-                    "{}: {} {} {}: not_supported requires 'action'",
-                    SUPPORT_MATRIX_JSON, format, direction, feature
+                    "{SUPPORT_MATRIX_JSON}: {format} {direction} {feature}: not_supported requires 'action'"
                 );
             }
         }
@@ -648,7 +586,7 @@ fn ssot_lint_io_mapping_rules_required_keys_and_forbidden_chars_regex_present() 
 
     for k in ["layer", "linetype", "units"] {
         if mr.get(k).is_none() {
-            panic!("{}: missing top-level key '{}'", MAPPING_RULES_JSON, k);
+            panic!("{MAPPING_RULES_JSON}: missing top-level key '{k}'");
         }
     }
 
@@ -656,7 +594,7 @@ fn ssot_lint_io_mapping_rules_required_keys_and_forbidden_chars_regex_present() 
         let s = mr.get(section).unwrap();
         for k in ["default", "max_len", "forbidden_chars_regex", "normalize"] {
             if s.get(k).is_none() {
-                panic!("{}: '{}' missing key '{}'", MAPPING_RULES_JSON, section, k);
+                panic!("{MAPPING_RULES_JSON}: '{section}' missing key '{k}'");
             }
         }
         let re = s
@@ -664,22 +602,19 @@ fn ssot_lint_io_mapping_rules_required_keys_and_forbidden_chars_regex_present() 
             .and_then(|v| v.as_str())
             .unwrap_or("");
         if re.is_empty() {
-            panic!(
-                "{}: '{}' forbidden_chars_regex must not be empty",
-                MAPPING_RULES_JSON, section
-            );
+            panic!("{MAPPING_RULES_JSON}: '{section}' forbidden_chars_regex must not be empty");
         }
     }
 
     let units = mr.get("units").unwrap();
     for k in ["supported", "default", "import_guess_order"] {
         if units.get(k).is_none() {
-            panic!("{}: 'units' missing key '{}'", MAPPING_RULES_JSON, k);
+            panic!("{MAPPING_RULES_JSON}: 'units' missing key '{k}'");
         }
     }
     let supported = units.get("supported").and_then(|v| v.as_array()).unwrap();
     if supported.is_empty() {
-        panic!("{}: units.supported must not be empty", MAPPING_RULES_JSON);
+        panic!("{MAPPING_RULES_JSON}: units.supported must not be empty");
     }
 }
 
