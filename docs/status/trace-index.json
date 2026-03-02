@@ -10,6 +10,17 @@
         "preflight": [],
         "tests": []
       }
+    },
+    "S12-IO-SVG-002": {
+      "branch": "feature/s12-io-svg-002-001",
+      "artifacts": [
+        "docs/verification/S12-IO-SVG-002.md"
+      ],
+      "verification_evidence": {
+        "history": [],
+        "preflight": [],
+        "tests": []
+      }
     }
   }
 }
