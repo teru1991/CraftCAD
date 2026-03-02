@@ -91,15 +91,16 @@
         "tests": "cargo test -p craftcad_library: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
       }
     },
-    "S13-LIBRARY-CRATE-003": {
-      "branch": "feature/s13-library-crate-003",
+    "S13-WIZARDS-IMPL-005": {
+      "branch": "feature/s13-wizards-impl-005",
       "artifacts": [
-        "core/crates/library/**"
+        "core/crates/wizards/**",
+        "tests/golden/wizards/**"
       ],
-      "verification": "docs/verification/S13-LIBRARY-CRATE-003.md",
+      "verification": "docs/verification/S13-WIZARDS-IMPL-005.md",
       "evidence": {
-        "head_sha": "see docs/verification/S13-LIBRARY-CRATE-003.md",
-        "tests": "cargo test -p craftcad_library: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
+        "head_sha": "see docs/verification/S13-WIZARDS-IMPL-005.md",
+        "tests": "cargo test -p craftcad_wizards: pass; cargo test (core workspace): fail at existing compat_report_golden ordering mismatch"
       }
     }
   }

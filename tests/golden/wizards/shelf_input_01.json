@@ -1,0 +1,13 @@
+{
+  "template_id": "shelf_wizard",
+  "inputs": {
+    "width_mm": 600.0,
+    "depth_mm": 300.0,
+    "thickness_mm": 18.0,
+    "quantity": 1,
+    "hole_dowel": true,
+    "dowel_diameter_mm": 8.0,
+    "offset_mm": 35.0
+  },
+  "seed": null
+}

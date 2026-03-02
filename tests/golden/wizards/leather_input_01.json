@@ -1,0 +1,10 @@
+{
+  "template_id": "leather_pouch_wizard",
+  "inputs": {
+    "pouch_w_mm": 100.0,
+    "pouch_h_mm": 70.0,
+    "seam_allowance_mm": 4.0,
+    "hole_pitch_mm": 4.0
+  },
+  "seed": null
+}
