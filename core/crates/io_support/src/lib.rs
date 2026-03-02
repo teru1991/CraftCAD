@@ -63,6 +63,11 @@ pub struct SupportMatrix {
     entries: Vec<SupportEntry>,
 }
 
+#[derive(Debug, Clone)]
+pub struct SupportMatrix {
+    entries: Vec<SupportEntry>,
+}
+
 impl SupportMatrix {
     pub fn load_from_ssot() -> AppResult<Self> {
         let doc: SupportMatrixDoc = serde_json::from_str(SUPPORT_MATRIX).map_err(|e| {
