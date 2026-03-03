@@ -267,6 +267,20 @@
         "docs/verification/S15-STEP3.md"
       ],
       "verification": "docs/verification/S15-STEP3.md"
+    },
+    "S15-STEP4": {
+      "branch": "feature/s15-step4-001",
+      "artifacts": [
+        "tests/compat/**",
+        "core/src/testing/compat_harness.rs",
+        "core/tests/compat_projects_read.rs",
+        "core/tests/compat_presets_read.rs",
+        "core/tests/compat_templates_read.rs",
+        "core/tests/compat_io_read.rs",
+        "scripts/testing/run_compat.sh",
+        "docs/verification/S15-STEP4.md"
+      ],
+      "verification": "docs/verification/S15-STEP4.md"
     }
   }
 }

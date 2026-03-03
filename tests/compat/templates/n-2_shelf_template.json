@@ -1,0 +1,23 @@
+{
+  "template_id": "n2_shelf_template",
+  "template_version": "1.0.0",
+  "schema_version": 1,
+  "kind": "shelf",
+  "display_name_key": "template.shelf",
+  "required_presets": {
+    "material_preset_ids": ["plywood_12mm"],
+    "process_preset_ids": ["saw_basic"],
+    "output_preset_ids": ["export_json_internal"],
+    "hardware_preset_ids": []
+  },
+  "ui_inputs": [
+    { "key": "width_mm", "type": "number", "unit": "mm", "default": 300.0, "min": 50.0, "max": 2400.0, "step": 1.0 },
+    { "key": "depth_mm", "type": "number", "unit": "mm", "default": 180.0, "min": 50.0, "max": 1200.0, "step": 1.0 },
+    { "key": "quantity", "type": "integer", "unit": "count", "default": 1, "min": 1, "max": 10, "step": 1 }
+  ],
+  "generation_steps": [
+    { "op": "add_part_rect", "args": { "name": "shelf_board", "w_key": "width_mm", "h_key": "depth_mm" } },
+    { "op": "recommend_nest", "args": { "material_hint": "plywood_12mm", "process_hint": "saw_basic" } }
+  ],
+  "determinism": { "seed_source": "ssot_default" }
+}
