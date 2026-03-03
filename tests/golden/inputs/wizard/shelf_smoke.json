@@ -1,0 +1,16 @@
+{
+  "kind": "shelf",
+  "version": 1,
+  "units": "mm",
+  "params": {
+    "width": 300,
+    "height": 250,
+    "depth": 180,
+    "thickness": 12,
+    "back_panel": true,
+    "shelf_count": 2,
+    "kerf": 0.8,
+    "margin": 2.0,
+    "grain": "longitudinal"
+  }
+}
