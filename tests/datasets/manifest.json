@@ -1,71 +1,36 @@
 {
-  "version": "1",
+  "version": "1.0.0",
   "datasets": [
     {
-      "id": "sample_board_hole_chamfer_v1",
-      "description": "板1枚＋穴＋面取り。図面/木取り/I/Oのゴールデン用",
-      "seed": 12345,
+      "id": "io_roundtrip_smoke",
+      "description": "Smoke: import/export round-trip (SVG/JSON) minimal fixtures.",
+      "seed": 1,
+      "determinism": { "epsilon": 0.0001, "round_step": 0.0001, "ordering_tag": "io_smoke_v1" },
+      "limits_ref": "default",
       "inputs": [
-        "tests/golden/inputs/sample_board_hole_chamfer/document.json",
-        "tests/golden/inputs/sample_board_hole_chamfer/parts/part_001.json"
+        { "kind": "svg", "path": "tests/golden/inputs/io/svg/min_rect.svg" },
+        { "kind": "json", "path": "tests/golden/inputs/io/json/min_rect.json" }
       ],
-      "expected_outputs": [
-        "tests/golden/expected/sample_board_hole_chamfer/nesting/result.json",
-        "tests/golden/expected/sample_board_hole_chamfer/drawing/output.svg"
+      "expected": [
+        { "kind": "normalized_model", "path": "tests/golden/expected/io_roundtrip_smoke/normalized_model.json", "compare": "json_struct" },
+        { "kind": "warnings", "path": "tests/golden/expected/io_roundtrip_smoke/warnings.json", "compare": "reason_codes" }
       ],
-      "perf_budget": {
-        "nesting_ms_p95": 200,
-        "io_roundtrip_ms_p95": 150,
-        "render_ms_p95": 180
-      }
+      "tags": ["smoke"]
     },
     {
-      "id": "json_roundtrip_01",
-      "description": "I/O JSON roundtrip golden baseline",
+      "id": "diycad_open_save_smoke",
+      "description": "Smoke: open/save .diycad minimal project fixture.",
+      "seed": 2,
+      "determinism": { "epsilon": 0.0001, "round_step": 0.0001, "ordering_tag": "diycad_smoke_v1" },
+      "limits_ref": "default",
       "inputs": [
-        "tests/golden/io_roundtrip/inputs/json/sample_01.json"
+        { "kind": "diycad", "path": "tests/golden/inputs/projects/min_project.diycad" }
       ],
-      "expected_outputs": [
-        "tests/golden/io_roundtrip/expected/normalized_internal_model.json",
-        "tests/golden/io_roundtrip/expected/warnings.json",
-        "tests/golden/io_roundtrip/expected/exported_out.json"
+      "expected": [
+        { "kind": "open_result", "path": "tests/golden/expected/diycad_open_save_smoke/open_result.json", "compare": "json_struct" },
+        { "kind": "warnings", "path": "tests/golden/expected/diycad_open_save_smoke/warnings.json", "compare": "reason_codes" }
       ],
-      "perf_budget": {
-        "io_import_p95_ms": 50,
-        "io_export_p95_ms": 50,
-        "roundtrip_p95_ms": 120
-      }
-    },
-    {
-      "id": "svg_roundtrip_01",
-      "description": "I/O SVG roundtrip baseline",
-      "inputs": [
-        "tests/golden/io_roundtrip/inputs/svg/sample_01.svg"
-      ],
-      "expected_outputs": [],
-      "perf_budget": {
-        "io_import_p95_ms": 50,
-        "io_export_p95_ms": 50,
-        "roundtrip_p95_ms": 120
-      }
-    },
-    {
-      "id": "dxf_roundtrip_01",
-      "description": "I/O DXF roundtrip baseline",
-      "inputs": [
-        "tests/golden/io_roundtrip/inputs/dxf/sample_01.dxf"
-      ],
-      "expected_outputs": [],
-      "perf_budget": {
-        "io_import_p95_ms": 50,
-        "io_export_p95_ms": 50,
-        "roundtrip_p95_ms": 120
-      }
+      "tags": ["smoke"]
     }
-  ],
-  "perf_budget": {
-    "io_import_p95_ms": 50,
-    "io_export_p95_ms": 50,
-    "roundtrip_p95_ms": 120
-  }
+  ]
 }

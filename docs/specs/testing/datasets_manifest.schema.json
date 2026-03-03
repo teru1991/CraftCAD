@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "craftcad://schemas/testing/datasets_manifest.schema.json",
+  "title": "CraftCAD Datasets Manifest (SSOT)",
+  "type": "object",
+  "required": ["version", "datasets"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "minLength": 1 },
+    "datasets": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/dataset" }
+    }
+  },
+  "$defs": {
+    "dataset": {
+      "type": "object",
+      "required": ["id", "description", "seed", "determinism", "limits_ref", "inputs", "expected"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_\\-]{2,63}$"
+        },
+        "description": { "type": "string", "minLength": 1 },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "determinism": { "$ref": "#/$defs/determinism" },
+        "limits_ref": { "type": "string", "minLength": 1 },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/input_asset" }
+        },
+        "expected": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/expected_asset" }
+        },
+        "perf_budget": { "$ref": "#/$defs/perf_budget" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9_\\-]{1,24}$" }
+        }
+      }
+    },
+    "determinism": {
+      "type": "object",
+      "required": ["epsilon", "round_step", "ordering_tag"],
+      "additionalProperties": false,
+      "properties": {
+        "epsilon": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 0.01 },
+        "round_step": { "type": "number", "exclusiveMinimum": 0.0, "maximum": 0.01 },
+        "ordering_tag": { "type": "string", "minLength": 1 }
+      }
+    },
+    "input_asset": {
+      "type": "object",
+      "required": ["kind", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["diycad", "dxf", "svg", "json", "preset", "template"]
+        },
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "expected_asset": {
+      "type": "object",
+      "required": ["kind", "path", "compare"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "normalized_model",
+            "warnings",
+            "exported_svg",
+            "exported_dxf",
+            "exported_json",
+            "drawing_svg",
+            "nest_result",
+            "open_result"
+          ]
+        },
+        "path": { "type": "string", "minLength": 1 },
+        "compare": {
+          "type": "string",
+          "enum": ["json_struct", "svg_hash", "bytes_hash", "reason_codes"]
+        }
+      }
+    },
+    "perf_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_ms": { "type": "integer", "minimum": 1 },
+        "tag": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

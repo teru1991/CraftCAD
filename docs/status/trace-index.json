@@ -234,6 +234,26 @@
         "head_sha": "87027acb87596a7ebeda460cc02e32a959fa570f",
         "tests": "scripts/ci/run_all.sh: pass (ssot_lint, diycad_format tests + test_latest_2, migration, recovery + crash e2e, golden/compat/fuzz/determinism/e2e batch, diycad-migrate)"
       }
+    },
+    "S15-STEP1": {
+      "branch": "feature/s15-step1-001",
+      "artifacts": [
+        "docs/specs/testing/datasets_manifest.schema.json",
+        "tests/datasets/manifest.json",
+        "tests/datasets/README.md",
+        "core/src/testing/datasets_manifest.rs",
+        "core/src/testing/mod.rs",
+        "core/tests/ssot_datasets_manifest_lint.rs",
+        "docs/verification/S15-STEP1.md"
+      ],
+      "verification": "docs/verification/S15-STEP1.md"
+    },
+    "S15-STEP2": {
+      "branch": "feature/s15-step2-001",
+      "artifacts": [
+        "failure_artifacts/<dataset_id>"
+      ],
+      "verification": "docs/verification/S15-STEP2.md"
     }
   }
 }
