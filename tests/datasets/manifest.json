@@ -155,6 +155,39 @@
         "smoke",
         "determinism"
       ]
+    },
+    {
+      "id": "heavy_sample_v1",
+      "description": "Deterministic heavy-ish sample for perf smoke. Replace with real heavy data later.",
+      "seed": 0,
+      "determinism": {
+        "epsilon": 0.0001,
+        "round_step": 0.0001,
+        "ordering_tag": "heavy_sample_v1"
+      },
+      "limits_ref": "default",
+      "inputs": [
+        {
+          "kind": "json",
+          "path": "tests/golden/inputs/perf/heavy_sample_v1.json"
+        }
+      ],
+      "expected": [
+        {
+          "kind": "warnings",
+          "path": "tests/golden/expected/heavy_sample_v1/warnings.json",
+          "compare": "reason_codes"
+        }
+      ],
+      "perf_budget": {
+        "max_ms": 8000,
+        "tag": "perf_smoke"
+      },
+      "tags": [
+        "perf",
+        "smoke",
+        "determinism"
+      ]
     }
   ]
 }

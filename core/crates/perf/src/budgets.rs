@@ -14,8 +14,21 @@ pub struct DatasetBudget {
     pub open_p95_ms: Option<f64>,
     pub save_p95_ms: Option<f64>,
     pub io_roundtrip_p95_ms: Option<f64>,
+    pub io_import_p95_ms: Option<f64>,
+    pub io_export_p95_ms: Option<f64>,
     pub render_frame_p95_ms: Option<f64>,
     pub max_rss_mb: Option<u64>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct SsotBudgetFile {
+    datasets: Vec<SsotBudgetDataset>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct SsotBudgetDataset {
+    dataset_id: String,
+    budgets: DatasetBudget,
 }
 
 pub fn load_budgets(path: impl AsRef<Path>) -> AppResult<PerfBudgets> {
@@ -26,13 +39,29 @@ pub fn load_budgets(path: impl AsRef<Path>) -> AppResult<PerfBudgets> {
             format!("failed to read budgets: {e}"),
         )
     })?;
-    serde_json::from_str(&raw).map_err(|e| {
+
+    // Backward compatible load:
+    // 1) legacy format {"datasets": {"id": {...}}}
+    // 2) SSOT format {"datasets": [{"dataset_id": "...", "budgets": {...}}]}
+    if let Ok(v) = serde_json::from_str::<PerfBudgets>(&raw) {
+        return Ok(v);
+    }
+
+    let ssot: SsotBudgetFile = serde_json::from_str(&raw).map_err(|e| {
         AppError::new(
             ReasonCode::new("PERF_BUDGET_SCHEMA_INVALID"),
             Severity::Error,
             format!("invalid budgets.json: {e}"),
         )
-    })
+    })?;
+
+    let datasets = ssot
+        .datasets
+        .into_iter()
+        .map(|d| (d.dataset_id, d.budgets))
+        .collect::<HashMap<_, _>>();
+
+    Ok(PerfBudgets { datasets })
 }
 
 pub fn check_report_against_budgets(report: &PerfReport, budgets: &PerfBudgets) -> Vec<AppError> {
@@ -47,9 +76,7 @@ pub fn check_report_against_budgets(report: &PerfReport, budgets: &PerfBudgets) 
             .iter()
             .filter(|s| s.name == name)
             .map(|s| s.duration_ms)
-            .fold(None, |acc: Option<f64>, v| {
-                Some(acc.map_or(v, |a| a.max(v)))
-            })
+            .fold(None, |acc: Option<f64>, v| Some(acc.map_or(v, |a| a.max(v))))
     };
 
     if let (Some(limit), Some(actual)) = (ds.open_p95_ms, find("open")) {
@@ -75,6 +102,36 @@ pub fn check_report_against_budgets(report: &PerfReport, budgets: &PerfBudgets) 
                 )
                 .with_context("dataset_id", &report.dataset_id),
             );
+        }
+    }
+
+    if let Some(limit) = ds.io_import_p95_ms.or(ds.io_roundtrip_p95_ms) {
+        if let Some(actual) = find("io.import.total") {
+            if actual > limit {
+                out.push(
+                    AppError::new(
+                        ReasonCode::new("PERF_BUDGET_EXCEEDED_IO_IMPORT_P95"),
+                        Severity::Warn,
+                        format!("io.import span exceeded budget: {actual:.2}ms > {limit:.2}ms"),
+                    )
+                    .with_context("dataset_id", &report.dataset_id),
+                );
+            }
+        }
+    }
+
+    if let Some(limit) = ds.io_export_p95_ms.or(ds.io_roundtrip_p95_ms) {
+        if let Some(actual) = find("io.export.total") {
+            if actual > limit {
+                out.push(
+                    AppError::new(
+                        ReasonCode::new("PERF_BUDGET_EXCEEDED_IO_EXPORT_P95"),
+                        Severity::Warn,
+                        format!("io.export span exceeded budget: {actual:.2}ms > {limit:.2}ms"),
+                    )
+                    .with_context("dataset_id", &report.dataset_id),
+                );
+            }
         }
     }
 

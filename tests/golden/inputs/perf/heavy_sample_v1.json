@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "dataset_id": "heavy_sample_v1",
+  "entities": [
+    { "id": 1, "kind": "polyline", "points": 1000 },
+    { "id": 2, "kind": "polyline", "points": 1000 },
+    { "id": 3, "kind": "circle", "r": 10.0 },
+    { "id": 4, "kind": "text", "chars": 200 }
+  ]
+}
