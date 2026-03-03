@@ -402,6 +402,61 @@
       "evidence": {
         "history": "git status; git log -n 30 --oneline; git branch -vv"
       }
+    },
+    "S17-DIAG-SSOT-001": {
+      "branch": "feature/s17-diag-ssot-001",
+      "artifacts": [
+        "docs/specs/diagnostics/README.md",
+        "docs/specs/diagnostics/privacy.md",
+        "docs/specs/diagnostics/retention_policy.md",
+        "docs/specs/diagnostics/repro_template.md",
+        "docs/specs/diagnostics/support_zip.md",
+        "docs/specs/diagnostics/joblog.schema.json",
+        "docs/specs/diagnostics/oplog.schema.json",
+        "core/serialize/tests/spec_ssot_lint.rs",
+        "docs/verification/S17-DIAG-SSOT-001.md"
+      ],
+      "verification": "docs/verification/S17-DIAG-SSOT-001.md",
+      "evidence": {
+        "history": "git status --porcelain; git fetch --all --prune; git log -n 20 --oneline; git log -n 30 --oneline -- core/serialize/tests/spec_ssot_lint.rs; git blame -n core/serialize/tests/spec_ssot_lint.rs | head -n 80; rg -n \"spec_ssot_lint|SSOT lint|schema.json|jsonschema|Ajv|diagnostics\" -S core docs tests"
+      }
+    },
+    "S17-DIAG-CORE-002": {
+      "branch": "feature/s17-diag-core-002",
+      "artifacts": [
+        "core/crates/diagnostics/Cargo.toml",
+        "core/crates/diagnostics/src/lib.rs",
+        "core/crates/diagnostics/src/security_iface.rs",
+        "core/crates/diagnostics/src/reasons.rs",
+        "core/crates/diagnostics/src/joblog.rs",
+        "core/crates/diagnostics/src/oplog.rs",
+        "core/crates/diagnostics/src/reason_summary.rs",
+        "core/crates/diagnostics/src/repro.rs",
+        "core/crates/diagnostics/src/ssot_fingerprint.rs",
+        "core/crates/diagnostics/src/retention.rs",
+        "core/crates/diagnostics/tests/basic.rs",
+        "docs/verification/S17-DIAG-CORE-002.md"
+      ],
+      "verification": "docs/verification/S17-DIAG-CORE-002.md",
+      "evidence": {
+        "history": "git status --porcelain; git fetch --all --prune; git checkout -b feature/s17-diag-core-002; git log -n 25 --oneline; rg -n \"core/crates|workspace.*members|diagnostics|ReasonCatalog|ReasonCode|redaction|limits|consent\" -S core core/Cargo.toml; rg -n \"pub enum Reason|ReasonCode|ReasonCatalog\" -S core; rg -n \"limits_profile|Determinism|seed|epsilon|rounding\" -S core",
+        "tests": "cargo test --manifest-path core/Cargo.toml -p craftcad_diagnostics: pass"
+      }
+    },
+    "S17-DIAG-ZIP-003": {
+      "branch": "feature/s17-diag-zip-003",
+      "artifacts": [
+        "core/crates/diagnostics/Cargo.toml",
+        "core/crates/diagnostics/src/support_zip.rs",
+        "core/crates/diagnostics/src/lib.rs",
+        "core/crates/diagnostics/tests/support_zip_basic.rs",
+        "docs/verification/S17-DIAG-ZIP-003.md"
+      ],
+      "verification": "docs/verification/S17-DIAG-ZIP-003.md",
+      "evidence": {
+        "history": "git status --porcelain; git fetch --all --prune; git checkout -b feature/s17-diag-zip-003; git log -n 25 --oneline; rg -n \"SupportZip|support_zip|zip::|zip crate|atomic|temp|sha256\" -S core; rg -n \"craftcad_diagnostics\" -S core",
+        "tests": "cargo test --manifest-path core/Cargo.toml -p craftcad_diagnostics: pass"
+      }
     }
   }
 }

@@ -973,8 +973,8 @@ fn ssot_perf_budgets_json_is_valid_and_consistent() {
         manifest_path.display()
     );
 
-    let manifest_text =
-        std::fs::read_to_string(&manifest_path).expect("Failed to read tests/datasets/manifest.json");
+    let manifest_text = std::fs::read_to_string(&manifest_path)
+        .expect("Failed to read tests/datasets/manifest.json");
     let manifest: DatasetManifest =
         serde_json::from_str(&manifest_text).expect("Invalid tests/datasets/manifest.json schema");
 
@@ -990,13 +990,24 @@ fn ssot_perf_budgets_json_is_valid_and_consistent() {
             d.dataset_id
         );
     }
-    assert!(!dataset_ids.is_empty(), "manifest datasets must not be empty");
+    assert!(
+        !dataset_ids.is_empty(),
+        "manifest datasets must not be empty"
+    );
 
     // 3) budgets.json を schema で検証
     let budgets_path = root.join("docs/specs/perf/budgets.json");
     let schema_path = root.join("docs/specs/perf/budgets.schema.json");
-    assert!(budgets_path.exists(), "Missing budgets.json: {}", budgets_path.display());
-    assert!(schema_path.exists(), "Missing budgets.schema.json: {}", schema_path.display());
+    assert!(
+        budgets_path.exists(),
+        "Missing budgets.json: {}",
+        budgets_path.display()
+    );
+    assert!(
+        schema_path.exists(),
+        "Missing budgets.schema.json: {}",
+        schema_path.display()
+    );
 
     let budgets_text = std::fs::read_to_string(&budgets_path).expect("Failed to read budgets.json");
     let schema_text =
@@ -1014,7 +1025,10 @@ fn ssot_perf_budgets_json_is_valid_and_consistent() {
         for e in errors {
             msgs.push(format!("{} at {}", e, e.instance_path));
         }
-        panic!("budgets.json failed schema validation:\n{}", msgs.join("\n"));
+        panic!(
+            "budgets.json failed schema validation:\n{}",
+            msgs.join("\n")
+        );
     }
 
     // policy sanity check (must have at least one enforcement path)
@@ -1041,7 +1055,10 @@ fn ssot_perf_budgets_json_is_valid_and_consistent() {
         .and_then(|v| v.as_array())
         .expect("budgets.json.datasets must be array");
 
-    assert!(!datasets.is_empty(), "budgets.json.datasets must not be empty");
+    assert!(
+        !datasets.is_empty(),
+        "budgets.json.datasets must not be empty"
+    );
 
     for entry in datasets {
         let id = entry
@@ -1061,7 +1078,9 @@ fn ssot_perf_budgets_json_is_valid_and_consistent() {
             .expect("budgets must be object");
 
         let must_pos_int = |k: &str, min: i64, max: i64| {
-            let v = b.get(k).unwrap_or_else(|| panic!("missing budget key: {k}"));
+            let v = b
+                .get(k)
+                .unwrap_or_else(|| panic!("missing budget key: {k}"));
             let n = v
                 .as_i64()
                 .unwrap_or_else(|| panic!("budget {k} must be integer"));
@@ -1084,4 +1103,110 @@ fn ssot_perf_budgets_json_is_valid_and_consistent() {
         assert!(temp >= 0, "max_temp_bytes_mb must be >= 0");
         assert!(temp <= 65536, "max_temp_bytes_mb must be <= 65536");
     }
+}
+
+fn read_text_path(p: &Path) -> String {
+    std::fs::read_to_string(p).unwrap_or_else(|e| panic!("failed to read {}: {e}", p.display()))
+}
+
+fn parse_retention_numbers(md: &str) -> (u64, u64, u64) {
+    fn extract_u64(md: &str, key: &str) -> u64 {
+        for line in md.lines() {
+            let line = line.trim();
+            if let Some(rest) = line.strip_prefix(key) {
+                let rest = rest.trim();
+                if let Some(num) = rest.strip_prefix(':') {
+                    let num = num.trim().split_whitespace().next().unwrap_or("");
+                    return num
+                        .parse::<u64>()
+                        .unwrap_or_else(|e| panic!("invalid {key} value '{num}': {e}"));
+                }
+            }
+        }
+        panic!("retention key not found: {key}");
+    }
+
+    let keep_days = extract_u64(md, "- default_keep_days");
+    let max_total_bytes = extract_u64(md, "- max_total_bytes");
+    let max_items = extract_u64(md, "- max_items");
+    (keep_days, max_total_bytes, max_items)
+}
+
+#[test]
+fn ssot_diagnostics_contracts_exist_and_valid() {
+    let root = repo_root_from_manifest();
+    let dir = root.join("docs").join("specs").join("diagnostics");
+    assert!(
+        dir.exists(),
+        "missing diagnostics ssot dir: {}",
+        dir.display()
+    );
+
+    let required = [
+        "README.md",
+        "privacy.md",
+        "retention_policy.md",
+        "repro_template.md",
+        "support_zip.md",
+        "joblog.schema.json",
+        "oplog.schema.json",
+    ];
+    for f in required {
+        let p = dir.join(f);
+        assert!(
+            p.exists(),
+            "missing required diagnostics spec file: {}",
+            p.display()
+        );
+    }
+
+    let joblog_schema = read_json(&dir.join("joblog.schema.json"));
+    let oplog_schema = read_json(&dir.join("oplog.schema.json"));
+
+    let joblog_compiled = jsonschema::JSONSchema::compile(&joblog_schema)
+        .unwrap_or_else(|e| panic!("joblog.schema.json is not a valid JSON Schema: {e:?}"));
+    let empty = serde_json::json!({});
+    assert!(
+        joblog_compiled.validate(&empty).is_err(),
+        "joblog schema unexpectedly validates empty object (required fields missing)"
+    );
+
+    let oplog_compiled = jsonschema::JSONSchema::compile(&oplog_schema)
+        .unwrap_or_else(|e| panic!("oplog.schema.json is not a valid JSON Schema: {e:?}"));
+    assert!(
+        oplog_compiled.validate(&empty).is_err(),
+        "oplog schema unexpectedly validates empty object (required fields missing)"
+    );
+
+    let retention = read_text_path(&dir.join("retention_policy.md"));
+    let (keep_days, max_total_bytes, max_items) = parse_retention_numbers(&retention);
+
+    assert!(
+        (1..=365).contains(&keep_days),
+        "default_keep_days out of range: {keep_days}"
+    );
+    let min_bytes: u64 = 64 * 1024 * 1024;
+    let max_bytes: u64 = 64 * 1024 * 1024 * 1024;
+    assert!(
+        (min_bytes..=max_bytes).contains(&max_total_bytes),
+        "max_total_bytes out of range: {max_total_bytes}"
+    );
+    assert!(
+        (1..=1000).contains(&max_items),
+        "max_items out of range: {max_items}"
+    );
+
+    let zip_md = read_text_path(&dir.join("support_zip.md"));
+    assert!(
+        zip_md.contains("joblog.json"),
+        "missing required marker in support_zip.md: needle=joblog.json"
+    );
+    assert!(
+        zip_md.contains("reason_summary.json"),
+        "missing required marker in support_zip.md: needle=reason_summary.json"
+    );
+    assert!(
+        zip_md.contains("ssot_fingerprint.json"),
+        "missing required marker in support_zip.md: needle=ssot_fingerprint.json"
+    );
 }
