@@ -281,6 +281,7 @@
         "docs/verification/S15-STEP4.md"
       ],
       "verification": "docs/verification/S15-STEP4.md"
+<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
     },
     "S15-STEP5": {
       "branch": "feature/s15-step5-001",
@@ -295,6 +296,8 @@
         "docs/verification/S15-STEP5.md"
       ],
       "verification": "docs/verification/S15-STEP5.md"
+=======
+>>>>>>> main
     }
   }
 }
