@@ -75,6 +75,7 @@ pub enum ExpectedKind {
     DrawingSvg,
     NestResult,
     OpenResult,
+    SavedProject,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

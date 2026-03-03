@@ -1,0 +1,8 @@
+{
+  "board": {
+    "w": 910.0,
+    "h": 1820.0
+  },
+  "placements": 4,
+  "strategy": "first_fit"
+}
