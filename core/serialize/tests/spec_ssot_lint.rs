@@ -50,9 +50,16 @@ fn dataset_manifest_references_existing_files() {
         std::fs::read_to_string("../../tests/datasets/manifest.json").expect("dataset manifest");
     let value: serde_json::Value = serde_json::from_str(&raw).expect("dataset manifest json");
     for ds in value["datasets"].as_array().expect("datasets") {
-        for key in ["inputs", "expected_outputs"] {
-            for p in ds[key].as_array().expect("paths") {
-                let rel = p.as_str().expect("path str");
+        for key in ["inputs", "expected", "expected_outputs"] {
+            let Some(entries) = ds.get(key).and_then(|v| v.as_array()) else {
+                continue;
+            };
+            for p in entries {
+                let rel = p
+                    .get("path")
+                    .and_then(|v| v.as_str())
+                    .or_else(|| p.as_str())
+                    .expect("path str");
                 assert!(
                     Path::new("../..").join(rel).exists(),
                     "missing dataset file: {rel}"
@@ -926,5 +933,155 @@ fn spec_ssot_lint_presets_templates_library() {
                 }
             }
         }
+    }
+}
+
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct DatasetManifest {
+    datasets: Vec<DatasetEntry>,
+}
+
+#[derive(Debug, Deserialize)]
+struct DatasetEntry {
+    #[serde(alias = "dataset_id", alias = "id")]
+    dataset_id: String,
+}
+
+#[test]
+fn ssot_perf_budgets_json_is_valid_and_consistent() {
+    let root = repo_root_from_manifest();
+
+    // 1) 必須SSOTファイルの存在チェック（最小）
+    let required_md = [
+        "docs/specs/perf/profiling.md",
+        "docs/specs/perf/job_queue.md",
+        "docs/specs/perf/cache_policy.md",
+        "docs/specs/perf/lod_policy.md",
+        "docs/specs/perf/memory_policy.md",
+    ];
+    for p in required_md {
+        assert!(root.join(p).exists(), "Missing perf SSOT doc: {p}");
+    }
+
+    // 2) datasets manifest を読み込む（tests/datasets/manifest.json）
+    let manifest_path = root.join("tests/datasets/manifest.json");
+    assert!(
+        manifest_path.exists(),
+        "Missing dataset manifest SSOT: {}",
+        manifest_path.display()
+    );
+
+    let manifest_text =
+        std::fs::read_to_string(&manifest_path).expect("Failed to read tests/datasets/manifest.json");
+    let manifest: DatasetManifest =
+        serde_json::from_str(&manifest_text).expect("Invalid tests/datasets/manifest.json schema");
+
+    let mut dataset_ids = BTreeSet::<String>::new();
+    for d in manifest.datasets {
+        assert!(
+            !d.dataset_id.trim().is_empty(),
+            "dataset_id must not be empty in manifest"
+        );
+        assert!(
+            dataset_ids.insert(d.dataset_id.clone()),
+            "Duplicate dataset_id in manifest: {}",
+            d.dataset_id
+        );
+    }
+    assert!(!dataset_ids.is_empty(), "manifest datasets must not be empty");
+
+    // 3) budgets.json を schema で検証
+    let budgets_path = root.join("docs/specs/perf/budgets.json");
+    let schema_path = root.join("docs/specs/perf/budgets.schema.json");
+    assert!(budgets_path.exists(), "Missing budgets.json: {}", budgets_path.display());
+    assert!(schema_path.exists(), "Missing budgets.schema.json: {}", schema_path.display());
+
+    let budgets_text = std::fs::read_to_string(&budgets_path).expect("Failed to read budgets.json");
+    let schema_text =
+        std::fs::read_to_string(&schema_path).expect("Failed to read budgets.schema.json");
+
+    let budgets_json: serde_json::Value =
+        serde_json::from_str(&budgets_text).expect("budgets.json must be valid JSON");
+    let schema_json: serde_json::Value =
+        serde_json::from_str(&schema_text).expect("budgets.schema.json must be valid JSON");
+
+    let compiled = jsonschema::JSONSchema::compile(&schema_json)
+        .expect("Failed to compile budgets.schema.json");
+    if let Err(errors) = compiled.validate(&budgets_json) {
+        let mut msgs = Vec::new();
+        for e in errors {
+            msgs.push(format!("{} at {}", e, e.instance_path));
+        }
+        panic!("budgets.json failed schema validation:\n{}", msgs.join("\n"));
+    }
+
+    // policy sanity check (must have at least one enforcement path)
+    let policy = budgets_json
+        .get("policy")
+        .and_then(|v| v.as_object())
+        .expect("policy must be object");
+    let warn_in_pr = policy
+        .get("warn_in_pr")
+        .and_then(|v| v.as_bool())
+        .expect("warn_in_pr must be bool");
+    let error_on_main = policy
+        .get("error_on_main")
+        .and_then(|v| v.as_bool())
+        .expect("error_on_main must be bool");
+    assert!(
+        warn_in_pr || error_on_main,
+        "budgets policy must enforce at least one path (warn_in_pr or error_on_main)"
+    );
+
+    // 4) dataset_id 整合（budgets.json ⊆ manifest.json）
+    let datasets = budgets_json
+        .get("datasets")
+        .and_then(|v| v.as_array())
+        .expect("budgets.json.datasets must be array");
+
+    assert!(!datasets.is_empty(), "budgets.json.datasets must not be empty");
+
+    for entry in datasets {
+        let id = entry
+            .get("dataset_id")
+            .and_then(|v| v.as_str())
+            .expect("dataset_id must be string");
+        assert!(
+            dataset_ids.contains(id),
+            "budgets.json dataset_id not found in tests/datasets/manifest.json: {}",
+            id
+        );
+
+        // 5) 追加の妥当性チェック（schema だけでは拾いにくい “極端値” を抑止）
+        let b = entry
+            .get("budgets")
+            .and_then(|v| v.as_object())
+            .expect("budgets must be object");
+
+        let must_pos_int = |k: &str, min: i64, max: i64| {
+            let v = b.get(k).unwrap_or_else(|| panic!("missing budget key: {k}"));
+            let n = v
+                .as_i64()
+                .unwrap_or_else(|| panic!("budget {k} must be integer"));
+            assert!(n >= min, "budget {k} too small: {n} < {min}");
+            assert!(n <= max, "budget {k} too large: {n} > {max}");
+        };
+
+        // “0禁止” を強制（契約）
+        must_pos_int("open_p95_ms", 1, 600000);
+        must_pos_int("save_p95_ms", 1, 600000);
+        must_pos_int("io_import_p95_ms", 1, 600000);
+        must_pos_int("io_export_p95_ms", 1, 600000);
+        must_pos_int("render_frame_p95_ms", 1, 600000);
+        must_pos_int("max_rss_mb", 32, 65536);
+
+        let temp = b
+            .get("max_temp_bytes_mb")
+            .and_then(|v| v.as_i64())
+            .expect("max_temp_bytes_mb must be integer");
+        assert!(temp >= 0, "max_temp_bytes_mb must be >= 0");
+        assert!(temp <= 65536, "max_temp_bytes_mb must be <= 65536");
     }
 }

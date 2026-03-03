@@ -8,8 +8,24 @@ authors.workspace = true
 [features]
 default = ["enabled"]
 enabled = []
+perf = ["enabled"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 craftcad_errors = { path = "../errors" }
+
+[[bench]]
+name = "io_import_export"
+path = "../../../benches/io_import_export.rs"
+harness = false
+
+[[bench]]
+name = "diycad_open_save"
+path = "../../../benches/diycad_open_save.rs"
+harness = false
+
+[[bench]]
+name = "render_frame"
+path = "../../../benches/render_frame.rs"
+harness = false
