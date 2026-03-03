@@ -12,6 +12,34 @@ fn repo_root() -> PathBuf {
         .to_path_buf()
 }
 
+
+
+fn is_ci() -> bool {
+    std::env::var("CI")
+        .map(|v| v == "true" || v == "1")
+        .unwrap_or(false)
+}
+
+fn ci_context() -> serde_json::Value {
+    serde_json::json!({
+        "CI": std::env::var("CI").ok(),
+        "GITHUB_EVENT_NAME": std::env::var("GITHUB_EVENT_NAME").ok(),
+        "GITHUB_REF_NAME": std::env::var("GITHUB_REF_NAME").ok(),
+        "GITHUB_REF": std::env::var("GITHUB_REF").ok(),
+    })
+}
+
+fn is_pull_request() -> bool {
+    matches!(
+        std::env::var("GITHUB_EVENT_NAME").ok().as_deref(),
+        Some("pull_request") | Some("pull_request_target")
+    )
+}
+
+fn is_main_or_release() -> bool {
+    let ref_name = std::env::var("GITHUB_REF_NAME").ok().unwrap_or_default();
+    ref_name == "main" || ref_name.starts_with("release/")
+}
 #[test]
 fn perf_smoke_generates_report_and_checks_budgets() {
     let root = repo_root();
@@ -79,13 +107,44 @@ fn perf_smoke_generates_report_and_checks_budgets() {
     let out_dir = root.join("tests/perf/artifacts");
     std::fs::create_dir_all(&out_dir).expect("create artifacts dir");
     let out_path = out_dir.join("perf_report_heavy_sample_v1.json");
+
+    let policy = budgets.policy().clone();
+    let fatal = if is_ci() {
+        if is_pull_request() {
+            !policy.warn_in_pr
+        } else if is_main_or_release() {
+            policy.error_on_main
+        } else {
+            false
+        }
+    } else {
+        false
+    };
+
     let artifact = json!({
         "report": report,
         "budget_warnings": warnings,
+        "policy": {
+            "mode": policy.mode,
+            "warn_in_pr": policy.warn_in_pr,
+            "error_on_main": policy.error_on_main,
+            "min_samples": policy.min_samples,
+            "fatal_evaluation": fatal,
+        },
+        "ci_context": ci_context(),
         "dataset_path": dataset_path.strip_prefix(&root).unwrap_or(Path::new("tests/datasets/heavy_sample_v1/heavy_sample_v1.json")),
     });
     let text = serde_json::to_string_pretty(&artifact).expect("serialize report artifact");
     std::fs::write(&out_path, text).expect("write report");
+
+    if fatal && !violations.is_empty() {
+        panic!(
+            "Perf budgets exceeded on fatal context. dataset_id={} violations={} report_path={}",
+            artifact["report"]["dataset_id"].as_str().unwrap_or("unknown"),
+            violations.len(),
+            out_path.display()
+        );
+    }
 
     assert_eq!(artifact["report"]["dataset_id"], "heavy_sample_v1");
     assert!(out_path.exists(), "perf artifact must exist");

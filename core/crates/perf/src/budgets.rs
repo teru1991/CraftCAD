@@ -7,6 +7,8 @@ use std::path::Path;
 #[derive(Debug, Clone, Deserialize)]
 pub struct PerfBudgets {
     pub datasets: HashMap<String, DatasetBudget>,
+    #[serde(default)]
+    policy: PerfBudgetPolicy,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -21,7 +23,44 @@ pub struct DatasetBudget {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct PerfBudgetPolicy {
+    #[serde(default = "default_mode")]
+    pub mode: String,
+    #[serde(default = "default_warn_in_pr")]
+    pub warn_in_pr: bool,
+    #[serde(default)]
+    pub error_on_main: bool,
+    #[serde(default = "default_min_samples")]
+    pub min_samples: u32,
+}
+
+fn default_mode() -> String {
+    "warn".to_string()
+}
+
+const fn default_warn_in_pr() -> bool {
+    true
+}
+
+const fn default_min_samples() -> u32 {
+    1
+}
+
+impl Default for PerfBudgetPolicy {
+    fn default() -> Self {
+        Self {
+            mode: default_mode(),
+            warn_in_pr: default_warn_in_pr(),
+            error_on_main: false,
+            min_samples: default_min_samples(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
 struct SsotBudgetFile {
+    #[serde(default)]
+    policy: PerfBudgetPolicy,
     datasets: Vec<SsotBudgetDataset>,
 }
 
@@ -29,6 +68,12 @@ struct SsotBudgetFile {
 struct SsotBudgetDataset {
     dataset_id: String,
     budgets: DatasetBudget,
+}
+
+impl PerfBudgets {
+    pub fn policy(&self) -> &PerfBudgetPolicy {
+        &self.policy
+    }
 }
 
 pub fn load_budgets(path: impl AsRef<Path>) -> AppResult<PerfBudgets> {
@@ -40,9 +85,6 @@ pub fn load_budgets(path: impl AsRef<Path>) -> AppResult<PerfBudgets> {
         )
     })?;
 
-    // Backward compatible load:
-    // 1) legacy format {"datasets": {"id": {...}}}
-    // 2) SSOT format {"datasets": [{"dataset_id": "...", "budgets": {...}}]}
     if let Ok(v) = serde_json::from_str::<PerfBudgets>(&raw) {
         return Ok(v);
     }
@@ -61,7 +103,10 @@ pub fn load_budgets(path: impl AsRef<Path>) -> AppResult<PerfBudgets> {
         .map(|d| (d.dataset_id, d.budgets))
         .collect::<HashMap<_, _>>();
 
-    Ok(PerfBudgets { datasets })
+    Ok(PerfBudgets {
+        datasets,
+        policy: ssot.policy,
+    })
 }
 
 pub fn check_report_against_budgets(report: &PerfReport, budgets: &PerfBudgets) -> Vec<AppError> {

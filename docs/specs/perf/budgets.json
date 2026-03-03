@@ -9,7 +9,7 @@
   "datasets": [
     {
       "dataset_id": "heavy_sample_v1",
-      "notes": "Initial heavy baseline. Adjust after first perf report is stable.",
+      "notes": "Initial heavy baseline. Adjust after first perf report is stable. PR warns, main/release errors per policy.",
       "budgets": {
         "open_p95_ms": 8000,
         "save_p95_ms": 8000,

@@ -1017,6 +1017,24 @@ fn ssot_perf_budgets_json_is_valid_and_consistent() {
         panic!("budgets.json failed schema validation:\n{}", msgs.join("\n"));
     }
 
+    // policy sanity check (must have at least one enforcement path)
+    let policy = budgets_json
+        .get("policy")
+        .and_then(|v| v.as_object())
+        .expect("policy must be object");
+    let warn_in_pr = policy
+        .get("warn_in_pr")
+        .and_then(|v| v.as_bool())
+        .expect("warn_in_pr must be bool");
+    let error_on_main = policy
+        .get("error_on_main")
+        .and_then(|v| v.as_bool())
+        .expect("error_on_main must be bool");
+    assert!(
+        warn_in_pr || error_on_main,
+        "budgets policy must enforce at least one path (warn_in_pr or error_on_main)"
+    );
+
     // 4) dataset_id 整合（budgets.json ⊆ manifest.json）
     let datasets = budgets_json
         .get("datasets")

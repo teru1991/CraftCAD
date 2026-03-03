@@ -92,4 +92,9 @@ PY
   overall_status=$?
 fi
 
+# Always try to collect reproducible perf artifacts (non-fatal).
+set +e
+"${ROOT_DIR}/scripts/ci/collect_artifacts.sh" "${ROOT_DIR}/artifacts" || true
+set -e
+
 exit ${overall_status}
