@@ -22,6 +22,7 @@ struct SupportEntry {
     action: Option<String>,
     #[serde(default)]
     reason_codes: Vec<String>,
+    #[allow(dead_code)]
     #[serde(default)]
     notes: Option<String>,
 }
@@ -61,6 +62,7 @@ struct NamedRulesDoc {
 struct UnitsRulesDoc {
     supported: Vec<String>,
     default: String,
+    #[allow(dead_code)]
     #[serde(default)]
     import_guess_order: Vec<String>,
 }

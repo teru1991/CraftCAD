@@ -391,7 +391,7 @@ pub fn open_package(path: &Path, opt: OpenOptions) -> Result<OpenResult> {
     ];
     let mut uniq: Vec<SalvageActionHint> = Vec::new();
     for x in preferred {
-        if salvage_actions.iter().any(|y| *y == x) && !uniq.contains(&x) {
+        if salvage_actions.contains(&x) && !uniq.contains(&x) {
             uniq.push(x);
         }
     }

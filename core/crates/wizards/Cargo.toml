@@ -22,6 +22,8 @@ ordered-float = "4"
 tempfile = "3"
 recovery = { path = "../recovery" }
 diycad_format = { path = "../diycad_format" }
+zip = "2"
+rand = "0.9"
 
 
 [[test]]
@@ -39,3 +41,23 @@ path = "../../../tests/compat/presets_templates_compat.rs"
 [[test]]
 name = "project_crash_recovery"
 path = "../../../tests/e2e/project_crash_recovery.rs"
+
+[[test]]
+name = "diycad_open_save"
+path = "../../../tests/golden/diycad_open_save/mod.rs"
+
+[[test]]
+name = "compat_open"
+path = "../../../tests/compat/compat_open.rs"
+
+[[test]]
+name = "diycad_open_fuzz"
+path = "../../../tests/fuzz/diycad_open_fuzz.rs"
+
+[[test]]
+name = "open_signature"
+path = "../../../tests/determinism/open_signature.rs"
+
+[[test]]
+name = "migrate_verify_batch"
+path = "../../../tests/e2e/migrate_verify_batch.rs"

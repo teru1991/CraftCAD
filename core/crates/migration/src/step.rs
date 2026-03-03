@@ -2,6 +2,7 @@ use crate::report::{ChangeSet, VersionBump};
 use anyhow::Result;
 use serde_json::Value;
 
+#[allow(clippy::wrong_self_convention)]
 pub trait MigrationStep: Send + Sync {
     fn from_version(&self) -> i64;
     fn to_version(&self) -> i64;

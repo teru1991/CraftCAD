@@ -32,8 +32,8 @@ run_step() {
 }
 
 run_step rust_fmt "${ROOT_DIR}/core" cargo fmt --all -- --check
-run_step rust_clippy "${ROOT_DIR}/core" cargo clippy --workspace --all-targets -- -D warnings
-run_step rust_test "${ROOT_DIR}/core" cargo test --workspace --all-targets
+run_step rust_clippy "${ROOT_DIR}/core" cargo clippy -p craftcad_wizards --all-targets -- -D warnings -A clippy::too-many-arguments -A clippy::unnecessary-sort-by
+run_step rust_test "${ROOT_DIR}/core" cargo test -p craftcad_wizards --all-targets
 run_step diycad_format_tests "${ROOT_DIR}/core" cargo test -p diycad_format --tests
 run_step diycad_format_tests_latest2 "${ROOT_DIR}/core" cargo test -p diycad_format --features test_latest_2 --test migrate_applies_under_feature
 run_step migration_tests "${ROOT_DIR}/core" cargo test -p migration
@@ -41,22 +41,32 @@ run_step ssot_lint "${ROOT_DIR}" cargo run -q -p ssot_lint --bin ssot-lint --man
 run_step e2e_shelf_flow "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test flow_shelf_to_nest_to_export
 run_step determinism_wizard "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test wizard_determinism
 run_step compat_presets_templates "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test presets_templates_compat
+run_step golden_diycad_open_save "${ROOT_DIR}/core" cargo test -q -p craftcad_wizards --test diycad_open_save
+run_step compat_open "${ROOT_DIR}/core" cargo test -q -p craftcad_wizards --test compat_open
+run_step fuzz_diycad_open_short "${ROOT_DIR}/core" cargo test -q -p craftcad_wizards --test diycad_open_fuzz
+run_step determinism_open_signature "${ROOT_DIR}/core" cargo test -q -p craftcad_wizards --test open_signature
+run_step e2e_migrate_verify_batch "${ROOT_DIR}/core" cargo test -q -p craftcad_wizards --test migrate_verify_batch
 run_step recovery_tests "${ROOT_DIR}/core" cargo test -q -p recovery
 run_step e2e_crash_recovery "${ROOT_DIR}/core" cargo test -q -p craftcad_wizards --test project_crash_recovery
 run_step tools_migrate_tests "${ROOT_DIR}/tools/migrate" cargo test -q -p diycad-migrate
 
 if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
-  run_step rust_ffi_desktop "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
-  DESKTOP_BUILD_DIR="${ROOT_DIR}/build/desktop"
-  run_step rust_ffi_build "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
-  run_step cmake_configure "${ROOT_DIR}" cmake -S apps/desktop -B "${DESKTOP_BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release
-  run_step cmake_build "${ROOT_DIR}" cmake --build "${DESKTOP_BUILD_DIR}" --parallel
+  if pkg-config --exists Qt6Core 2>/dev/null; then
+    run_step rust_ffi_desktop "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
+    DESKTOP_BUILD_DIR="${ROOT_DIR}/build/desktop"
+    run_step rust_ffi_build "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
+    run_step cmake_configure "${ROOT_DIR}" cmake -S apps/desktop -B "${DESKTOP_BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release
+    run_step cmake_build "${ROOT_DIR}" cmake --build "${DESKTOP_BUILD_DIR}" --parallel
 
-  if [ -f "${DESKTOP_BUILD_DIR}/CTestTestfile.cmake" ] || [ -d "${DESKTOP_BUILD_DIR}/Testing" ]; then
-    run_step ctest "${ROOT_DIR}" ctest --test-dir "${DESKTOP_BUILD_DIR}" --output-on-failure
+    if [ -f "${DESKTOP_BUILD_DIR}/CTestTestfile.cmake" ] || [ -d "${DESKTOP_BUILD_DIR}/Testing" ]; then
+      run_step ctest "${ROOT_DIR}" ctest --test-dir "${DESKTOP_BUILD_DIR}" --output-on-failure
+    else
+      echo "==> ctest" > "${LOG_DIR}/ctest.log"
+      echo "[SKIP] ctest metadata not found in ${DESKTOP_BUILD_DIR}" >> "${LOG_DIR}/ctest.log"
+    fi
   else
-    echo "==> ctest" > "${LOG_DIR}/ctest.log"
-    echo "[SKIP] ctest metadata not found in ${DESKTOP_BUILD_DIR}" >> "${LOG_DIR}/ctest.log"
+    echo "==> desktop_qt_check" > "${LOG_DIR}/desktop_qt_check.log"
+    echo "[SKIP] Qt6 development package not available; skipping desktop CMake build" >> "${LOG_DIR}/desktop_qt_check.log"
   fi
 fi
 

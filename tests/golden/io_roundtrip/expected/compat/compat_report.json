@@ -1,8 +1,5 @@
 {
-  "exports": {
-    "json_from_dxf_len": 5512,
-    "json_from_svg_len": 2565
-  },
+  "schema_version": 1,
   "input_id": "compat_01",
   "pipelines": [
     "json->dxf->json",
@@ -10,33 +7,36 @@
   ],
   "results": [
     {
+      "pipeline": "json->dxf->json",
       "deterministic": true,
       "geometry_ok": true,
-      "notes": [
-        "bbox0=0.000000,0.000000,38.000000,20.000000",
-        "bbox1=0.000000,0.000000,38.000000,20.000000"
-      ],
-      "pipeline": "json->dxf->json",
       "style_ok": true,
       "warnings": [
         "IO_TEXT_FALLBACK_FONT",
         "IO_FALLBACK_024"
+      ],
+      "notes": [
+        "bbox0=0.000000,0.000000,38.000000,20.000000",
+        "bbox1=0.000000,0.000000,38.000000,20.000000"
       ]
     },
     {
+      "pipeline": "json->svg->json",
       "deterministic": true,
       "geometry_ok": true,
-      "notes": [
-        "bbox0=0.000000,0.000000,38.000000,20.000000",
-        "bbox2=0.000000,0.000000,33.000000,14.000000"
-      ],
-      "pipeline": "json->svg->json",
       "style_ok": true,
       "warnings": [
         "IO_UNIT_GUESSED",
         "IO_TEXT_FALLBACK_FONT"
+      ],
+      "notes": [
+        "bbox0=0.000000,0.000000,38.000000,20.000000",
+        "bbox2=0.000000,0.000000,33.000000,14.000000"
       ]
     }
   ],
-  "schema_version": 1
+  "exports": {
+    "json_from_dxf_len": 5512,
+    "json_from_svg_len": 2565
+  }
 }
