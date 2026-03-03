@@ -56,6 +56,7 @@ run_step e2e_migrate_verify_batch "${ROOT_DIR}/core" cargo test -q -p craftcad_w
 run_step recovery_tests "${ROOT_DIR}/core" cargo test -q -p recovery
 run_step e2e_crash_recovery "${ROOT_DIR}/core" cargo test -q -p craftcad_wizards --test project_crash_recovery
 run_step tools_migrate_tests "${ROOT_DIR}/tools/migrate" cargo test -q -p diycad-migrate
+run_step perf_smoke "${ROOT_DIR}" scripts/ci/perf_smoke.sh
 
 if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
   if pkg-config --exists Qt6Core 2>/dev/null; then
