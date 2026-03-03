@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "units": "mm",
+  "title": "min_project_v1",
+  "layers": [
+    {
+      "id": "L1",
+      "name": "default",
+      "visible": true,
+      "locked": false
+    }
+  ],
+  "entities": [
+    {
+      "type": "rect",
+      "layer": "L1",
+      "id": "E1",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 100.0,
+      "h": 60.0
+    }
+  ],
+  "parts": [],
+  "meta": {
+    "created_by": "golden",
+    "notes": "text-only project exchange fixture"
+  }
+}

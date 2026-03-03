@@ -254,6 +254,19 @@
         "failure_artifacts/<dataset_id>"
       ],
       "verification": "docs/verification/S15-STEP2.md"
+    },
+    "S15-STEP3": {
+      "branch": "feature/s15-step3-001",
+      "artifacts": [
+        "tests/datasets/manifest.json",
+        "tests/golden/inputs/**",
+        "tests/golden/expected/**",
+        "tests/golden/README.md",
+        "core/tests/golden_datasets.rs",
+        "scripts/testing/run_golden.sh",
+        "docs/verification/S15-STEP3.md"
+      ],
+      "verification": "docs/verification/S15-STEP3.md"
     }
   }
 }
