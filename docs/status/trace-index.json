@@ -202,6 +202,25 @@
         "head_sha": "see docs/verification/SPRINT14-STEP6.md",
         "tests": "cargo test -p diycad-migrate: pass; scripts/ci/run_all.sh: tools_migrate_tests and project gates pass, existing rust_clippy/rust_test/cmake configure-build fail"
       }
+    },
+    "SPRINT14-STEP7": {
+      "branch": "feature/sprint14-step7-001",
+      "artifacts": [
+        "core/crates/diycad_format/src/open.rs",
+        "core/crates/io_support/src/lib.rs",
+        "core/crates/migration/src/step.rs",
+        "core/crates/wizards/Cargo.toml",
+        "scripts/ci/run_all.sh",
+        "tests/compat/compat_open.rs",
+        "tests/determinism/open_signature.rs",
+        "tests/e2e/migrate_verify_batch.rs",
+        "tests/fuzz/diycad_open_fuzz.rs",
+        "tests/golden/diycad_open_save/mod.rs",
+        "tests/golden/diycad_open_save/golden_signatures.json",
+        "tests/golden/io_roundtrip/expected/compat/compat_report.json",
+        "docs/verification/SPRINT14-STEP7.md"
+      ],
+      "verification_evidence": "docs/verification/SPRINT14-STEP7.md"
     }
   }
 }
