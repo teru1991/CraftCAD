@@ -1,36 +1,84 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://craftcad.dev/specs/perf/budgets.schema.json",
-  "title": "CraftCAD Perf Budgets",
+  "$id": "https://craftcad.local/schemas/perf/budgets.schema.json",
+  "title": "CraftCAD Perf Budgets SSOT",
   "type": "object",
-  "required": ["units", "categories", "datasets"],
+  "additionalProperties": false,
+  "required": ["schema_version", "policy", "datasets"],
   "properties": {
-    "units": {
-      "type": "object",
-      "required": ["time", "memory", "input_bytes"],
-      "properties": {
-        "time": {"const": "ms"},
-        "memory": {"const": "mb"},
-        "input_bytes": {"const": "bytes"}
-      }
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Schema version for this budgets SSOT (NOT app schema_version)."
     },
-    "categories": {
-      "type": "array",
-      "items": {
-        "enum": ["io_import", "io_export", "nesting", "render", "open", "save", "migrate"]
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "warn_in_pr", "error_on_main", "min_samples"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["warn", "error"],
+          "description": "Default behavior when budgets exceed. 'warn' is allowed in early stage."
+        },
+        "warn_in_pr": {
+          "type": "boolean",
+          "description": "If true, CI in PR treats exceed as warning (non-fatal)."
+        },
+        "error_on_main": {
+          "type": "boolean",
+          "description": "If true, CI on main/release treats exceed as error (fatal)."
+        },
+        "min_samples": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 200,
+          "description": "Minimum number of samples required to compute p95 approximation."
+        }
       }
     },
     "datasets": {
-      "type": "object",
-      "additionalProperties": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
         "type": "object",
+        "additionalProperties": false,
+        "required": ["dataset_id", "budgets"],
         "properties": {
-          "open_p95_ms": {"type": "number", "minimum": 0},
-          "save_p95_ms": {"type": "number", "minimum": 0},
-          "io_roundtrip_p95_ms": {"type": "number", "minimum": 0},
-          "render_frame_p95_ms": {"type": "number", "minimum": 0},
-          "max_rss_mb": {"type": "number", "minimum": 1},
-          "max_input_bytes": {"type": "integer", "minimum": 1}
+          "dataset_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-z0-9_\\-]+$"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "budgets": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "open_p95_ms",
+              "save_p95_ms",
+              "io_import_p95_ms",
+              "io_export_p95_ms",
+              "render_frame_p95_ms",
+              "max_rss_mb",
+              "max_temp_bytes_mb"
+            ],
+            "properties": {
+              "open_p95_ms": { "type": "integer", "minimum": 1, "maximum": 600000 },
+              "save_p95_ms": { "type": "integer", "minimum": 1, "maximum": 600000 },
+              "io_import_p95_ms": { "type": "integer", "minimum": 1, "maximum": 600000 },
+              "io_export_p95_ms": { "type": "integer", "minimum": 1, "maximum": 600000 },
+              "nesting_p95_ms": { "type": ["integer", "null"], "minimum": 1, "maximum": 600000 },
+              "render_frame_p95_ms": { "type": "integer", "minimum": 1, "maximum": 600000 },
+              "max_rss_mb": { "type": "integer", "minimum": 32, "maximum": 65536 },
+              "max_temp_bytes_mb": { "type": "integer", "minimum": 0, "maximum": 65536 }
+            }
+          }
         }
       }
     }
