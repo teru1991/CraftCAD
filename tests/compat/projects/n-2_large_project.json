@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "units": "mm",
+  "entities": [
+    {
+      "type": "path",
+      "id": "P1",
+      "closed": true,
+      "stroke": {
+        "layer": "0",
+        "linetype": "CONTINUOUS",
+        "weight": 0.25,
+        "color_policy": "by_layer"
+      },
+      "segments": [
+        { "kind": "line", "a": { "x": 0.0, "y": 0.0 }, "b": { "x": 500.0, "y": 0.0 } },
+        { "kind": "line", "a": { "x": 500.0, "y": 0.0 }, "b": { "x": 500.0, "y": 300.0 } },
+        { "kind": "line", "a": { "x": 500.0, "y": 300.0 }, "b": { "x": 0.0, "y": 300.0 } },
+        { "kind": "line", "a": { "x": 0.0, "y": 300.0 }, "b": { "x": 0.0, "y": 0.0 } }
+      ]
+    },
+    {
+      "type": "path",
+      "id": "P2",
+      "closed": false,
+      "stroke": {
+        "layer": "cuts",
+        "linetype": "CONTINUOUS",
+        "weight": 0.25,
+        "color_policy": "by_layer"
+      },
+      "segments": [
+        { "kind": "circle", "center": { "x": 250.0, "y": 150.0 }, "radius": 18.0 }
+      ]
+    }
+  ],
+  "metadata": {
+    "source_format": "compat_project_exchange",
+    "determinism_tag": "n2_large_v1"
+  }
+}

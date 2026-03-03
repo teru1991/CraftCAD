@@ -1,0 +1,9 @@
+{
+  "schema_version": 9999,
+  "units": "mm",
+  "entities": [],
+  "metadata": {
+    "source_format": "compat_project_exchange",
+    "determinism_tag": "forward_v9999"
+  }
+}

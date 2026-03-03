@@ -1,4 +1,7 @@
 {
-  "note": "Placeholder expected for Step1. Will be populated by golden_update --accept in later steps.",
-  "model": {}
+  "dataset": "io_roundtrip_smoke",
+  "imports": {
+    "svg_bytes": 180,
+    "json_entity_count": 0
+  }
 }

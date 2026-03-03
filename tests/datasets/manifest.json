@@ -3,34 +3,158 @@
   "datasets": [
     {
       "id": "io_roundtrip_smoke",
-      "description": "Smoke: import/export round-trip (SVG/JSON) minimal fixtures.",
+      "description": "Smoke: import minimal SVG+JSON fixtures.",
       "seed": 1,
-      "determinism": { "epsilon": 0.0001, "round_step": 0.0001, "ordering_tag": "io_smoke_v1" },
+      "determinism": {
+        "epsilon": 0.0001,
+        "round_step": 0.0001,
+        "ordering_tag": "io_smoke_v1"
+      },
       "limits_ref": "default",
       "inputs": [
-        { "kind": "svg", "path": "tests/golden/inputs/io/svg/min_rect.svg" },
-        { "kind": "json", "path": "tests/golden/inputs/io/json/min_rect.json" }
+        {
+          "kind": "svg",
+          "path": "tests/golden/inputs/io/svg/min_rect.svg",
+          "sha256": "7a8d5c063fcb33aab5f7d3cd4ecb76c3fcaef889eacb2222eb15d454ef93c40e"
+        },
+        {
+          "kind": "json",
+          "path": "tests/golden/inputs/io/json/min_rect.json",
+          "sha256": "85aacffcd20d781c1c94ddebeaf8d0afeac88b5e6d65640cb0f6bb400b808df3"
+        }
       ],
       "expected": [
-        { "kind": "normalized_model", "path": "tests/golden/expected/io_roundtrip_smoke/normalized_model.json", "compare": "json_struct" },
-        { "kind": "warnings", "path": "tests/golden/expected/io_roundtrip_smoke/warnings.json", "compare": "reason_codes" }
+        {
+          "kind": "normalized_model",
+          "path": "tests/golden/expected/io_roundtrip_smoke/normalized_model.json",
+          "compare": "json_struct"
+        },
+        {
+          "kind": "warnings",
+          "path": "tests/golden/expected/io_roundtrip_smoke/warnings.json",
+          "compare": "reason_codes"
+        }
       ],
-      "tags": ["smoke"]
+      "tags": [
+        "smoke",
+        "determinism"
+      ]
     },
     {
-      "id": "diycad_open_save_smoke",
-      "description": "Smoke: open/save .diycad minimal project fixture.",
-      "seed": 2,
-      "determinism": { "epsilon": 0.0001, "round_step": 0.0001, "ordering_tag": "diycad_smoke_v1" },
+      "id": "io_export_reimport_smoke",
+      "description": "Smoke: import -> export(svg/json) -> reimport -> normalized compare.",
+      "seed": 11,
+      "determinism": {
+        "epsilon": 0.0001,
+        "round_step": 0.0001,
+        "ordering_tag": "io_export_reimport_v1"
+      },
       "limits_ref": "default",
       "inputs": [
-        { "kind": "diycad", "path": "tests/golden/inputs/projects/min_project.diycad" }
+        {
+          "kind": "svg",
+          "path": "tests/golden/inputs/io/svg/rect_with_hole.svg",
+          "sha256": "2d84c84f8527d6b4305aca11e21656909eebe2fcc754261e575673cdf353f457"
+        }
       ],
       "expected": [
-        { "kind": "open_result", "path": "tests/golden/expected/diycad_open_save_smoke/open_result.json", "compare": "json_struct" },
-        { "kind": "warnings", "path": "tests/golden/expected/diycad_open_save_smoke/warnings.json", "compare": "reason_codes" }
+        {
+          "kind": "normalized_model",
+          "path": "tests/golden/expected/io_export_reimport_smoke/normalized_model.json",
+          "compare": "json_struct"
+        },
+        {
+          "kind": "warnings",
+          "path": "tests/golden/expected/io_export_reimport_smoke/warnings.json",
+          "compare": "reason_codes"
+        },
+        {
+          "kind": "exported_svg",
+          "path": "tests/golden/expected/io_export_reimport_smoke/exported.svg",
+          "compare": "svg_hash"
+        }
       ],
-      "tags": ["smoke"]
+      "tags": [
+        "smoke"
+      ]
+    },
+    {
+      "id": "project_json_open_save_smoke",
+      "description": "Smoke: open/save via text-only project exchange JSON (binary-free).",
+      "seed": 2,
+      "determinism": {
+        "epsilon": 0.0001,
+        "round_step": 0.0001,
+        "ordering_tag": "project_json_smoke_v1"
+      },
+      "limits_ref": "default",
+      "inputs": [
+        {
+          "kind": "json",
+          "path": "tests/golden/inputs/projects/min_project_v1.json",
+          "sha256": "c93e96861ff3a1f71c8923bf35f1527449a0b011fe9c1a3635e99589d962acf6"
+        }
+      ],
+      "expected": [
+        {
+          "kind": "open_result",
+          "path": "tests/golden/expected/project_json_open_save_smoke/open_result.json",
+          "compare": "json_struct"
+        },
+        {
+          "kind": "saved_project",
+          "path": "tests/golden/expected/project_json_open_save_smoke/saved_project.json",
+          "compare": "json_struct"
+        },
+        {
+          "kind": "warnings",
+          "path": "tests/golden/expected/project_json_open_save_smoke/warnings.json",
+          "compare": "reason_codes"
+        }
+      ],
+      "tags": [
+        "smoke",
+        "determinism"
+      ]
+    },
+    {
+      "id": "wizard_shelf_smoke",
+      "description": "Smoke: shelf wizard generates parts and recommends nesting.",
+      "seed": 21,
+      "determinism": {
+        "epsilon": 0.0001,
+        "round_step": 0.0001,
+        "ordering_tag": "wizard_shelf_v1"
+      },
+      "limits_ref": "default",
+      "inputs": [
+        {
+          "kind": "json",
+          "path": "tests/golden/inputs/wizard/shelf_smoke.json",
+          "sha256": "b249784c92e7be74be0b32799d6eceeb2cd7a6e43e42189928ea53c226f9dd5c"
+        }
+      ],
+      "expected": [
+        {
+          "kind": "normalized_model",
+          "path": "tests/golden/expected/wizard_shelf_smoke/parts.json",
+          "compare": "json_struct"
+        },
+        {
+          "kind": "nest_result",
+          "path": "tests/golden/expected/wizard_shelf_smoke/recommended_nest.json",
+          "compare": "json_struct"
+        },
+        {
+          "kind": "warnings",
+          "path": "tests/golden/expected/wizard_shelf_smoke/warnings.json",
+          "compare": "reason_codes"
+        }
+      ],
+      "tags": [
+        "smoke",
+        "determinism"
+      ]
     }
   ]
 }
