@@ -31,6 +31,13 @@ run_step() {
   fi
 }
 
+# Sprint14 final PR-gate checklist (must stay aligned with docs/verification/SPRINT14-STEP8.md):
+# 1) ssot-lint (required files + schema hash)
+# 2) diycad_format tests: unit/determinism/limits/atomic-save/schema-compat + test_latest_2 hook
+# 3) migration crate tests
+# 4) recovery crate tests + crash recovery e2e
+# 5) golden / compat / fuzz(quick) / determinism / e2e(batch)
+# 6) migrate tool tests (diycad-migrate)
 run_step rust_fmt "${ROOT_DIR}/core" cargo fmt --all -- --check
 run_step rust_clippy "${ROOT_DIR}/core" cargo clippy -p craftcad_wizards --all-targets -- -D warnings -A clippy::too-many-arguments -A clippy::unnecessary-sort-by
 run_step rust_test "${ROOT_DIR}/core" cargo test -p craftcad_wizards --all-targets

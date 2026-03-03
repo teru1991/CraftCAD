@@ -221,6 +221,19 @@
         "docs/verification/SPRINT14-STEP7.md"
       ],
       "verification_evidence": "docs/verification/SPRINT14-STEP7.md"
+    },
+    "SPRINT14-STEP8": {
+      "branch": "feature/sprint14-step8-001",
+      "artifacts": [
+        "docs/runbooks/sprint14_project_survival.md",
+        "scripts/ci/run_all.sh",
+        "docs/verification/SPRINT14-STEP8.md"
+      ],
+      "verification": "docs/verification/SPRINT14-STEP8.md",
+      "evidence": {
+        "head_sha": "87027acb87596a7ebeda460cc02e32a959fa570f",
+        "tests": "scripts/ci/run_all.sh: pass (ssot_lint, diycad_format tests + test_latest_2, migration, recovery + crash e2e, golden/compat/fuzz/determinism/e2e batch, diycad-migrate)"
+      }
     }
   }
 }
