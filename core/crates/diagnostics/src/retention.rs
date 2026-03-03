@@ -15,4 +15,25 @@ impl RetentionPolicy {
             max_items: 50,
         }
     }
+
+    pub fn validate(&self) -> Result<(), String> {
+        if !(1..=365).contains(&self.default_keep_days) {
+            return Err(format!(
+                "default_keep_days out of range: {}",
+                self.default_keep_days
+            ));
+        }
+        let min_bytes: u64 = 64 * 1024 * 1024;
+        let max_bytes: u64 = 64 * 1024 * 1024 * 1024;
+        if !(min_bytes..=max_bytes).contains(&self.max_total_bytes) {
+            return Err(format!(
+                "max_total_bytes out of range: {}",
+                self.max_total_bytes
+            ));
+        }
+        if !(1..=1000).contains(&self.max_items) {
+            return Err(format!("max_items out of range: {}", self.max_items));
+        }
+        Ok(())
+    }
 }

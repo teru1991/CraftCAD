@@ -442,6 +442,32 @@
         "history": "git status --porcelain; git fetch --all --prune; git checkout -b feature/s17-diag-core-002; git log -n 25 --oneline; rg -n \"core/crates|workspace.*members|diagnostics|ReasonCatalog|ReasonCode|redaction|limits|consent\" -S core core/Cargo.toml; rg -n \"pub enum Reason|ReasonCode|ReasonCatalog\" -S core; rg -n \"limits_profile|Determinism|seed|epsilon|rounding\" -S core",
         "tests": "cargo test --manifest-path core/Cargo.toml -p craftcad_diagnostics: pass"
       }
+    },
+    "S17-DIAG-RET-FP-004": {
+      "branch": "feature/s17-diag-ret-fp-004",
+      "artifacts": [
+        "core/crates/diagnostics/src/store.rs",
+        "core/crates/diagnostics/src/retention.rs",
+        "core/crates/diagnostics/src/ssot_fingerprint.rs",
+        "core/crates/diagnostics/src/support_zip.rs"
+      ],
+      "verification": "docs/verification/S17-DIAG-RET-FP-004.md",
+      "evidence": {
+        "tests": "cargo test -p craftcad_diagnostics"
+      }
+    },
+    "S17-DIAG-UX-005": {
+      "branch": "feature/s17-diag-ux-005",
+      "artifacts": [
+        "core/crates/diagnostics/src/cli.rs",
+        "core/crates/diagnostics/examples/diagnostics_cli.rs",
+        "scripts/diagnostics/run_support_zip.sh",
+        "scripts/diagnostics/run_support_zip.ps1"
+      ],
+      "verification": "docs/verification/S17-DIAG-UX-005.md",
+      "evidence": {
+        "tests": "cargo test -p craftcad_diagnostics; cargo run -p craftcad_diagnostics --example diagnostics_cli -- zip --preview"
+      }
     }
   }
 }
