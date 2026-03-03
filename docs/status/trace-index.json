@@ -313,6 +313,21 @@
       "evidence": {
         "history": "git status; git log -n 20 --oneline; git branch -vv"
       }
+    },
+    "S16-JOBS-QUEUE-003": {
+      "branch": "feature/s16-jobs-queue-003",
+      "artifacts": [
+        "core/crates/jobs/Cargo.toml",
+        "core/crates/jobs/src/lib.rs",
+        "core/crates/jobs/src/reasons.rs",
+        "core/crates/jobs/src/cancel.rs",
+        "core/crates/jobs/src/progress.rs",
+        "core/crates/jobs/src/job.rs",
+        "core/crates/jobs/src/queue.rs",
+        "core/crates/jobs/tests/queue_priority_cancel_progress.rs",
+        "docs/verification/S16-JOBS-QUEUE-003.md"
+      ],
+      "verification": "docs/verification/S16-JOBS-QUEUE-003.md"
     }
   }
 }
