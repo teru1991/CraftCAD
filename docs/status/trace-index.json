@@ -189,6 +189,19 @@
         "head_sha": "see docs/verification/SPRINT14-STEP5.md",
         "tests": "cargo test -p recovery: pass; cargo test -p craftcad_wizards --test project_crash_recovery: pass; scripts/ci/run_all.sh: includes recovery + crash recovery gates"
       }
+    },
+    "SPRINT14-STEP6": {
+      "branch": "feature/sprint14-step6-001",
+      "artifacts": [
+        "tools/migrate/**",
+        "scripts/ci/run_all.sh",
+        "docs/verification/SPRINT14-STEP6.md"
+      ],
+      "verification": "docs/verification/SPRINT14-STEP6.md",
+      "evidence": {
+        "head_sha": "see docs/verification/SPRINT14-STEP6.md",
+        "tests": "cargo test -p diycad-migrate: pass; scripts/ci/run_all.sh: tools_migrate_tests and project gates pass, existing rust_clippy/rust_test/cmake configure-build fail"
+      }
     }
   }
 }

@@ -43,6 +43,7 @@ run_step determinism_wizard "${ROOT_DIR}/core" cargo test -p craftcad_wizards --
 run_step compat_presets_templates "${ROOT_DIR}/core" cargo test -p craftcad_wizards --test presets_templates_compat
 run_step recovery_tests "${ROOT_DIR}/core" cargo test -q -p recovery
 run_step e2e_crash_recovery "${ROOT_DIR}/core" cargo test -q -p craftcad_wizards --test project_crash_recovery
+run_step tools_migrate_tests "${ROOT_DIR}/tools/migrate" cargo test -q -p diycad-migrate
 
 if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
   run_step rust_ffi_desktop "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
