@@ -1,26 +1,32 @@
+mod args;
+mod commands;
+mod report_json;
+
+use anyhow::{anyhow, Result};
+use args::Args;
 use clap::Parser;
 
-#[derive(Parser, Debug)]
-#[command(name = "diycad-migrate")]
-struct Args {
-    input: String,
-    #[arg(long)]
-    output: Option<String>,
-    #[arg(long, default_value = "latest")]
-    to: String,
-    #[arg(long)]
-    dry_run: bool,
-    #[arg(long)]
-    in_place: bool,
-}
-
-fn main() -> anyhow::Result<()> {
+fn main() -> Result<()> {
     let args = Args::parse();
-    if args.in_place && args.output.is_none() {
-        anyhow::bail!("--in-place は破壊的です。明示の --output 併用を推奨します");
+
+    if args.in_place {
+        return Err(anyhow!(
+            "--in-place is disabled for operational safety in Step6. Use explicit --output path."
+        ));
     }
 
-    println!("migrate request: {:?}", args);
-    println!("TODO: open zip -> validate schemas -> apply step migration -> verify");
-    Ok(())
+    if args.batch.is_some() {
+        return commands::batch::run_batch(&args);
+    }
+    if args.dry_run {
+        return commands::dry_run::run_dry_run(&args);
+    }
+    if args.diff {
+        return commands::diff::run_diff(&args);
+    }
+    if args.verify && args.output.is_none() && args.input.is_some() {
+        return commands::verify::run_verify(&args);
+    }
+
+    commands::migrate::run_migrate(&args)
 }
