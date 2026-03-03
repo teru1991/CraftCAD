@@ -8,7 +8,7 @@
   },
   "datasets": [
     {
-      "dataset_id": "io_roundtrip_smoke",
+      "dataset_id": "heavy_sample_v1",
       "notes": "Initial heavy baseline. Adjust after first perf report is stable.",
       "budgets": {
         "open_p95_ms": 8000,

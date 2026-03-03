@@ -331,6 +331,45 @@
       "evidence": {
         "history": "git status; git log -n 20 --oneline; git branch -vv"
       }
+    },
+    "S16-RENDER-LOD-005": {
+      "branch": "feature/s16-render-lod-005",
+      "artifacts": [
+        "core/crates/render_ir/Cargo.toml",
+        "core/crates/render_ir/src/lib.rs",
+        "core/crates/render_ir/src/viewport.rs",
+        "core/crates/render_ir/src/lod.rs",
+        "core/crates/render_ir/src/batching.rs",
+        "core/crates/render_ir/src/reasons.rs",
+        "core/crates/render_ir/tests/ir_determinism_lod_culling.rs",
+        "core/Cargo.toml",
+        "docs/verification/S16-RENDER-LOD-005.md"
+      ],
+      "verification": "docs/verification/S16-RENDER-LOD-005.md",
+      "evidence": {
+        "history": "git status; git log -n 20 --oneline; git branch -vv"
+      }
+    },
+    "S16-PERF-DATASET-SMOKE-006": {
+      "branch": "feature/s16-perf-dataset-smoke-006",
+      "artifacts": [
+        "tests/datasets/manifest.json",
+        "tests/datasets/heavy_sample_v1/README.md",
+        "tests/datasets/heavy_sample_v1/heavy_sample_v1.json",
+        "tests/perf/mod.rs",
+        "tests/perf/perf_smoke.rs",
+        "core/crates/perf/tests/perf_smoke.rs",
+        "core/crates/perf/src/budgets.rs",
+        "core/crates/perf/Cargo.toml",
+        "scripts/ci/perf_smoke.sh",
+        "scripts/ci/run_all.sh",
+        "docs/specs/perf/budgets.json",
+        "docs/verification/S16-PERF-DATASET-SMOKE-006.md"
+      ],
+      "verification": "docs/verification/S16-PERF-DATASET-SMOKE-006.md",
+      "evidence": {
+        "history": "git status; git log -n 20 --oneline; git branch -vv"
+      }
     }
   }
 }

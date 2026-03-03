@@ -24,6 +24,7 @@ members = [
   "crates/io_bridge",
   "crates/perf",
   "crates/cache",
+  "crates/render_ir",
   "crates/security",
   "crates/diagnostics",
   "crates/drawing_model",
