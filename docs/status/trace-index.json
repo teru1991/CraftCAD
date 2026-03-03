@@ -281,6 +281,23 @@
         "docs/verification/S15-STEP4.md"
       ],
       "verification": "docs/verification/S15-STEP4.md"
+<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
+    },
+    "S15-STEP5": {
+      "branch": "feature/s15-step5-001",
+      "artifacts": [
+        "tests/datasets/manifest.json",
+        "core/src/testing/determinism_harness.rs",
+        "core/src/testing/dataset_runner.rs",
+        "core/tests/determinism_io.rs",
+        "core/tests/determinism_wizard.rs",
+        "core/tests/determinism_migrate.rs",
+        "scripts/testing/run_determinism.sh",
+        "docs/verification/S15-STEP5.md"
+      ],
+      "verification": "docs/verification/S15-STEP5.md"
+=======
+>>>>>>> main
     }
   }
 }

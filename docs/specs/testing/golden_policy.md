@@ -44,3 +44,12 @@
 - expected/actual の保存
 - diff.txt
 - warnings_codes.json（あれば）
+
+## 7. Determinism gate (Step5)
+- Determinism対象datasetは `tags` に `determinism` を付与し、同一入力/同一seed/同一SSOTで **10回連続完全一致** を要求する。
+- 比較対象 fingerprint:
+  - normalized_model の SHA-256
+  - warnings ReasonCode一覧（dedupe + stable sort）
+  - 主要出力（例: exported_svg/exported_json）の SHA-256
+- ordering noise 注入は **test-only**（`cfg(test)` or env）でのみ許可し、本番デフォルト挙動は不変であること。
+- mismatch時は `failure_artifacts/determinism/<dataset_id>/` に run index, seed, eps, round_step, limits_ref と expected/actual fingerprint + diff を **テキストのみ** で保存する（*.json/*.txt/*.svg）。

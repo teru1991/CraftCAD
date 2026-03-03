@@ -1,15 +1,27 @@
 use std::path::{Path, PathBuf};
 
+<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
+#[path = "../../../src/testing/dataset_runner.rs"]
+mod dataset_runner;
+=======
+>>>>>>> main
 #[path = "../../../src/testing/datasets_manifest.rs"]
 mod datasets_manifest;
 #[path = "../../../src/testing/golden_harness.rs"]
 mod golden_harness;
 
+<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
+use dataset_runner::{run_dataset_by_id, NoiseMode};
+=======
+>>>>>>> main
 use datasets_manifest::{CompareMode, ExpectedKind, Manifest};
 use golden_harness::{
     compare_json_struct, compare_reason_codes, compare_svg_hash, DatasetMeta, InputRef,
 };
+<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
+=======
 use serde_json::{json, Value};
+>>>>>>> main
 
 fn repo_root() -> PathBuf {
     let crate_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -46,6 +58,8 @@ fn build_meta(ds: &datasets_manifest::Dataset) -> DatasetMeta {
     }
 }
 
+<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
+=======
 struct O {
     normalized_model: Option<Value>,
     warnings: Option<Value>,
@@ -125,6 +139,7 @@ fn run_dataset(root: &Path, ds: &datasets_manifest::Dataset) -> O {
     }
 }
 
+>>>>>>> main
 #[test]
 fn golden_datasets_smoke() {
     let root = repo_root();
@@ -134,20 +149,58 @@ fn golden_datasets_smoke() {
             continue;
         }
         let meta = build_meta(ds);
+<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
+        let out = run_dataset_by_id(&root, &manifest, &ds.id, NoiseMode::Off).unwrap();
+=======
         let out = run_dataset(&root, ds);
+>>>>>>> main
         for exp in &ds.expected {
             let ep = root.join(&exp.path);
             match (&exp.kind, &exp.compare) {
                 (ExpectedKind::NormalizedModel, CompareMode::JsonStruct) => {
+<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
+                    compare_json_struct(&root, &meta, &ep, out.normalized_model.clone()).unwrap()
+                }
+                (ExpectedKind::Warnings, CompareMode::ReasonCodes) => {
+                    compare_reason_codes(&root, &meta, &ep, out.warnings.clone()).unwrap()
+=======
                     compare_json_struct(&root, &meta, &ep, out.normalized_model.clone().unwrap())
                         .unwrap()
                 }
                 (ExpectedKind::Warnings, CompareMode::ReasonCodes) => {
                     compare_reason_codes(&root, &meta, &ep, out.warnings.clone().unwrap()).unwrap()
+>>>>>>> main
                 }
                 (ExpectedKind::ExportedSvg, CompareMode::SvgHash) => {
                     compare_svg_hash(&root, &meta, &ep, &out.exported_svg.clone().unwrap()).unwrap()
                 }
+<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
+                (ExpectedKind::ExportedJson, CompareMode::JsonStruct) => {
+                    compare_json_struct(&root, &meta, &ep, out.exported_json.clone().unwrap())
+                        .unwrap()
+                }
+                (ExpectedKind::OpenResult, CompareMode::JsonStruct) => compare_json_struct(
+                    &root,
+                    &meta,
+                    &ep,
+                    out.extra_outputs.get("open_result").cloned().unwrap(),
+                )
+                .unwrap(),
+                (ExpectedKind::SavedProject, CompareMode::JsonStruct) => compare_json_struct(
+                    &root,
+                    &meta,
+                    &ep,
+                    out.extra_outputs.get("saved_project").cloned().unwrap(),
+                )
+                .unwrap(),
+                (ExpectedKind::NestResult, CompareMode::JsonStruct) => compare_json_struct(
+                    &root,
+                    &meta,
+                    &ep,
+                    out.extra_outputs.get("nest_result").cloned().unwrap(),
+                )
+                .unwrap(),
+=======
                 (ExpectedKind::OpenResult, CompareMode::JsonStruct) => {
                     compare_json_struct(&root, &meta, &ep, out.open_result.clone().unwrap())
                         .unwrap()
@@ -160,6 +213,7 @@ fn golden_datasets_smoke() {
                     compare_json_struct(&root, &meta, &ep, out.nest_result.clone().unwrap())
                         .unwrap()
                 }
+>>>>>>> main
                 _ => panic!("unsupported kind/comparison"),
             }
         }

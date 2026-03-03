@@ -36,7 +36,8 @@
         }
       ],
       "tags": [
-        "smoke"
+        "smoke",
+        "determinism"
       ]
     },
     {
@@ -112,7 +113,8 @@
         }
       ],
       "tags": [
-        "smoke"
+        "smoke",
+        "determinism"
       ]
     },
     {
@@ -150,7 +152,8 @@
         }
       ],
       "tags": [
-        "smoke"
+        "smoke",
+        "determinism"
       ]
     }
   ]
