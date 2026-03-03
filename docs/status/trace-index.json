@@ -281,7 +281,6 @@
         "docs/verification/S15-STEP4.md"
       ],
       "verification": "docs/verification/S15-STEP4.md"
-<<<<<<< codex/expand-golden-datasets-for-step-3-thjhms
     },
     "S15-STEP5": {
       "branch": "feature/s15-step5-001",
@@ -296,8 +295,24 @@
         "docs/verification/S15-STEP5.md"
       ],
       "verification": "docs/verification/S15-STEP5.md"
-=======
->>>>>>> main
+    },
+    "S16-PERF-SSOT-001": {
+      "branch": "feature/s16-perf-ssot-001",
+      "artifacts": [
+        "docs/specs/perf/budgets.schema.json",
+        "docs/specs/perf/budgets.json",
+        "docs/specs/perf/profiling.md",
+        "docs/specs/perf/job_queue.md",
+        "docs/specs/perf/cache_policy.md",
+        "docs/specs/perf/lod_policy.md",
+        "docs/specs/perf/memory_policy.md",
+        "core/serialize/tests/spec_ssot_lint.rs",
+        "docs/verification/S16-PERF-SSOT-001.md"
+      ],
+      "verification": "docs/verification/S16-PERF-SSOT-001.md",
+      "evidence": {
+        "history": "git status; git log -n 20 --oneline; git branch -vv"
+      }
     }
   }
 }
