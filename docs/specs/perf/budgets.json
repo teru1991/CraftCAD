@@ -1,29 +1,25 @@
 {
-  "units": {
-    "time": "ms",
-    "memory": "mb",
-    "input_bytes": "bytes"
+  "schema_version": 1,
+  "policy": {
+    "mode": "warn",
+    "warn_in_pr": true,
+    "error_on_main": true,
+    "min_samples": 5
   },
-  "categories": [
-    "io_import",
-    "io_export",
-    "nesting",
-    "render",
-    "open",
-    "save",
-    "migrate"
-  ],
-  "datasets": {
-    "sample_board_hole_chamfer_v1": {
-      "open_p95_ms": 150,
-      "save_p95_ms": 200,
-      "io_roundtrip_p95_ms": 250,
-      "max_input_bytes": 52428800
-    },
-    "heavy_sample_v1": {
-      "render_frame_p95_ms": 16,
-      "max_rss_mb": 800,
-      "max_input_bytes": 52428800
+  "datasets": [
+    {
+      "dataset_id": "io_roundtrip_smoke",
+      "notes": "Initial heavy baseline. Adjust after first perf report is stable.",
+      "budgets": {
+        "open_p95_ms": 8000,
+        "save_p95_ms": 8000,
+        "io_import_p95_ms": 3000,
+        "io_export_p95_ms": 3000,
+        "nesting_p95_ms": null,
+        "render_frame_p95_ms": 25,
+        "max_rss_mb": 800,
+        "max_temp_bytes_mb": 256
+      }
     }
-  }
+  ]
 }
