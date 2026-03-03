@@ -370,6 +370,22 @@
       "evidence": {
         "history": "git status; git log -n 20 --oneline; git branch -vv"
       }
+    },
+    "S16-PERF-BENCHES-007": {
+      "branch": "feature/s16-perf-benches-007",
+      "artifacts": [
+        "benches/perf_common.rs",
+        "benches/io_import_export.rs",
+        "benches/diycad_open_save.rs",
+        "benches/render_frame.rs",
+        "scripts/bench/run_perf_benches.sh",
+        "core/crates/perf/Cargo.toml",
+        "docs/verification/S16-PERF-BENCHES-007.md"
+      ],
+      "verification": "docs/verification/S16-PERF-BENCHES-007.md",
+      "evidence": {
+        "history": "git status; git log -n 20 --oneline; git branch -vv"
+      }
     }
   }
 }
