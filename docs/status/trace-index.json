@@ -402,6 +402,24 @@
       "evidence": {
         "history": "git status; git log -n 30 --oneline; git branch -vv"
       }
+    },
+    "S17-DIAG-SSOT-001": {
+      "branch": "feature/s17-diag-ssot-001",
+      "artifacts": [
+        "docs/specs/diagnostics/README.md",
+        "docs/specs/diagnostics/privacy.md",
+        "docs/specs/diagnostics/retention_policy.md",
+        "docs/specs/diagnostics/repro_template.md",
+        "docs/specs/diagnostics/support_zip.md",
+        "docs/specs/diagnostics/joblog.schema.json",
+        "docs/specs/diagnostics/oplog.schema.json",
+        "core/serialize/tests/spec_ssot_lint.rs",
+        "docs/verification/S17-DIAG-SSOT-001.md"
+      ],
+      "verification": "docs/verification/S17-DIAG-SSOT-001.md",
+      "evidence": {
+        "history": "git status --porcelain; git fetch --all --prune; git log -n 20 --oneline; git log -n 30 --oneline -- core/serialize/tests/spec_ssot_lint.rs; git blame -n core/serialize/tests/spec_ssot_lint.rs | head -n 80; rg -n \"spec_ssot_lint|SSOT lint|schema.json|jsonschema|Ajv|diagnostics\" -S core docs tests"
+      }
     }
   }
 }
