@@ -247,6 +247,13 @@
         "docs/verification/S15-STEP1.md"
       ],
       "verification": "docs/verification/S15-STEP1.md"
+    },
+    "S15-STEP2": {
+      "branch": "feature/s15-step2-001",
+      "artifacts": [
+        "failure_artifacts/<dataset_id>"
+      ],
+      "verification": "docs/verification/S15-STEP2.md"
     }
   }
 }
