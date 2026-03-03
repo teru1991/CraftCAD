@@ -455,6 +455,19 @@
       "evidence": {
         "tests": "cargo test -p craftcad_diagnostics"
       }
+    },
+    "S17-DIAG-UX-005": {
+      "branch": "feature/s17-diag-ux-005",
+      "artifacts": [
+        "core/crates/diagnostics/src/cli.rs",
+        "core/crates/diagnostics/examples/diagnostics_cli.rs",
+        "scripts/diagnostics/run_support_zip.sh",
+        "scripts/diagnostics/run_support_zip.ps1"
+      ],
+      "verification": "docs/verification/S17-DIAG-UX-005.md",
+      "evidence": {
+        "tests": "cargo test -p craftcad_diagnostics; cargo run -p craftcad_diagnostics --example diagnostics_cli -- zip --preview"
+      }
     }
   }
 }

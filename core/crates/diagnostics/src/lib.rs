@@ -1,3 +1,4 @@
+pub mod cli;
 pub mod joblog;
 pub mod oplog;
 pub mod reason_summary;
