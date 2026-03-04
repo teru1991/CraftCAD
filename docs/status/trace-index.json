@@ -554,6 +554,69 @@
           "scripts/ci/run_all.sh (fails at existing diagnostics tests/golden/support_zip_e2e)"
         ]
       }
+    },
+    "S20-STEP1": {
+      "branch": "feature/s20-step1-001",
+      "artifacts": [
+        "docs/specs/ux/README.md",
+        "docs/specs/ux/onboarding_flow.md",
+        "docs/specs/ux/error_ux_policy.md",
+        "docs/specs/ux/mode_policy.md",
+        "docs/specs/ux/navigation_policy.md",
+        "docs/specs/ux/sample_library.md",
+        "core/serialize/src/spec/ux_ssot.rs",
+        "core/serialize/src/spec/mod.rs",
+        "core/serialize/tests/spec_ssot_lint.rs",
+        "docs/verification/S20-STEP1.md"
+      ],
+      "verification": "docs/verification/S20-STEP1.md"
+    },
+    "S20-STEP2": {
+      "branch": "feature/s20-step2-001",
+      "artifacts": [
+        "apps/desktop/src/app/onboarding/mod.rs",
+        "apps/desktop/src/app/onboarding/spec.rs",
+        "apps/desktop/src/app/onboarding/samples.rs",
+        "apps/desktop/src/app/onboarding/first_run.rs",
+        "apps/desktop/src/app/onboarding/tutorial_state.rs",
+        "apps/desktop/src/app/onboarding/completion.rs",
+        "apps/desktop/src/app/onboarding/ui.rs",
+        "apps/desktop/src/app/onboarding/tests.rs",
+        "apps/desktop/src/app/mod.rs",
+        "docs/verification/S20-STEP2.md"
+      ],
+      "verification": "docs/verification/S20-STEP2.md"
+    },
+    "S20-STEP3": {
+      "branch": "feature/s20-step3-001",
+      "artifacts": [
+        "apps/desktop/src/app/error_ux/mod.rs",
+        "apps/desktop/src/app/error_ux/reason_catalog.rs",
+        "apps/desktop/src/app/error_ux/error_mapper.rs",
+        "apps/desktop/src/app/error_ux/error_panel.rs",
+        "apps/desktop/src/app/error_ux/actions.rs",
+        "apps/desktop/src/app/error_ux/history.rs",
+        "apps/desktop/src/app/error_ux/tests.rs",
+        "apps/desktop/src/app/mod.rs",
+        "docs/verification/S20-STEP3.md"
+      ],
+      "verification": "docs/verification/S20-STEP3.md"
+    },
+    "S20-STEP5": {
+      "branch": "feature/s20-step5-001",
+      "artifacts": [
+        "apps/desktop/src/app/jobs_ux/mod.rs",
+        "apps/desktop/src/app/jobs_ux/job_ux_controller.rs",
+        "apps/desktop/src/app/jobs_ux/job_view.rs",
+        "apps/desktop/src/app/jobs_ux/adapters.rs",
+        "apps/desktop/src/app/jobs_ux/tests.rs",
+        "apps/desktop/src/app/mod.rs",
+        "apps/desktop/src/app/modes/transitions.rs",
+        "apps/desktop/src/app/onboarding/mod.rs",
+        "apps/desktop/src/app/error_ux/mod.rs",
+        "docs/verification/S20-STEP5.md"
+      ],
+      "verification": "docs/verification/S20-STEP5.md"
     }
   }
 }
