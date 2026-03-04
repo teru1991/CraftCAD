@@ -46,20 +46,20 @@ static bool runExportAction(
     QString env = take(ffi_fn(docJson.constData(), opts.constData()));
     auto root = QJsonDocument::fromJson(env.toUtf8()).object();
     if (!root.value("ok").toBool()) {
-        QMessageBox::warning(parent, "Export failed", localizeReason(root.value("reason").toObject()));
+        QMessageBox::warning(parent, "UI.ERROR.EXPORT.FAILED", localizeReason(root.value("reason").toObject()));
         return false;
     }
     auto data = root.value("data").toObject();
     auto bytes = QByteArray::fromBase64(data.value("bytes_base64").toString().toUtf8());
-    auto path = QFileDialog::getSaveFileName(parent, "Save Export", defaultName, filter);
+    auto path = QFileDialog::getSaveFileName(parent, "UI.DIALOG.EXPORT.SAVE", defaultName, filter);
     if (path.isEmpty()) return false;
     QFile f(path);
     if (!f.open(QIODevice::WriteOnly)) {
-        QMessageBox::warning(parent, "Export failed", "EXPORT_IO_WRITE_FAILED");
+        QMessageBox::warning(parent, "UI.ERROR.EXPORT.FAILED", "EXPORT_IO_WRITE_FAILED");
         return false;
     }
     f.write(bytes);
-    QMessageBox::information(parent, "Export", "Export completed.");
+    QMessageBox::information(parent, "Export", "UI.EXPORT.COMPLETED");
     return true;
 }
 
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
     });
     QObject::connect(diagAction, &QAction::triggered, [&]() {
         QDialog dlg(&w);
-        dlg.setWindowTitle("Diagnostic Pack Options");
+        dlg.setWindowTitle("UI.DIALOG.SUPPORT.TITLE");
         auto* layout = new QVBoxLayout(&dlg);
         auto* includeDoc = new QCheckBox("Include document snapshot (contains project data)");
         includeDoc->setChecked(false);
