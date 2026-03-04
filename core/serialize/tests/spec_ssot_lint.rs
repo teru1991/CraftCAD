@@ -1116,7 +1116,7 @@ fn parse_retention_numbers(md: &str) -> (u64, u64, u64) {
             if let Some(rest) = line.strip_prefix(key) {
                 let rest = rest.trim();
                 if let Some(num) = rest.strip_prefix(':') {
-                    let num = num.trim().split_whitespace().next().unwrap_or("");
+                    let num = num.split_whitespace().next().unwrap_or("");
                     return num
                         .parse::<u64>()
                         .unwrap_or_else(|e| panic!("invalid {key} value '{num}': {e}"));
@@ -1209,4 +1209,338 @@ fn ssot_diagnostics_contracts_exist_and_valid() {
         zip_md.contains("ssot_fingerprint.json"),
         "missing required marker in support_zip.md: needle=ssot_fingerprint.json"
     );
+}
+
+fn assert_object_at<'a>(v: &'a Value, path: &Path) -> &'a serde_json::Map<String, Value> {
+    v.as_object()
+        .unwrap_or_else(|| panic!("expected json object: {}", path.display()))
+}
+
+fn require_keys(obj: &serde_json::Map<String, Value>, required: &[&str], path: &Path) {
+    for key in required {
+        assert!(
+            obj.contains_key(*key),
+            "missing required key '{}' in {}",
+            key,
+            path.display()
+        );
+    }
+}
+
+fn reject_unknown_keys(obj: &serde_json::Map<String, Value>, allowed: &[&str], path: &Path) {
+    let allowed: BTreeSet<&str> = allowed.iter().copied().collect();
+    for key in obj.keys() {
+        assert!(
+            allowed.contains(key.as_str()),
+            "unknown key '{}' in {}",
+            key,
+            path.display()
+        );
+    }
+}
+
+fn as_u64_field(v: Option<&Value>, key: &str, path: &Path) -> u64 {
+    v.and_then(Value::as_u64)
+        .unwrap_or_else(|| panic!("expected u64 for '{}' in {}", key, path.display()))
+}
+
+fn as_bool_field(v: Option<&Value>, key: &str, path: &Path) -> bool {
+    v.and_then(Value::as_bool)
+        .unwrap_or_else(|| panic!("expected bool for '{}' in {}", key, path.display()))
+}
+
+fn as_str_field<'a>(v: Option<&'a Value>, key: &str, path: &Path) -> &'a str {
+    v.and_then(Value::as_str)
+        .unwrap_or_else(|| panic!("expected string for '{}' in {}", key, path.display()))
+}
+
+fn lint_threat_model_md(path: &Path) {
+    let text = read_text_path(path);
+    for heading in [
+        "## Scope",
+        "## Assets to protect",
+        "## Threats",
+        "## Mitigations",
+        "## Out of scope",
+    ] {
+        assert!(
+            text.contains(heading),
+            "threat_model.md missing heading: {}",
+            heading
+        );
+    }
+}
+
+fn lint_consent_md(path: &Path) {
+    let lower = read_text_path(path).to_lowercase();
+    for required in [
+        "off by default",
+        "change or revoke",
+        "one-time",
+        "stored in user settings",
+        "not inside project",
+    ] {
+        assert!(
+            lower.contains(required),
+            "consent.md missing required phrase: {}",
+            required
+        );
+    }
+}
+
+fn lint_limits_json(path: &Path) {
+    let root_v = read_json(path);
+    let root = assert_object_at(&root_v, path);
+    reject_unknown_keys(root, &["version", "profiles"], path);
+
+    let version = as_u64_field(root.get("version"), "version", path);
+    assert!(version >= 1, "limits.json version must be >= 1");
+
+    let profiles = root
+        .get("profiles")
+        .and_then(Value::as_object)
+        .unwrap_or_else(|| panic!("profiles must be object: {}", path.display()));
+    reject_unknown_keys(profiles, &["default", "heavy"], path);
+
+    let default = profiles
+        .get("default")
+        .and_then(Value::as_object)
+        .unwrap_or_else(|| panic!("profiles.default must be object: {}", path.display()));
+    let heavy = profiles
+        .get("heavy")
+        .and_then(Value::as_object)
+        .unwrap_or_else(|| panic!("profiles.heavy must be object: {}", path.display()));
+
+    let profile_keys = [
+        "max_import_bytes",
+        "max_entities",
+        "max_zip_entries",
+        "max_zip_total_uncompressed_bytes",
+        "max_single_entry_bytes",
+        "max_json_depth",
+        "max_string_len",
+        "max_paths_per_entity",
+        "max_points_per_path",
+        "max_support_zip_bytes",
+        "max_path_depth",
+    ];
+    reject_unknown_keys(default, &profile_keys, path);
+    reject_unknown_keys(heavy, &profile_keys, path);
+
+    for key in profile_keys {
+        let dv = as_u64_field(default.get(key), key, path);
+        let hv = as_u64_field(heavy.get(key), key, path);
+        assert!(dv >= 1, "default.{} must be >= 1", key);
+        assert!(hv >= dv, "heavy.{} must be >= default.{}", key, key);
+    }
+
+    let d_depth = as_u64_field(default.get("max_path_depth"), "max_path_depth", path);
+    let h_depth = as_u64_field(heavy.get("max_path_depth"), "max_path_depth", path);
+    assert!(d_depth <= 256, "default.max_path_depth must be <= 256");
+    assert!(h_depth <= 256, "heavy.max_path_depth must be <= 256");
+}
+
+fn lint_redaction_rules_json(path: &Path) {
+    let root_v = read_json(path);
+    let root = assert_object_at(&root_v, path);
+    reject_unknown_keys(
+        root,
+        &[
+            "version",
+            "path_rules",
+            "pii_patterns",
+            "text_policy",
+            "json_policy",
+            "zip_policy",
+        ],
+        path,
+    );
+
+    let version = as_u64_field(root.get("version"), "version", path);
+    assert!(version >= 1, "redaction_rules.json version must be >= 1");
+
+    let path_rules = root
+        .get("path_rules")
+        .and_then(Value::as_object)
+        .unwrap_or_else(|| panic!("path_rules must be object: {}", path.display()));
+    let path_keys = [
+        "replace_home",
+        "replace_drive_letters",
+        "replace_unc",
+        "replace_absolute",
+        "replace_parent_segments",
+    ];
+    reject_unknown_keys(path_rules, &path_keys, path);
+    for key in path_keys {
+        let value = as_str_field(path_rules.get(key), key, path);
+        assert!(
+            !value.trim().is_empty(),
+            "path_rules.{} must not be empty",
+            key
+        );
+    }
+
+    let patterns = root
+        .get("pii_patterns")
+        .and_then(Value::as_object)
+        .unwrap_or_else(|| panic!("pii_patterns must be object: {}", path.display()));
+    let pattern_keys = [
+        "email",
+        "phone",
+        "url",
+        "token_like",
+        "bearer",
+        "query_secret_kv",
+        "long_hex",
+    ];
+    reject_unknown_keys(patterns, &pattern_keys, path);
+    for key in pattern_keys {
+        let pattern = as_str_field(patterns.get(key), key, path);
+        Regex::new(pattern)
+            .unwrap_or_else(|e| panic!("invalid regex for pii_patterns.{}: {}", key, e));
+    }
+
+    let text_policy = root
+        .get("text_policy")
+        .and_then(Value::as_object)
+        .unwrap_or_else(|| panic!("text_policy must be object: {}", path.display()));
+    reject_unknown_keys(
+        text_policy,
+        &[
+            "free_text_mode",
+            "free_text_prefix_chars",
+            "hash_algo",
+            "max_len_after_redaction",
+        ],
+        path,
+    );
+    let mode = as_str_field(text_policy.get("free_text_mode"), "free_text_mode", path);
+    assert!(
+        mode == "hash_len" || mode == "hash_len_prefix",
+        "text_policy.free_text_mode invalid"
+    );
+    let algo = as_str_field(text_policy.get("hash_algo"), "hash_algo", path);
+    assert!(algo == "sha256", "text_policy.hash_algo must be sha256");
+    let prefix = as_u64_field(
+        text_policy.get("free_text_prefix_chars"),
+        "free_text_prefix_chars",
+        path,
+    );
+    assert!(
+        prefix <= 64,
+        "text_policy.free_text_prefix_chars must be <= 64"
+    );
+    let max_len = as_u64_field(
+        text_policy.get("max_len_after_redaction"),
+        "max_len_after_redaction",
+        path,
+    );
+    assert!(
+        (32..=2_000_000).contains(&max_len),
+        "text_policy.max_len_after_redaction out of range"
+    );
+
+    let json_policy = root
+        .get("json_policy")
+        .and_then(Value::as_object)
+        .unwrap_or_else(|| panic!("json_policy must be object: {}", path.display()));
+    reject_unknown_keys(
+        json_policy,
+        &["always_mask_keys", "mask_value_token", "free_text_keys"],
+        path,
+    );
+    let mask_value = as_str_field(
+        json_policy.get("mask_value_token"),
+        "mask_value_token",
+        path,
+    );
+    assert!(
+        !mask_value.trim().is_empty(),
+        "json_policy.mask_value_token must not be empty"
+    );
+    let always_mask_keys = json_policy
+        .get("always_mask_keys")
+        .and_then(Value::as_array)
+        .unwrap_or_else(|| panic!("json_policy.always_mask_keys must be array"));
+    assert!(
+        !always_mask_keys.is_empty(),
+        "json_policy.always_mask_keys must not be empty"
+    );
+    for key in ["always_mask_keys", "free_text_keys"] {
+        let arr = json_policy
+            .get(key)
+            .and_then(Value::as_array)
+            .unwrap_or_else(|| panic!("json_policy.{} must be array", key));
+        for item in arr {
+            let Some(s) = item.as_str() else {
+                panic!("json_policy.{} contains non-string item", key);
+            };
+            assert!(
+                !s.trim().is_empty(),
+                "json_policy.{} contains empty string",
+                key
+            );
+        }
+    }
+
+    let zip_policy = root
+        .get("zip_policy")
+        .and_then(Value::as_object)
+        .unwrap_or_else(|| panic!("zip_policy must be object: {}", path.display()));
+    reject_unknown_keys(
+        zip_policy,
+        &["redact_filenames", "filename_replacement"],
+        path,
+    );
+    let _ = as_bool_field(zip_policy.get("redact_filenames"), "redact_filenames", path);
+    let filename_replacement = as_str_field(
+        zip_policy.get("filename_replacement"),
+        "filename_replacement",
+        path,
+    );
+    assert!(
+        !filename_replacement.trim().is_empty(),
+        "zip_policy.filename_replacement must not be empty"
+    );
+}
+
+#[test]
+fn ssot_security_contracts_exist_and_valid() {
+    let root = repo_root_from_manifest();
+    let dir = root.join("docs").join("specs").join("security");
+
+    let threat_model = dir.join("threat_model.md");
+    let limits_schema = dir.join("limits.schema.json");
+    let limits_json = dir.join("limits.json");
+    let redaction_schema = dir.join("redaction.schema.json");
+    let redaction_rules = dir.join("redaction_rules.json");
+    let consent_md = dir.join("consent.md");
+    let consent_schema = dir.join("consent.schema.json");
+    let sca_policy = dir.join("sca_policy.md");
+    let readme = dir.join("README.md");
+
+    for p in [
+        &threat_model,
+        &limits_schema,
+        &limits_json,
+        &redaction_schema,
+        &redaction_rules,
+        &consent_md,
+        &consent_schema,
+        &sca_policy,
+        &readme,
+    ] {
+        assert!(p.exists(), "missing security spec: {}", p.display());
+    }
+
+    lint_threat_model_md(&threat_model);
+    lint_consent_md(&consent_md);
+    lint_limits_json(&limits_json);
+    lint_redaction_rules_json(&redaction_rules);
+
+    for schema in [&limits_schema, &redaction_schema, &consent_schema] {
+        let schema_json = read_json(schema);
+        let obj = assert_object_at(&schema_json, schema);
+        require_keys(obj, &["$schema", "title"], schema);
+    }
 }

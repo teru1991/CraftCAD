@@ -1,8 +1,75 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schemas/security/redaction.schema.json",
+  "title": "CraftCAD Redaction Rules SSOT",
   "type": "object",
-  "required": ["rules"],
+  "additionalProperties": false,
+  "required": ["version", "path_rules", "pii_patterns", "text_policy", "json_policy", "zip_policy"],
   "properties": {
-    "rules": {"type": "array", "items": {"type": "string"}}
+    "version": { "type": "integer", "minimum": 1 },
+    "path_rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["replace_home", "replace_drive_letters", "replace_unc", "replace_absolute", "replace_parent_segments"],
+      "properties": {
+        "replace_home": { "type": "string", "minLength": 1 },
+        "replace_drive_letters": { "type": "string", "minLength": 1 },
+        "replace_unc": { "type": "string", "minLength": 1 },
+        "replace_absolute": { "type": "string", "minLength": 1 },
+        "replace_parent_segments": { "type": "string", "minLength": 1 }
+      }
+    },
+    "pii_patterns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["email", "phone", "url", "token_like", "bearer", "query_secret_kv", "long_hex"],
+      "properties": {
+        "email": { "type": "string", "minLength": 1 },
+        "phone": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 },
+        "token_like": { "type": "string", "minLength": 1 },
+        "bearer": { "type": "string", "minLength": 1 },
+        "query_secret_kv": { "type": "string", "minLength": 1 },
+        "long_hex": { "type": "string", "minLength": 1 }
+      }
+    },
+    "text_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["free_text_mode", "free_text_prefix_chars", "hash_algo", "max_len_after_redaction"],
+      "properties": {
+        "free_text_mode": { "type": "string", "enum": ["hash_len", "hash_len_prefix"] },
+        "free_text_prefix_chars": { "type": "integer", "minimum": 0, "maximum": 64 },
+        "hash_algo": { "type": "string", "enum": ["sha256"] },
+        "max_len_after_redaction": { "type": "integer", "minimum": 32, "maximum": 2000000 }
+      }
+    },
+    "json_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["always_mask_keys", "mask_value_token", "free_text_keys"],
+      "properties": {
+        "always_mask_keys": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "mask_value_token": { "type": "string", "minLength": 1 },
+        "free_text_keys": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 0
+        }
+      }
+    },
+    "zip_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["redact_filenames", "filename_replacement"],
+      "properties": {
+        "redact_filenames": { "type": "boolean" },
+        "filename_replacement": { "type": "string", "minLength": 1 }
+      }
+    }
   }
 }

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schemas/security/limits.schema.json",
+  "title": "CraftCAD Security Limits SSOT",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "profiles"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "profiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "heavy"],
+      "properties": {
+        "default": { "$ref": "#/$defs/profile" },
+        "heavy": { "$ref": "#/$defs/profile" }
+      }
+    }
+  },
+  "$defs": {
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_import_bytes",
+        "max_entities",
+        "max_zip_entries",
+        "max_zip_total_uncompressed_bytes",
+        "max_single_entry_bytes",
+        "max_json_depth",
+        "max_string_len",
+        "max_paths_per_entity",
+        "max_points_per_path",
+        "max_support_zip_bytes",
+        "max_path_depth"
+      ],
+      "properties": {
+        "max_import_bytes": { "type": "integer", "minimum": 1 },
+        "max_entities": { "type": "integer", "minimum": 1 },
+        "max_zip_entries": { "type": "integer", "minimum": 1 },
+        "max_zip_total_uncompressed_bytes": { "type": "integer", "minimum": 1 },
+        "max_single_entry_bytes": { "type": "integer", "minimum": 1 },
+        "max_json_depth": { "type": "integer", "minimum": 1 },
+        "max_string_len": { "type": "integer", "minimum": 1 },
+        "max_paths_per_entity": { "type": "integer", "minimum": 1 },
+        "max_points_per_path": { "type": "integer", "minimum": 1 },
+        "max_support_zip_bytes": { "type": "integer", "minimum": 1 },
+        "max_path_depth": { "type": "integer", "minimum": 1, "maximum": 256 }
+      }
+    }
+  }
+}

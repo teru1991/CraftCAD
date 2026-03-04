@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://craftcad.local/schemas/security/consent.schema.json",
+  "title": "CraftCAD Consent State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "telemetry_opt_in", "diagnostics_include_project", "diagnostics_include_inputs_copy", "remember_choice"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "telemetry_opt_in": { "type": "boolean" },
+    "diagnostics_include_project": { "type": "boolean" },
+    "diagnostics_include_inputs_copy": { "type": "boolean" },
+    "remember_choice": { "type": "boolean" }
+  }
+}

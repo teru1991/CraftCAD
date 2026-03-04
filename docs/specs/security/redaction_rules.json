@@ -1,10 +1,34 @@
 {
-  "rules": [
-    "mask_home_path",
-    "mask_email",
-    "mask_phone",
-    "mask_url",
-    "mask_token_like",
-    "hash_user_free_text"
-  ]
+  "version": 1,
+  "path_rules": {
+    "replace_home": "<HOME>",
+    "replace_drive_letters": "<DRIVE>",
+    "replace_unc": "<UNC>",
+    "replace_absolute": "<ABS_PATH>",
+    "replace_parent_segments": "<PARENT>"
+  },
+  "pii_patterns": {
+    "email": "(?i)\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b",
+    "phone": "\\b(?:\\+?\\d{1,3}[-. ]?)?(?:\\(\\d+\\)|\\d+)(?:[-. ]?\\d+){2,}\\b",
+    "url": "(?i)\\bhttps?://[^\\s)\\]}]+",
+    "token_like": "(?i)\\b(api[_-]?key|token|secret|passwd|password)\\s*[:=]\\s*[^\\s,;]+",
+    "bearer": "(?i)\\bBearer\\s+[A-Za-z0-9._\\-]+",
+    "query_secret_kv": "(?i)([?&](?:api[_-]?key|token|secret|sig|signature|passwd|password)=)[^&\\s]+",
+    "long_hex": "\\b[a-fA-F0-9]{32,}\\b"
+  },
+  "text_policy": {
+    "free_text_mode": "hash_len_prefix",
+    "free_text_prefix_chars": 8,
+    "hash_algo": "sha256",
+    "max_len_after_redaction": 200000
+  },
+  "json_policy": {
+    "always_mask_keys": ["name", "author", "email", "path", "token", "apikey", "api_key", "secret", "password", "passwd", "username"],
+    "mask_value_token": "<REDACTED>",
+    "free_text_keys": ["note", "memo", "comment", "description"]
+  },
+  "zip_policy": {
+    "redact_filenames": true,
+    "filename_replacement": "<FILE>"
+  }
 }
