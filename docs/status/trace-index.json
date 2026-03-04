@@ -1,5 +1,13 @@
 {
   "tasks": {
+    "S18-SEC-CORE-002": {
+      "branch": "feature/s18-sec-core-002",
+      "artifacts": [
+        "core/crates/security/**",
+        "docs/verification/S18-SEC-CORE-002.md"
+      ],
+      "verification": "docs/verification/S18-SEC-CORE-002.md"
+    },
     "S12-IO-SSOT-001": {
       "branch": "feature/s12-io-ssot-001-001",
       "artifacts": [
