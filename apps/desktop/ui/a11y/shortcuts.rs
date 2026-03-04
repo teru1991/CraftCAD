@@ -136,3 +136,17 @@ pub fn format_conflicts(check: &ShortcutCheck) -> Option<String> {
   }
   Some(lines.join("\n"))
 }
+
+
+pub fn is_text_sensitive_single_key(chord: KeyChord) -> bool {
+  matches!(
+    chord.normalize(),
+    KeyChord::Char('L')
+      | KeyChord::Char('C')
+      | KeyChord::Char('A')
+      | KeyChord::Char('D')
+      | KeyChord::Char('T')
+      | KeyChord::Char('N')
+      | KeyChord::Char('E')
+  )
+}
