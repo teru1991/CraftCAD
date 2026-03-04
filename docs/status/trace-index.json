@@ -617,6 +617,29 @@
         "docs/verification/S20-STEP5.md"
       ],
       "verification": "docs/verification/S20-STEP5.md"
+    },
+    "P00-PREP-SSOT-001": {
+      "branch": "feature/p00-prep-ssot-001",
+      "artifacts": [
+        "docs/specs/product/vision.md",
+        "docs/specs/product/feature-scope.md",
+        "docs/specs/product/contracts/master-model.md",
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "docs/specs/product/contracts/jobs.md",
+        "docs/specs/product/contracts/reason-codes.md",
+        "docs/specs/product/contracts/rules-wood.md",
+        "docs/specs/product/testing/e2e-flows.md",
+        "docs/specs/product/implementation-readiness-checklist.md",
+        "docs/verification/P00-PREP-SSOT-001.md"
+      ],
+      "verification": "docs/verification/P00-PREP-SSOT-001.md",
+      "verification_evidence": [
+        "git status --porcelain (clean before changes)",
+        "git log -n 30 --oneline",
+        "rg search results for existing SSOT overlap",
+        "json lint/format check",
+        "diff of trace-index limited to this task"
+      ]
     }
   }
 }

@@ -1,0 +1,52 @@
+# Jobs Contract (Progress/Cancel/Determinism)
+
+## Job invariants
+- Every heavy operation is a Job.
+- A Job must provide:
+  - `job_id`, `job_type`, `created_at`
+  - progress (stage or percent)
+  - cancel capability (if safe)
+  - result link (open artifact / show report)
+  - failure ReasonCode + next actions
+
+## Canonical job types (minimum)
+1) `JOB_REGEN_3D_VIEW`
+- Input: SSOT snapshot
+- Output: 3D view artifact
+- Timeout: configurable (default small)
+- Determinism: strict
+
+2) `JOB_REGEN_2D_DRAWINGS`
+- Input: SSOT snapshot + drawing presets
+- Output: 2D sheets
+- Timeout: moderate
+- Determinism: strict
+
+3) `JOB_RUN_NESTING`
+- Input: parts outlines + material constraints + seed + heuristics config
+- Output: nesting sheets + cutlist + yield
+- Timeout: moderate; cancel supported
+- Determinism: strict w/ seed and stable ordering
+
+4) `JOB_EXPORT`
+- Input: chosen artifacts + export target (PDF/DXF/SVG/JSON)
+- Output: export files + manifest
+- Timeout: moderate; cancel supported
+- Determinism: strict
+
+5) `JOB_BUILD_STEPS`
+- Input: SSOT snapshot + screw features + rules config
+- Output: steps + manufacturing hints
+- Timeout: small; deterministic
+
+## Job failure requirements
+- Never crash silently.
+- Must return:
+  - `ReasonCode` (machine readable)
+  - human summary + fix hints (UI layer)
+  - optional diagnostic attachments (SupportZip integration; see ../diagnostics/)
+
+## Links
+- Determinism SSOT: ../determinism/
+- Diagnostics SSOT: ../diagnostics/
+- UX job flow SSOT: ../ux/
