@@ -1,9 +1,13 @@
 pub mod error_ux;
+pub mod modes;
+pub mod navigation;
 pub mod onboarding;
 
 pub struct AppState {
     pub onboarding: Option<onboarding::OnboardingController>,
     pub error_ux: Option<error_ux::ErrorUxController>,
+    pub modes: Option<modes::ModesController>,
+    pub nav: Option<navigation::NavigationController>,
 }
 
 impl AppState {
@@ -12,9 +16,13 @@ impl AppState {
         let kv = onboarding::first_run::FileKvStore::new(store_path);
         let onboarding = onboarding::OnboardingController::new(Box::new(kv)).ok();
         let error_ux = error_ux::ErrorUxController::new().ok();
+        let modes = modes::ModesController::new().ok();
+        let nav = navigation::NavigationController::new().ok();
         Self {
             onboarding,
             error_ux,
+            modes,
+            nav,
         }
     }
 
@@ -48,5 +56,13 @@ impl AppState {
         if let Some(ctrl) = self.error_ux.as_mut() {
             ctrl.show(e);
         }
+    }
+
+    pub fn apply_mode_event(&mut self, ev: modes::transitions::ModeEvent) {
+        let Some(m) = self.modes.as_mut() else {
+            return;
+        };
+        let r = m.apply(ev);
+        let _ = r.effects;
     }
 }
