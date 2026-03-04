@@ -109,6 +109,10 @@ impl OnboardingController {
         }
     }
 
+    pub fn notify_job_succeeded(&mut self, _job_kind: &str, _job_id: &str) {
+        // Step5 hook: actual completion evaluation is still driven by tick(JobQuery).
+        // This hook exists so AppState can forward deterministic success notifications.
+    }
     pub fn tick(
         &mut self,
         oplog: &dyn OpLogQuery,

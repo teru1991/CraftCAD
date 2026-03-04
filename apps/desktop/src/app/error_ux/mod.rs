@@ -151,4 +151,12 @@ impl ErrorUxController {
         };
         actions::ActionExecutor::exec(a)
     }
+
+    pub fn click_action_to_app_error(&self, idx: usize) -> Option<AppError> {
+        let action = self.current.as_ref().and_then(|e| e.actions.get(idx))?;
+        match actions::ActionExecutor::exec(action) {
+            Ok(_) => None,
+            Err(err) => Some(actions::ActionExecutor::to_app_error(&err, action)),
+        }
+    }
 }

@@ -602,26 +602,21 @@
       ],
       "verification": "docs/verification/S20-STEP3.md"
     },
-    "S20-STEP4": {
-      "branch": "feature/s20-step4-001",
+    "S20-STEP5": {
+      "branch": "feature/s20-step5-001",
       "artifacts": [
-        "apps/desktop/src/app/modes/mod.rs",
-        "apps/desktop/src/app/modes/spec.rs",
-        "apps/desktop/src/app/modes/mode_state.rs",
-        "apps/desktop/src/app/modes/transitions.rs",
-        "apps/desktop/src/app/modes/input_router.rs",
-        "apps/desktop/src/app/modes/undo_bridge.rs",
-        "apps/desktop/src/app/navigation/mod.rs",
-        "apps/desktop/src/app/navigation/spec.rs",
-        "apps/desktop/src/app/navigation/breadcrumbs.rs",
-        "apps/desktop/src/app/navigation/backstack.rs",
-        "apps/desktop/src/app/navigation/deep_link.rs",
-        "apps/desktop/src/app/modes/tests.rs",
-        "apps/desktop/src/app/navigation/tests.rs",
+        "apps/desktop/src/app/jobs_ux/mod.rs",
+        "apps/desktop/src/app/jobs_ux/job_ux_controller.rs",
+        "apps/desktop/src/app/jobs_ux/job_view.rs",
+        "apps/desktop/src/app/jobs_ux/adapters.rs",
+        "apps/desktop/src/app/jobs_ux/tests.rs",
         "apps/desktop/src/app/mod.rs",
-        "docs/verification/S20-STEP4.md"
+        "apps/desktop/src/app/modes/transitions.rs",
+        "apps/desktop/src/app/onboarding/mod.rs",
+        "apps/desktop/src/app/error_ux/mod.rs",
+        "docs/verification/S20-STEP5.md"
       ],
-      "verification": "docs/verification/S20-STEP4.md"
+      "verification": "docs/verification/S20-STEP5.md"
     }
   }
 }
