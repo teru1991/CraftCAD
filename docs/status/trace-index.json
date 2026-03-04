@@ -586,6 +586,21 @@
         "docs/verification/S20-STEP2.md"
       ],
       "verification": "docs/verification/S20-STEP2.md"
+    },
+    "S20-STEP3": {
+      "branch": "feature/s20-step3-001",
+      "artifacts": [
+        "apps/desktop/src/app/error_ux/mod.rs",
+        "apps/desktop/src/app/error_ux/reason_catalog.rs",
+        "apps/desktop/src/app/error_ux/error_mapper.rs",
+        "apps/desktop/src/app/error_ux/error_panel.rs",
+        "apps/desktop/src/app/error_ux/actions.rs",
+        "apps/desktop/src/app/error_ux/history.rs",
+        "apps/desktop/src/app/error_ux/tests.rs",
+        "apps/desktop/src/app/mod.rs",
+        "docs/verification/S20-STEP3.md"
+      ],
+      "verification": "docs/verification/S20-STEP3.md"
     }
   }
 }
