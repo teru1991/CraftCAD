@@ -570,6 +570,22 @@
         "docs/verification/S20-STEP1.md"
       ],
       "verification": "docs/verification/S20-STEP1.md"
+    },
+    "S20-STEP2": {
+      "branch": "feature/s20-step2-001",
+      "artifacts": [
+        "apps/desktop/src/app/onboarding/mod.rs",
+        "apps/desktop/src/app/onboarding/spec.rs",
+        "apps/desktop/src/app/onboarding/samples.rs",
+        "apps/desktop/src/app/onboarding/first_run.rs",
+        "apps/desktop/src/app/onboarding/tutorial_state.rs",
+        "apps/desktop/src/app/onboarding/completion.rs",
+        "apps/desktop/src/app/onboarding/ui.rs",
+        "apps/desktop/src/app/onboarding/tests.rs",
+        "apps/desktop/src/app/mod.rs",
+        "docs/verification/S20-STEP2.md"
+      ],
+      "verification": "docs/verification/S20-STEP2.md"
     }
   }
 }
