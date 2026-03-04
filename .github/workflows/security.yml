@@ -4,15 +4,94 @@ on:
   pull_request:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  cargo-audit:
+  sca:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check allowlist expiry
+        run: python3 scripts/ci/sca_allowlist_check.py
+
       - name: Install cargo-audit
         run: cargo install cargo-audit --locked
-      - name: Audit
-        run: cargo audit --deny warnings
-        working-directory: core
+
+      - name: Run cargo audit (strict gate)
+        env:
+          RUSTSEC_ADVISORY_DB: "https://github.com/RustSec/advisory-db"
+        run: |
+          cargo audit --json > audit.json || true
+          python3 - << 'PY'
+          import json, sys
+          from pathlib import Path
+
+          audit = json.loads(Path("audit.json").read_text("utf-8"))
+          vulns = audit.get("vulnerabilities", {}).get("list", []) or []
+
+          allow = json.loads(Path("docs/specs/security/sca_allowlist.json").read_text("utf-8"))
+          allowed = set(x["id"] for x in allow.get("exceptions", []))
+
+          def sev(v):
+              a = v.get("advisory", {}) or {}
+              return (a.get("cvss", "") or "").upper(), (a.get("severity", "") or "").upper()
+
+          high = []
+          unlisted = []
+          for v in vulns:
+              adv = v.get("advisory", {}) or {}
+              _id = adv.get("id", "")
+              cvss, severity = sev(v)
+              is_high = ("CRITICAL" in severity) or ("HIGH" in severity) or (severity == "")
+              if is_high:
+                  high.append(_id or "<unknown>")
+                  if _id not in allowed:
+                      unlisted.append(_id or "<unknown>")
+
+          if high:
+              print("[cargo-audit] HIGH/CRITICAL advisories:", high, file=sys.stderr)
+          if unlisted:
+              print("[cargo-audit] Unlisted HIGH/CRITICAL advisories found -> FAIL", file=sys.stderr)
+              sys.exit(2)
+
+          if vulns:
+              ids = []
+              for v in vulns:
+                  adv = v.get("advisory", {}) or {}
+                  ids.append(adv.get("id", "<unknown>"))
+              print("[cargo-audit] vulnerabilities present (listed only):", ids, file=sys.stderr)
+              sys.exit(1)
+
+          print("[cargo-audit] OK: no vulnerabilities.")
+          PY
+
+  sprint18-security-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run Sprint18 security gate tests
+        run: |
+          cargo test --manifest-path core/Cargo.toml -p security
+          cargo test --manifest-path core/Cargo.toml -p craftcad_io_svg --test svg_limits_external_ref
+          cargo test --manifest-path core/Cargo.toml -p ssot_lint --test support_zip_is_safe
+          cargo test --manifest-path core/Cargo.toml -p ssot_lint --test malformed_inputs
+          cargo test --manifest-path core/Cargo.toml -p ssot_lint --test redaction_golden
+          cargo test --manifest-path core/Cargo.toml -p ssot_lint --test security_smoke_fuzz

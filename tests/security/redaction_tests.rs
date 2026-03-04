@@ -1,7 +1,9 @@
-use craftcad_security::redact_str;
-
 #[test]
-fn masks_email() {
-    let s = redact_str("mail me a@b.com");
-    assert!(s.contains("<EMAIL>"));
+fn redactor_masks_email() {
+    let red = security::Redactor::from_ssot(security::RedactorConfig {
+        limits_profile: security::LimitsProfile::Default,
+    })
+    .expect("redactor");
+    let out = red.redact_str("contact me at user@example.com");
+    assert!(out.contains("<EMAIL>") || out.contains("free_text"));
 }

@@ -270,6 +270,7 @@ impl<'a> JobLogBuilder<'a> {
             self.add_reason(diag_codes::DIAG_PARAMS_TRUNCATED, Severity::Warn);
         }
 
+        // Mandatory redaction: caller-provided params are always passed through redactor.
         let mut p = self.redactor.redact_json(params_redacted);
         let serialized = serde_json::to_string(&p).unwrap_or_else(|_| "{}".to_string());
         if serialized.len() > self.limits.max_string_len * 4 {

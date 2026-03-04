@@ -4,6 +4,7 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use migration::Registry;
+use security::LimitKind;
 use serde_json::Value;
 use std::path::Path;
 
@@ -74,6 +75,21 @@ fn validate_pair(_version: i64, manifest: &Value, document: &Value) -> Result<()
 }
 
 pub fn open_package(path: &Path, opt: OpenOptions) -> Result<OpenResult> {
+    let (sec_limits, sec_sandbox) = crate::load_security_defaults()?;
+    let meta = std::fs::metadata(path)?;
+    sec_limits
+        .check_bytes(LimitKind::ImportBytes, meta.len())
+        .map_err(|e| anyhow!("{}: {}", crate::map_sec_code(e.code).as_str(), e.message))?;
+
+    let file = std::fs::File::open(path)?;
+    let mut zip = zip::ZipArchive::new(file).map_err(|e| {
+        anyhow!(
+            "{}: zip open failed: {e}",
+            ReasonCode::SecZipBadZip.as_str()
+        )
+    })?;
+    let _ = crate::zip_preflight(&sec_limits, &sec_sandbox, &mut zip)?;
+
     let mut pkg = open_package_file(path, &opt.limits)?;
 
     let mut warnings: Vec<AppWarning> = Vec::new();
@@ -94,12 +110,16 @@ pub fn open_package(path: &Path, opt: OpenOptions) -> Result<OpenResult> {
             );
             None
         }
-        Some(bytes) => match parse_json::<Manifest>(&bytes, opt.strict_schema) {
-            Ok(m) => {
-                if m.schema_version > LATEST_SCHEMA_VERSION {
-                    if opt.allow_forward_compat_readonly {
-                        read_only = true;
-                        push_warn(
+        Some(bytes) => {
+            sec_limits
+                .check_bytes(LimitKind::SingleEntryBytes, bytes.len() as u64)
+                .map_err(|e| anyhow!("{}: {}", crate::map_sec_code(e.code).as_str(), e.message))?;
+            match parse_json::<Manifest>(&bytes, opt.strict_schema) {
+                Ok(m) => {
+                    if m.schema_version > LATEST_SCHEMA_VERSION {
+                        if opt.allow_forward_compat_readonly {
+                            read_only = true;
+                            push_warn(
                             &mut warnings,
                             ReasonCode::OpenSchemaForwardIncompatibleReadonly,
                             Some("manifest.json".to_string()),
@@ -109,41 +129,42 @@ pub fn open_package(path: &Path, opt: OpenOptions) -> Result<OpenResult> {
                                 m.schema_version, LATEST_SCHEMA_VERSION
                             ),
                         );
-                    } else {
-                        return Err(anyhow!(
-                            "{}: forward incompatible schema_version={} > latest={}",
-                            ReasonCode::OpenSchemaForwardIncompatibleReadonly.as_str(),
-                            m.schema_version,
-                            LATEST_SCHEMA_VERSION
-                        ));
+                        } else {
+                            return Err(anyhow!(
+                                "{}: forward incompatible schema_version={} > latest={}",
+                                ReasonCode::OpenSchemaForwardIncompatibleReadonly.as_str(),
+                                m.schema_version,
+                                LATEST_SCHEMA_VERSION
+                            ));
+                        }
+                    } else if m.schema_version < (LATEST_SCHEMA_VERSION - 2) {
+                        push_warn(
+                            &mut warnings,
+                            ReasonCode::OpenSchemaTooOldSuggestMigrate,
+                            Some("manifest.json".to_string()),
+                            WarningKind::Warning,
+                            format!(
+                                "too old schema_version={} (supported >= {})",
+                                m.schema_version,
+                                LATEST_SCHEMA_VERSION - 2
+                            ),
+                        );
+                        salvage_actions.push(SalvageActionHint::SuggestMigrateTool);
                     }
-                } else if m.schema_version < (LATEST_SCHEMA_VERSION - 2) {
+                    Some(m)
+                }
+                Err(e) => {
                     push_warn(
                         &mut warnings,
-                        ReasonCode::OpenSchemaTooOldSuggestMigrate,
+                        ReasonCode::OpenManifestInvalidJson,
                         Some("manifest.json".to_string()),
                         WarningKind::Warning,
-                        format!(
-                            "too old schema_version={} (supported >= {})",
-                            m.schema_version,
-                            LATEST_SCHEMA_VERSION - 2
-                        ),
+                        format!("manifest invalid: {}", e),
                     );
-                    salvage_actions.push(SalvageActionHint::SuggestMigrateTool);
+                    None
                 }
-                Some(m)
             }
-            Err(e) => {
-                push_warn(
-                    &mut warnings,
-                    ReasonCode::OpenManifestInvalidJson,
-                    Some("manifest.json".to_string()),
-                    WarningKind::Warning,
-                    format!("manifest invalid: {}", e),
-                );
-                None
-            }
-        },
+        }
     };
 
     let doc_path =

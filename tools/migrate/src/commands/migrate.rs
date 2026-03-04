@@ -1,6 +1,7 @@
 use crate::args::{Args, ToVersion};
 use anyhow::{anyhow, Context, Result};
 use diycad_format::{open_package, save_package, OpenOptions, SaveOptions};
+use security::LimitKind;
 
 pub fn resolve_target(to: &ToVersion) -> i64 {
     match to {
@@ -19,6 +20,13 @@ pub fn run_migrate(args: &Args) -> Result<()> {
         .output
         .as_ref()
         .ok_or_else(|| anyhow!("--output is required"))?;
+
+    let sec_limits = security::Limits::load_from_ssot(security::LimitsProfile::Default)
+        .map_err(|e| anyhow!("{}", e.message))?;
+    let meta = std::fs::metadata(input)?;
+    sec_limits
+        .check_bytes(LimitKind::ImportBytes, meta.len())
+        .map_err(|e| anyhow!("{}", e.message))?;
 
     let open = open_package(input.as_path(), OpenOptions::default())
         .with_context(|| format!("open failed: {}", input.display()))?;
