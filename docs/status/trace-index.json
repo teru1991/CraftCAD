@@ -1,5 +1,20 @@
 {
   "tasks": {
+    "S18-SEC-GATE-004": {
+      "branch": "feature/s18-sec-gate-004",
+      "artifacts": [
+        ".github/workflows/security.yml",
+        "scripts/ci/sca_allowlist_check.py",
+        "docs/specs/security/sca_allowlist.schema.json",
+        "docs/specs/security/sca_allowlist.json",
+        "tests/security/redaction_golden.rs",
+        "tests/security/malformed_inputs.rs",
+        "tests/e2e/support_zip_is_safe.rs",
+        "tests/fuzz/security_smoke_fuzz.rs",
+        "docs/verification/S18-SEC-GATE-004.md"
+      ],
+      "verification": "docs/verification/S18-SEC-GATE-004.md"
+    },
     "S18-SEC-INTEGRATE-003": {
       "branch": "feature/s18-sec-integrate-003",
       "artifacts": [

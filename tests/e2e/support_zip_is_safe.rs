@@ -1,10 +1,12 @@
+use std::io::Read;
+
 use craftcad_diagnostics::{
     DefaultDenyConsent, DeterminismTag, JobContext, JobLogBuilder, Limits, StepResultKind,
     StubRedactor, SupportZipBuilder,
 };
 
 #[test]
-fn support_zip_respects_consent_and_is_redacted() {
+fn support_zip_contains_no_raw_pii_and_respects_consent_defaults() {
     let config_dir = tempfile::tempdir().expect("tmp config");
     std::env::set_var("CRAFTCAD_CONFIG_DIR", config_dir.path());
 
@@ -35,7 +37,7 @@ fn support_zip_respects_consent_and_is_redacted() {
                 "email": "user@example.com",
                 "note": "my token=SECRET",
                 "path": "/Users/alice/projects/private.diycad",
-                "x": "Bearer VERYSECRET"
+                "x": "Bearer SUPERSECRET"
             }),
         );
         step.set_result(StepResultKind::Ok);
@@ -50,9 +52,24 @@ fn support_zip_respects_consent_and_is_redacted() {
         .build(&zip_path)
         .expect("zip build");
 
-    let hay = String::from_utf8_lossy(&std::fs::read(&zip_path).expect("read zip"));
-    assert!(!hay.contains("user@example.com"));
-    assert!(!hay.contains("VERYSECRET"));
-    assert!(!hay.contains("/Users/alice"));
-    assert!(!hay.contains("project_snapshot.diycad"));
+    let zip_bytes = std::fs::read(&zip_path).expect("read zip");
+    let rdr = std::io::Cursor::new(zip_bytes);
+    let mut zip = zip::ZipArchive::new(rdr).expect("open zip bytes");
+
+    let mut names = Vec::new();
+    for i in 0..zip.len() {
+        let mut f = zip.by_index(i).expect("zip entry");
+        let name = f.name().to_string();
+        names.push(name);
+
+        let mut buf = Vec::new();
+        f.read_to_end(&mut buf).expect("read entry");
+        let text = String::from_utf8_lossy(&buf);
+
+        assert!(!text.contains("user@example.com"));
+        assert!(!text.contains("Bearer SUPERSECRET"));
+        assert!(!text.contains("/Users/alice"));
+    }
+
+    assert!(!names.iter().any(|n| n.contains("project_snapshot")));
 }
