@@ -468,6 +468,21 @@
       "evidence": {
         "tests": "cargo test -p craftcad_diagnostics; cargo run -p craftcad_diagnostics --example diagnostics_cli -- zip --preview"
       }
+    },
+    "S17-DIAG-GATES-006": {
+      "branch": "feature/s17-diag-gates-006",
+      "artifacts": [
+        "tests/golden/diagnostics/*",
+        "tests/golden/diagnostics_golden.rs",
+        "tests/e2e/diagnostics_support_zip.rs",
+        "core/crates/diagnostics/tests/determinism_10x.rs",
+        "core/crates/diagnostics/tests/fuzz_limits.rs",
+        "scripts/ci/golden/diagnostics_update.sh"
+      ],
+      "verification": "docs/verification/S17-DIAG-GATES-006.md",
+      "evidence": {
+        "tests": "cargo test -p craftcad_diagnostics; cargo test --manifest-path core/crates/ssot_lint/Cargo.toml --test diagnostics_golden; cargo test --manifest-path core/crates/ssot_lint/Cargo.toml --test diagnostics_support_zip"
+      }
     }
   }
 }

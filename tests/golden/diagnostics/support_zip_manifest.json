@@ -1,0 +1,13 @@
+{
+  "required_entries": [
+    "joblog.json",
+    "reason_summary.json",
+    "ssot_fingerprint.json"
+  ],
+  "optional_entries": [
+    "perf_report.json",
+    "oplog.json",
+    "project_snapshot.diycad",
+    "inputs/"
+  ]
+}

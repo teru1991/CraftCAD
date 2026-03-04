@@ -1,0 +1,39 @@
+{
+  "session_id": "sess-1",
+  "started_at": "2000-01-01T00:00:00Z",
+  "actions": [
+    {
+      "seq": 1,
+      "action_id": "a1",
+      "kind": "ImportFile",
+      "params_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "params_redacted": {
+        "format": "svg",
+        "input_id": "input-1"
+      },
+      "affected_ids": [
+        "input-1"
+      ],
+      "result": "ok",
+      "reason_codes": [
+        "R_IMPORT_WARN"
+      ]
+    },
+    {
+      "seq": 2,
+      "action_id": "a2",
+      "kind": "RunNest",
+      "params_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "params_redacted": {
+        "job_id": "job-1"
+      },
+      "affected_ids": [
+        "job-1"
+      ],
+      "result": "failed",
+      "reason_codes": [
+        "R_NEST_FAIL"
+      ]
+    }
+  ]
+}

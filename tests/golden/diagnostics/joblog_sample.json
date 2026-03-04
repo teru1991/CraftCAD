@@ -1,0 +1,80 @@
+{
+  "header": {
+    "joblog_version": 1,
+    "app_version": "1.0.0-test",
+    "build_id": "build-test",
+    "schema_version": "diycad-1",
+    "os": "TestOS",
+    "arch": "x86_64",
+    "locale": "ja-JP",
+    "timezone": "Asia/Tokyo",
+    "determinism_tag": {
+      "seed": 42,
+      "epsilon": 1e-6,
+      "rounding": "bankers",
+      "ordering": "btree"
+    },
+    "limits_profile": "default"
+  },
+  "inputs": [
+    {
+      "kind": "svg",
+      "id": "input-1",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "size_bytes": 1234,
+      "source_hint_redacted": "drag_drop"
+    }
+  ],
+  "timeline": {
+    "steps": [
+      {
+        "ts": "2000-01-01T00:00:00Z",
+        "action_id": "a1",
+        "action_kind": "ImportFile",
+        "params_redacted": {
+          "format": "svg",
+          "input_id": "input-1"
+        },
+        "result_kind": "ok",
+        "reason_codes": [
+          "R_IMPORT_WARN"
+        ],
+        "duration_ms": 10
+      },
+      {
+        "ts": "2000-01-01T00:00:01Z",
+        "action_id": "a2",
+        "action_kind": "RunNest",
+        "params_redacted": {
+          "job_id": "job-1"
+        },
+        "result_kind": "failed",
+        "reason_codes": [
+          "R_NEST_FAIL"
+        ],
+        "duration_ms": 20
+      }
+    ]
+  },
+  "reasons": [
+    {
+      "code": "R_IMPORT_WARN",
+      "severity": "warn",
+      "count": 1,
+      "first_ts": "2000-01-01T00:00:02Z",
+      "last_ts": "2000-01-01T00:00:02Z"
+    },
+    {
+      "code": "R_NEST_FAIL",
+      "severity": "warn",
+      "count": 1,
+      "first_ts": "2000-01-01T00:00:03Z",
+      "last_ts": "2000-01-01T00:00:03Z"
+    }
+  ],
+  "consent_snapshot": {
+    "include_project_snapshot": false,
+    "include_inputs_copy": false,
+    "telemetry_opt_in": false
+  }
+}
