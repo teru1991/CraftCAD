@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "required": [
+    { "id": "file.open", "scope": "global", "keys": ["Mod+O"] },
+    { "id": "file.save", "scope": "global", "keys": ["Mod+S"] },
+    { "id": "edit.undo", "scope": "global", "keys": ["Mod+Z"] },
+    { "id": "edit.redo", "scope": "global", "keys": ["Shift+Mod+Z"] },
+    { "id": "ui.cancel", "scope": "global", "keys": ["Esc"] },
+    { "id": "library.search", "scope": "global", "keys": ["Mod+F"] },
+    { "id": "help.support", "scope": "global", "keys": ["F1"] },
+
+    { "id": "view.pan", "scope": "view", "keys": ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"] },
+    { "id": "view.zoom_in", "scope": "view", "keys": ["+"] },
+    { "id": "view.zoom_out", "scope": "view", "keys": ["-"] },
+
+    { "id": "tool.line", "scope": "cad", "keys": ["L"] },
+    { "id": "tool.circle", "scope": "cad", "keys": ["C"] },
+    { "id": "tool.arc", "scope": "cad", "keys": ["A"] },
+    { "id": "tool.dimension", "scope": "cad", "keys": ["D"] },
+    { "id": "tool.text", "scope": "cad", "keys": ["T"] },
+
+    { "id": "job.nest", "scope": "global", "keys": ["N"] },
+    { "id": "job.export", "scope": "global", "keys": ["E"] }
+  ]
+}

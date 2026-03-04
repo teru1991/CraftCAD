@@ -1610,8 +1610,7 @@ fn ssot_i18n_resources_validate_and_cover_required_keys() {
     }
 
     let schema_json = read_json(&schema_path);
-    let compiled = JSONSchema::compile(&schema_json)
-        .expect("failed to compile i18n.schema.json");
+    let compiled = JSONSchema::compile(&schema_json).expect("failed to compile i18n.schema.json");
 
     let ja_json = read_json(&ja_path);
     let en_json = read_json(&en_path);
@@ -1725,4 +1724,63 @@ fn ssot_i18n_resources_validate_and_cover_required_keys() {
         "i18n values contain dangerous control chars:\n- {}",
         bad.join("\n- ")
     );
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RequiredShortcutItem {
+    id: String,
+    scope: String,
+    keys: Vec<String>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RequiredShortcuts {
+    version: u32,
+    required: Vec<RequiredShortcutItem>,
+}
+
+#[test]
+fn ssot_a11y_required_shortcuts_validate_basic() {
+    let root = repo_root_from_manifest();
+    let p = root.join("docs/specs/a11y/required_shortcuts.json");
+    assert!(p.exists(), "missing required file: {}", p.display());
+    let s = std::fs::read_to_string(&p)
+        .unwrap_or_else(|e| panic!("failed to read {}: {}", p.display(), e));
+    let rs: RequiredShortcuts =
+        serde_json::from_str(&s).unwrap_or_else(|e| panic!("invalid json {}: {}", p.display(), e));
+    assert!(
+        rs.version >= 1,
+        "required_shortcuts.json version must be >= 1"
+    );
+    assert!(
+        !rs.required.is_empty(),
+        "required_shortcuts.json required[] must not be empty"
+    );
+
+    use std::collections::BTreeSet;
+    let mut seen = BTreeSet::new();
+    for it in &rs.required {
+        assert!(!it.id.trim().is_empty(), "shortcut id must not be empty");
+        assert!(
+            !it.scope.trim().is_empty(),
+            "shortcut scope must not be empty"
+        );
+        assert!(
+            !it.keys.is_empty(),
+            "shortcut keys must not be empty: id={}",
+            it.id
+        );
+        for k in &it.keys {
+            assert!(
+                !k.trim().is_empty(),
+                "shortcut key string must not be empty: id={}",
+                it.id
+            );
+        }
+        assert!(
+            seen.insert(it.id.clone()),
+            "duplicate shortcut id in required_shortcuts.json: {}",
+            it.id
+        );
+    }
 }
