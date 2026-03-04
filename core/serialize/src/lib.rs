@@ -1,5 +1,7 @@
 #![allow(clippy::result_large_err)]
 
+pub mod spec;
+
 use jsonschema::JSONSchema;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
