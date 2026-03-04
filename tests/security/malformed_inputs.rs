@@ -1,6 +1,9 @@
-use craftcad_security::redact_json;
-
 #[test]
-fn malformed_input_no_panic() {
-    let _ = redact_json(serde_json::json!({"x": ["a", 1, {"y": "b"}]}));
+fn redact_json_handles_malformed_like_input() {
+    let red = security::Redactor::from_ssot(security::RedactorConfig {
+        limits_profile: security::LimitsProfile::Default,
+    })
+    .expect("redactor");
+    let out = red.redact_json(&serde_json::json!({"token":"secret","nested":["a",{"k":"v"}]}));
+    assert!(out.is_object());
 }

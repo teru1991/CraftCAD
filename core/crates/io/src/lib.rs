@@ -128,3 +128,25 @@ impl Default for IoEngine {
         Self::new()
     }
 }
+
+fn map_sec_code(code: security::SecCode) -> ReasonCode {
+    match code.as_str() {
+        "SEC_LIMIT_EXCEEDED" | "SEC_ZIP_LIMIT_EXCEEDED" => ReasonCode::IO_LIMIT_BYTES_EXCEEDED,
+        "SEC_EXTERNAL_REF_REJECTED" => ReasonCode::IO_SVG_EXTERNAL_REFERENCE_BLOCKED,
+        "SEC_SSOT_NOT_FOUND" | "SEC_SSOT_INVALID" | "SEC_REGEX_INVALID" => {
+            ReasonCode::IO_PARSE_SVG_MALFORMED
+        }
+        _ => ReasonCode::IO_LIMIT_BYTES_EXCEEDED,
+    }
+}
+
+fn map_sec_to_io(err: security::SecError) -> AppError {
+    AppError::new(map_sec_code(err.code), err.message.to_string())
+}
+
+pub(crate) fn security_defaults() -> AppResult<(security::Limits, security::Sandbox)> {
+    let limits = security::Limits::load_from_ssot(security::LimitsProfile::Default)
+        .map_err(map_sec_to_io)?;
+    let sandbox = security::Sandbox::new(security::ExternalRefPolicy::Reject);
+    Ok((limits, sandbox))
+}
