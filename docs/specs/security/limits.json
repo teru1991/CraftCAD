@@ -1,7 +1,31 @@
 {
-  "max_import_bytes": 52428800,
-  "max_entities": 200000,
-  "max_zip_entries": 20000,
-  "max_json_depth": 200,
-  "max_string_len": 100000
+  "version": 1,
+  "profiles": {
+    "default": {
+      "max_import_bytes": 52428800,
+      "max_entities": 200000,
+      "max_zip_entries": 20000,
+      "max_zip_total_uncompressed_bytes": 2147483648,
+      "max_single_entry_bytes": 209715200,
+      "max_json_depth": 200,
+      "max_string_len": 100000,
+      "max_paths_per_entity": 100000,
+      "max_points_per_path": 1000000,
+      "max_support_zip_bytes": 524288000,
+      "max_path_depth": 20
+    },
+    "heavy": {
+      "max_import_bytes": 157286400,
+      "max_entities": 500000,
+      "max_zip_entries": 40000,
+      "max_zip_total_uncompressed_bytes": 4294967296,
+      "max_single_entry_bytes": 536870912,
+      "max_json_depth": 300,
+      "max_string_len": 200000,
+      "max_paths_per_entity": 200000,
+      "max_points_per_path": 2000000,
+      "max_support_zip_bytes": 1073741824,
+      "max_path_depth": 24
+    }
+  }
 }

@@ -483,6 +483,40 @@
       "evidence": {
         "tests": "cargo test -p craftcad_diagnostics; cargo test --manifest-path core/crates/ssot_lint/Cargo.toml --test diagnostics_golden; cargo test --manifest-path core/crates/ssot_lint/Cargo.toml --test diagnostics_support_zip"
       }
+    },
+    "S18-SEC-SSOT-001": {
+      "branch": "feature/s18-sec-ssot-001",
+      "artifacts": [
+        "docs/specs/security/threat_model.md",
+        "docs/specs/security/limits.schema.json",
+        "docs/specs/security/limits.json",
+        "docs/specs/security/redaction.schema.json",
+        "docs/specs/security/redaction_rules.json",
+        "docs/specs/security/consent.md",
+        "docs/specs/security/consent.schema.json",
+        "docs/specs/security/sca_policy.md",
+        "docs/specs/security/README.md",
+        "core/serialize/tests/spec_ssot_lint.rs",
+        "docs/verification/S18-SEC-SSOT-001.md"
+      ],
+      "verification": "docs/verification/S18-SEC-SSOT-001.md",
+      "evidence": {
+        "preflight": [
+          "git status --porcelain (clean)",
+          "git fetch --all --prune",
+          "git checkout -b feature/s18-sec-ssot-001"
+        ],
+        "history": [
+          "git log --oneline -n 20",
+          "git log -- core/serialize/tests/spec_ssot_lint.rs | head -n 40",
+          "git blame core/serialize/tests/spec_ssot_lint.rs | head -n 50"
+        ],
+        "tests": [
+          "cargo clippy --manifest-path core/serialize/Cargo.toml --all-targets -- -D warnings",
+          "cargo test --manifest-path core/Cargo.toml -p craftcad_serialize",
+          "scripts/ci/run_all.sh (fails at existing diagnostics tests/golden/support_zip_e2e)"
+        ]
+      }
     }
   }
 }
