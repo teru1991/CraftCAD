@@ -1,0 +1,15 @@
+{
+  "__meta": { "lang": "en", "version": 1 },
+  "UI.MENU.FILE.OPEN": "Open",
+  "UI.MENU.FILE.SAVE": "Save",
+  "UI.MENU.FILE.SAVE_AS": "Save As",
+  "UI.MENU.FILE.RECENT": "Recent Files",
+  "UI.BUTTON.EXPORT": "Export",
+  "UI.BUTTON.NEST": "Nest",
+  "UI.SETTINGS.LANGUAGE": "Language",
+  "UI.SETTINGS.UNIT_SYSTEM": "Units",
+  "UI.DIALOG.SUPPORT.TITLE": "Support",
+  "UI.PANEL.ERROR.TITLE": "Error",
+  "UI.PANEL.ERROR.DETAIL": "Details",
+  "UI.ONBOARDING.TITLE": "Getting Started"
+}
