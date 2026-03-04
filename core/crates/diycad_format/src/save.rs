@@ -3,6 +3,7 @@ use crate::{
     SaveOptions, Unit,
 };
 use anyhow::{anyhow, Context, Result};
+use security::LimitKind;
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -104,6 +105,8 @@ pub fn save_package(
         }
     }
 
+    let (sec_limits, _sec_sandbox) = crate::load_security_defaults()?;
+
     if opt.normalize_before_save {
         normalize_document(&mut document);
         normalize_parts(&mut parts);
@@ -113,6 +116,9 @@ pub fn save_package(
     let mut doc_v = serde_json::to_value(&document)?;
     normalize_json_value(&mut doc_v);
     let doc_bytes = serde_json::to_vec_pretty(&doc_v)?;
+    sec_limits
+        .check_bytes(LimitKind::SingleEntryBytes, doc_bytes.len() as u64)
+        .map_err(|e| anyhow!("{}: {}", crate::map_sec_code(e.code).as_str(), e.message))?;
 
     let mut man = manifest.clone();
     man.updated_at = now_rfc3339();
@@ -167,6 +173,9 @@ pub fn save_package(
     let mut man_v = serde_json::to_value(&man)?;
     normalize_json_value(&mut man_v);
     let man_bytes = serde_json::to_vec_pretty(&man_v)?;
+    sec_limits
+        .check_bytes(LimitKind::SingleEntryBytes, man_bytes.len() as u64)
+        .map_err(|e| anyhow!("{}: {}", crate::map_sec_code(e.code).as_str(), e.message))?;
 
     let parent = path.parent().unwrap_or_else(|| Path::new("."));
     let fname = path

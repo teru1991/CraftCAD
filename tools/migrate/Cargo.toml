@@ -13,6 +13,7 @@ walkdir = "2"
 
 diycad_format = { path = "../../core/crates/diycad_format" }
 migration = { path = "../../core/crates/migration" }
+security = { path = "../../core/crates/security" }
 
 [dev-dependencies]
 tempfile = "3"

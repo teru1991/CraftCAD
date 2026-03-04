@@ -29,11 +29,8 @@ fn svg_blocks_external_reference_href() {
     let eng = IoEngine::new().register_importer(Box::new(SvgIo::new()));
     let opts = ImportOptions::default_for_tests();
 
-    let res = eng.import("svg", svg.as_bytes(), &opts).unwrap();
-    assert!(
-        res.warnings
-            .iter()
-            .any(|w| w.reason == ReasonCode::IO_IMAGE_REFERENCE_DROPPED),
-        "expected IO_IMAGE_REFERENCE_DROPPED warning"
-    );
+    let err = eng
+        .import("svg", svg.as_bytes(), &opts)
+        .expect_err("must reject external refs");
+    assert_eq!(err.reason, ReasonCode::IO_SVG_EXTERNAL_REFERENCE_BLOCKED);
 }

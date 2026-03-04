@@ -1,5 +1,19 @@
 {
   "tasks": {
+    "S18-SEC-INTEGRATE-003": {
+      "branch": "feature/s18-sec-integrate-003",
+      "artifacts": [
+        "core/crates/diycad_format/**",
+        "core/crates/io/**",
+        "core/crates/io_svg/**",
+        "core/crates/diagnostics/**",
+        "tools/migrate/**",
+        "tests/security/integration_limits.rs",
+        "tests/e2e/support_zip_is_safe.rs",
+        "docs/verification/S18-SEC-INTEGRATE-003.md"
+      ],
+      "verification": "docs/verification/S18-SEC-INTEGRATE-003.md"
+    },
     "S18-SEC-CORE-002": {
       "branch": "feature/s18-sec-core-002",
       "artifacts": [

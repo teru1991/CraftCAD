@@ -7,6 +7,16 @@ use craftcad_io::options::ImportOptions;
 use craftcad_io::reasons::{AppError, AppResult, ReasonCode};
 use craftcad_io::report::IoReport;
 use craftcad_io_support::{MappingRules, SupportLevel, SupportMatrix};
+use security::{ExternalRefPolicy, Limits, LimitsProfile, Sandbox};
+
+fn map_sec_to_io(e: security::SecError) -> AppError {
+    let reason = match e.code.as_str() {
+        "SEC_EXTERNAL_REF_REJECTED" => ReasonCode::IO_SVG_EXTERNAL_REFERENCE_BLOCKED,
+        "SEC_LIMIT_EXCEEDED" => ReasonCode::IO_LIMIT_BYTES_EXCEEDED,
+        _ => ReasonCode::IO_PARSE_SVG_MALFORMED,
+    };
+    AppError::new(reason, e.message.to_string())
+}
 
 fn attr<'a>(node: &'a SvgNode, key: &str) -> Option<&'a str> {
     node.attrs
@@ -369,10 +379,21 @@ pub fn import_svg(
     let sm = SupportMatrix::load_from_ssot()?;
     let mr = MappingRules::load_from_ssot()?;
 
+    let limits = Limits::load_from_ssot(LimitsProfile::Default).map_err(map_sec_to_io)?;
+    limits
+        .check_bytes(security::LimitKind::ImportBytes, bytes.len() as u64)
+        .map_err(map_sec_to_io)?;
+    let sandbox = Sandbox::new(ExternalRefPolicy::Reject);
+    let svg_text = std::str::from_utf8(bytes)
+        .map_err(|_| AppError::new(ReasonCode::IO_PARSE_SVG_MALFORMED, "svg utf8 invalid"))?;
+    let (sanitized, _action, _warn) = sandbox
+        .handle_svg_external_refs(&limits, svg_text)
+        .map_err(map_sec_to_io)?;
+
     let SvgDom {
         root,
         warnings: parse_warn,
-    } = parse_svg_dom(bytes, opts)?;
+    } = parse_svg_dom(sanitized.as_bytes(), opts)?;
     warnings.extend(parse_warn);
 
     let mut units = Units::Mm;

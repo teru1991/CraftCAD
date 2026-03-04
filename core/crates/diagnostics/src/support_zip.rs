@@ -4,8 +4,8 @@ use crate::reason_summary::ReasonSummary;
 use crate::retention::RetentionPolicy;
 use crate::ssot_fingerprint::SsotFingerprint;
 use crate::store::{DiagnosticsStore, StoreIndexEntry};
+use crate::SecurityCtx;
 use craftcad_perf::PerfReport;
-use craftcad_security::{redact_json, ConsentState};
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::io::{self, Write};
@@ -43,7 +43,8 @@ pub struct SupportZipBuilder {
     reason_summary: Option<ReasonSummary>,
     perf: Option<serde_json::Value>,
     project_snapshot: Option<String>,
-    consent: Option<ConsentState>,
+    consent: Option<security::ConsentState>,
+    inputs_copy: Vec<(String, Vec<u8>)>,
     ssot_fingerprint: Option<SsotFingerprint>,
 }
 
@@ -62,6 +63,7 @@ impl SupportZipBuilder {
             perf: None,
             project_snapshot: None,
             consent: None,
+            inputs_copy: Vec::new(),
             ssot_fingerprint: None,
         }
     }
@@ -96,8 +98,13 @@ impl SupportZipBuilder {
         self
     }
 
-    pub fn attach_consent(mut self, consent: ConsentState) -> Self {
+    pub fn attach_consent(mut self, consent: security::ConsentState) -> Self {
         self.consent = Some(consent);
+        self
+    }
+
+    pub fn attach_inputs_copy(mut self, inputs: Vec<(String, Vec<u8>)>) -> Self {
+        self.inputs_copy = inputs;
         self
     }
 
@@ -130,15 +137,14 @@ impl SupportZipBuilder {
             out_dir.join("support.zip")
         };
         let tmp = path.with_extension("tmp");
+
+        let sec = SecurityCtx::load_default()?;
+        let consent_out = sec.consent_store.load();
+        let effective_consent = self.consent.unwrap_or(consent_out.state);
+
         let file = fs::File::create(&tmp)?;
         let mut zip = zip::ZipWriter::new(file);
         let opts = FileOptions::default().compression_method(zip::CompressionMethod::Deflated);
-
-        let include_project = self
-            .consent
-            .as_ref()
-            .map(|c| c.support_zip_include_project)
-            .unwrap_or(false);
 
         let SupportZipBuilder {
             joblog,
@@ -146,7 +152,8 @@ impl SupportZipBuilder {
             reason_summary,
             perf,
             project_snapshot,
-            consent,
+            consent: _,
+            inputs_copy,
             ssot_fingerprint,
         } = self;
 
@@ -154,8 +161,14 @@ impl SupportZipBuilder {
 
         if let Some(joblog) = joblog {
             zip.start_file("joblog.json", opts)?;
-            let v = redact_json(serde_json::to_value(joblog).map_err(io::Error::other)?);
-            zip.write_all(&serde_json::to_vec_pretty(&v).map_err(io::Error::other)?)?;
+            let v = sec
+                .redactor
+                .redact_json(&serde_json::to_value(joblog).map_err(io::Error::other)?);
+            let payload = serde_json::to_vec_pretty(&v).map_err(io::Error::other)?;
+            sec.limits
+                .check_bytes(security::LimitKind::SingleEntryBytes, payload.len() as u64)
+                .map_err(|e| io::Error::other(e.message.to_string()))?;
+            zip.write_all(&payload)?;
         }
 
         let summary = reason_summary.unwrap_or(ReasonSummary {
@@ -163,28 +176,63 @@ impl SupportZipBuilder {
             suggested_actions: Vec::new(),
         });
         zip.start_file("reason_summary.json", opts)?;
-        zip.write_all(&serde_json::to_vec_pretty(&summary).map_err(io::Error::other)?)?;
+        let summary_payload = serde_json::to_vec_pretty(&summary).map_err(io::Error::other)?;
+        sec.limits
+            .check_bytes(
+                security::LimitKind::SingleEntryBytes,
+                summary_payload.len() as u64,
+            )
+            .map_err(|e| io::Error::other(e.message.to_string()))?;
+        zip.write_all(&summary_payload)?;
 
         if let Some(oplog) = oplog {
             zip.start_file("oplog.json", opts)?;
-            zip.write_all(&serde_json::to_vec_pretty(&oplog).map_err(io::Error::other)?)?;
+            let payload = serde_json::to_vec_pretty(&oplog).map_err(io::Error::other)?;
+            sec.limits
+                .check_bytes(security::LimitKind::SingleEntryBytes, payload.len() as u64)
+                .map_err(|e| io::Error::other(e.message.to_string()))?;
+            zip.write_all(&payload)?;
         }
 
         if let Some(perf) = perf {
             zip.start_file("perf_report.json", opts)?;
-            zip.write_all(&serde_json::to_vec_pretty(&perf).map_err(io::Error::other)?)?;
+            let payload = serde_json::to_vec_pretty(&perf).map_err(io::Error::other)?;
+            sec.limits
+                .check_bytes(security::LimitKind::SingleEntryBytes, payload.len() as u64)
+                .map_err(|e| io::Error::other(e.message.to_string()))?;
+            zip.write_all(&payload)?;
         }
 
-        if let Some(consent) = consent {
-            zip.start_file("consent.json", opts)?;
-            zip.write_all(&serde_json::to_vec_pretty(&consent).map_err(io::Error::other)?)?;
-        }
-        if include_project {
+        zip.start_file("consent.json", opts)?;
+        zip.write_all(&serde_json::to_vec_pretty(&effective_consent).map_err(io::Error::other)?)?;
+
+        if effective_consent.diagnostics_include_project {
             if let Some(snapshot) = project_snapshot {
                 zip.start_file("project_snapshot.diycad", opts)?;
+                sec.limits
+                    .check_bytes(security::LimitKind::SingleEntryBytes, snapshot.len() as u64)
+                    .map_err(|e| io::Error::other(e.message.to_string()))?;
                 zip.write_all(snapshot.as_bytes())?;
             }
-            built.path = final_zip;
+        }
+
+        if effective_consent.diagnostics_include_inputs_copy {
+            for (name, bytes) in inputs_copy {
+                sec.limits
+                    .check_bytes(security::LimitKind::SingleEntryBytes, bytes.len() as u64)
+                    .map_err(|e| io::Error::other(e.message.to_string()))?;
+                let safe_name = sec
+                    .sandbox
+                    .normalize_rel_path(
+                        security::PathValidationContext {
+                            max_depth: sec.limits.max_path_depth,
+                        },
+                        &name,
+                    )
+                    .map_err(|e| io::Error::other(e.message.to_string()))?;
+                zip.start_file(format!("inputs/{}", safe_name.as_str()), opts)?;
+                zip.write_all(&bytes)?;
+            }
         }
 
         zip.start_file("ssot_fingerprint.json", opts)?;
@@ -193,13 +241,21 @@ impl SupportZipBuilder {
         zip.finish()?;
         fs::rename(&tmp, &path)?;
         let size_bytes = fs::metadata(&path)?.len();
+        sec.limits
+            .check_bytes(security::LimitKind::SupportZipBytes, size_bytes)
+            .map_err(|e| io::Error::other(e.message.to_string()))?;
         let sha256 = sha256_file(&path)?;
+
+        let mut warnings = fingerprint.warnings;
+        for w in consent_out.warnings {
+            warnings.push(w.code.as_str().to_string());
+        }
 
         Ok(ZipResult {
             path,
             sha256,
             size_bytes,
-            warnings: fingerprint.warnings,
+            warnings,
         })
     }
 
