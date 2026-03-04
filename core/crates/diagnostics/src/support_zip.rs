@@ -184,6 +184,7 @@ impl SupportZipBuilder {
                 zip.start_file("project_snapshot.diycad", opts)?;
                 zip.write_all(snapshot.as_bytes())?;
             }
+            built.path = final_zip;
         }
 
         zip.start_file("ssot_fingerprint.json", opts)?;
