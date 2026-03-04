@@ -3,12 +3,28 @@ use crate::security_iface::{ConsentProvider, Limits, Redactor};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{BTreeMap, BTreeSet};
+use std::sync::OnceLock;
 use time::OffsetDateTime;
 
+static NOW_FN: OnceLock<fn() -> String> = OnceLock::new();
+
 fn now_rfc3339_utc() -> String {
+    if let Some(f) = NOW_FN.get() {
+        return f();
+    }
     OffsetDateTime::now_utc()
         .format(&time::format_description::well_known::Rfc3339)
         .unwrap_or_else(|_| "1970-01-01T00:00:00Z".to_string())
+}
+
+pub fn set_now_fn_for_tests(f: fn() -> String) {
+    let _ = NOW_FN.set(f);
+}
+
+fn now_offset_utc() -> OffsetDateTime {
+    let now = now_rfc3339_utc();
+    OffsetDateTime::parse(&now, &time::format_description::well_known::Rfc3339)
+        .unwrap_or_else(|_| OffsetDateTime::now_utc())
 }
 
 fn truncate_str(mut s: String, max_len: usize) -> (String, bool) {
@@ -245,10 +261,8 @@ impl<'a> JobLogBuilder<'a> {
         action_kind: &str,
         params_redacted: &Value,
     ) -> StepGuard<'_, 'a> {
-        let start = OffsetDateTime::now_utc();
-        let ts = start
-            .format(&time::format_description::well_known::Rfc3339)
-            .unwrap_or_else(|_| "1970-01-01T00:00:00Z".to_string());
+        let start = now_offset_utc();
+        let ts = now_rfc3339_utc();
 
         let (action_id, id_tr) = truncate_str(self.redactor.redact_str(action_id), 128);
         let (action_kind, kind_tr) = truncate_str(self.redactor.redact_str(action_kind), 64);
@@ -440,7 +454,7 @@ impl<'b, 'a> Drop for StepGuard<'b, 'a> {
             return;
         }
 
-        let end = OffsetDateTime::now_utc();
+        let end = now_offset_utc();
         let dur = end - self.started_at;
         let duration_ms = dur.whole_milliseconds().max(0).min(i64::MAX as i128) as i64;
 

@@ -4,6 +4,7 @@ pub mod diag_codes {
     pub const DIAG_INPUTS_TRUNCATED: &str = "DIAG_INPUTS_TRUNCATED";
     pub const DIAG_STEP_TRUNCATED: &str = "DIAG_STEP_TRUNCATED";
     pub const DIAG_INTERNAL_ERROR: &str = "DIAG_INTERNAL_ERROR";
+    pub const DIAG_SSOT_FINGERPRINT_PARTIAL: &str = "DIAG_SSOT_FINGERPRINT_PARTIAL";
 }
 
 #[derive(

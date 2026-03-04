@@ -63,6 +63,24 @@ pub struct OpLogBuilder<'a> {
 }
 
 impl<'a> OpLogBuilder<'a> {
+    pub fn start_session_at(
+        session_id: &str,
+        started_at_rfc3339: &str,
+        redactor: &'a dyn Redactor,
+        limits: Limits,
+    ) -> Self {
+        let (sid, _) = truncate_str(redactor.redact_str(session_id), 128);
+        let (sat, _) = truncate_str(redactor.redact_str(started_at_rfc3339), 64);
+        Self {
+            redactor,
+            limits,
+            session_id: sid,
+            started_at: sat,
+            next_seq: 1,
+            actions: Vec::new(),
+        }
+    }
+
     pub fn start_session(session_id: &str, redactor: &'a dyn Redactor, limits: Limits) -> Self {
         let (sid, _) = truncate_str(redactor.redact_str(session_id), 128);
         Self {

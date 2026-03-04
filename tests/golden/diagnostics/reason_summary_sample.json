@@ -1,0 +1,19 @@
+{
+  "top_reasons": [
+    {
+      "code": "R_IMPORT_WARN",
+      "count": 1,
+      "first_ts": "2000-01-01T00:00:02Z",
+      "last_ts": "2000-01-01T00:00:02Z",
+      "severity": "warn"
+    },
+    {
+      "code": "R_NEST_FAIL",
+      "count": 1,
+      "first_ts": "2000-01-01T00:00:03Z",
+      "last_ts": "2000-01-01T00:00:03Z",
+      "severity": "warn"
+    }
+  ],
+  "suggested_actions": []
+}

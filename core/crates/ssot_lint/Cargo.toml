@@ -21,6 +21,8 @@ craftcad_wizards = { path = "../wizards" }
 tempfile = "3"
 
 [dev-dependencies]
+craftcad_diagnostics = { path = "../diagnostics" }
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
 
 [[bin]]
 name = "ssot-lint"

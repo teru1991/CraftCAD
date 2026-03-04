@@ -11,6 +11,12 @@ time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
 sha2 = "0.10"
 hex = "0.4"
 uuid = { version = "1", features = ["v4", "serde"] }
+craftcad_perf = { path = "../perf" }
+craftcad_security = { path = "../security" }
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
 
 [dev-dependencies]
 proptest = "1"
+tempfile = "3"
