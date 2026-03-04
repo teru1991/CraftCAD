@@ -1,7 +1,7 @@
 use jsonschema::JSONSchema;
 use regex::Regex;
 use serde_json::Value;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -1542,5 +1542,245 @@ fn ssot_security_contracts_exist_and_valid() {
         let schema_json = read_json(schema);
         let obj = assert_object_at(&schema_json, schema);
         require_keys(obj, &["$schema", "title"], schema);
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct RequiredKeys {
+    version: u32,
+    required: Vec<String>,
+}
+
+fn load_required_keys(path: &Path) -> RequiredKeys {
+    let s = fs::read_to_string(path)
+        .unwrap_or_else(|e| panic!("failed to read {}: {}", path.display(), e));
+    serde_json::from_str::<RequiredKeys>(&s)
+        .unwrap_or_else(|e| panic!("invalid required_keys.json {}: {}", path.display(), e))
+}
+
+fn extract_i18n_keys(v: &Value) -> BTreeMap<String, String> {
+    let obj = v
+        .as_object()
+        .unwrap_or_else(|| panic!("resource must be object"));
+    let mut out = BTreeMap::new();
+    for (k, vv) in obj {
+        if k == "__meta" {
+            continue;
+        }
+        let s = vv
+            .as_str()
+            .unwrap_or_else(|| panic!("value for key '{}' must be string", k))
+            .to_string();
+        out.insert(k.clone(), s);
+    }
+    out
+}
+
+fn check_i18n_key_format(keys: &BTreeMap<String, String>) {
+    for k in keys.keys() {
+        assert!(
+            k.starts_with("UI."),
+            "i18n key must start with 'UI.': {}",
+            k
+        );
+    }
+}
+
+fn check_no_empty_i18n_values(keys: &BTreeMap<String, String>, resource_path: &Path) {
+    for (k, v) in keys {
+        assert!(
+            !v.trim().is_empty(),
+            "empty i18n value: key={} file={}",
+            k,
+            resource_path.display()
+        );
+    }
+}
+
+#[test]
+fn ssot_i18n_resources_validate_and_cover_required_keys() {
+    let root = repo_root_from_manifest();
+    let schema_path = root.join("docs/specs/i18n/i18n.schema.json");
+    let required_path = root.join("docs/specs/i18n/required_keys.json");
+    let ja_path = root.join("apps/desktop/i18n/resources/ja.json");
+    let en_path = root.join("apps/desktop/i18n/resources/en.json");
+
+    for p in [&schema_path, &required_path, &ja_path, &en_path] {
+        assert!(p.exists(), "missing required file: {}", p.display());
+    }
+
+    let schema_json = read_json(&schema_path);
+    let compiled = JSONSchema::compile(&schema_json).expect("failed to compile i18n.schema.json");
+
+    let ja_json = read_json(&ja_path);
+    let en_json = read_json(&en_path);
+
+    if let Err(errors) = compiled.validate(&ja_json) {
+        let ja_errs: Vec<String> = errors.map(|e| e.to_string()).collect();
+        assert!(
+            ja_errs.is_empty(),
+            "ja.json schema invalid:\n- {}",
+            ja_errs.join("\n- ")
+        );
+    }
+
+    if let Err(errors) = compiled.validate(&en_json) {
+        let en_errs: Vec<String> = errors.map(|e| e.to_string()).collect();
+        assert!(
+            en_errs.is_empty(),
+            "en.json schema invalid:\n- {}",
+            en_errs.join("\n- ")
+        );
+    }
+
+    let ja_map = extract_i18n_keys(&ja_json);
+    let en_map = extract_i18n_keys(&en_json);
+
+    check_i18n_key_format(&ja_map);
+    check_i18n_key_format(&en_map);
+    check_no_empty_i18n_values(&ja_map, &ja_path);
+    check_no_empty_i18n_values(&en_map, &en_path);
+
+    let ja_set: BTreeSet<String> = ja_map.keys().cloned().collect();
+    assert_eq!(
+        ja_set.len(),
+        ja_map.len(),
+        "duplicate key detected in ja.json (unexpected)"
+    );
+    let en_set: BTreeSet<String> = en_map.keys().cloned().collect();
+    assert_eq!(
+        en_set.len(),
+        en_map.len(),
+        "duplicate key detected in en.json (unexpected)"
+    );
+
+    let required = load_required_keys(&required_path);
+    assert!(
+        required.version >= 1,
+        "required_keys.json version must be >= 1"
+    );
+    assert!(
+        !required.required.is_empty(),
+        "required_keys.json required[] must not be empty"
+    );
+
+    let mut seen = BTreeSet::new();
+    for k in &required.required {
+        assert!(
+            seen.insert(k.clone()),
+            "required_keys.json has duplicate key: {}",
+            k
+        );
+        assert!(
+            k.starts_with("UI."),
+            "required key must start with UI.: {}",
+            k
+        );
+    }
+
+    let mut missing_ja = Vec::new();
+    let mut missing_en = Vec::new();
+    for k in &required.required {
+        if !ja_map.contains_key(k) {
+            missing_ja.push(k.clone());
+        }
+        if !en_map.contains_key(k) {
+            missing_en.push(k.clone());
+        }
+    }
+
+    assert!(
+        missing_ja.is_empty(),
+        "ja.json missing required keys:\n- {}",
+        missing_ja.join("\n- ")
+    );
+    assert!(
+        missing_en.is_empty(),
+        "en.json missing required keys:\n- {}",
+        missing_en.join("\n- ")
+    );
+
+    fn has_dangerous_controls(s: &str) -> bool {
+        s.contains('\r')
+            || s.contains('\u{202E}')
+            || s.contains('\u{202A}')
+            || s.contains('\u{202B}')
+            || s.contains('\u{202D}')
+            || s.contains('\u{2066}')
+            || s.contains('\u{2067}')
+            || s.contains('\u{2068}')
+            || s.contains('\u{2069}')
+    }
+
+    let mut bad = Vec::new();
+    for (k, v) in ja_map.iter().chain(en_map.iter()) {
+        if has_dangerous_controls(v) {
+            bad.push(format!("{} => {:?}", k, v));
+        }
+    }
+
+    assert!(
+        bad.is_empty(),
+        "i18n values contain dangerous control chars:\n- {}",
+        bad.join("\n- ")
+    );
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RequiredShortcutItem {
+    id: String,
+    scope: String,
+    keys: Vec<String>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RequiredShortcuts {
+    version: u32,
+    required: Vec<RequiredShortcutItem>,
+}
+
+#[test]
+fn ssot_a11y_required_shortcuts_validate_basic() {
+    let root = repo_root_from_manifest();
+    let p = root.join("docs/specs/a11y/required_shortcuts.json");
+    assert!(p.exists(), "missing required file: {}", p.display());
+    let s = std::fs::read_to_string(&p)
+        .unwrap_or_else(|e| panic!("failed to read {}: {}", p.display(), e));
+    let rs: RequiredShortcuts =
+        serde_json::from_str(&s).unwrap_or_else(|e| panic!("invalid json {}: {}", p.display(), e));
+    assert!(
+        rs.version >= 1,
+        "required_shortcuts.json version must be >= 1"
+    );
+    assert!(
+        !rs.required.is_empty(),
+        "required_shortcuts.json required[] must not be empty"
+    );
+
+    use std::collections::BTreeSet;
+    let mut seen = BTreeSet::new();
+    for it in &rs.required {
+        assert!(!it.id.trim().is_empty(), "shortcut id must not be empty");
+        assert!(
+            !it.scope.trim().is_empty(),
+            "shortcut scope must not be empty"
+        );
+        assert!(
+            !it.keys.is_empty(),
+            "shortcut keys must not be empty: id={}",
+            it.id
+        );
+        for k in &it.keys {
+            assert!(
+                !k.trim().is_empty(),
+                "shortcut key string must not be empty: id={}",
+                it.id
+            );
+        }
+        assert!(
+            seen.insert(it.id.clone()),
+            "duplicate shortcut id in required_shortcuts.json: {}",
+            it.id
+        );
     }
 }

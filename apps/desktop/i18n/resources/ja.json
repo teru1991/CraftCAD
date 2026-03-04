@@ -1,0 +1,15 @@
+{
+  "__meta": { "lang": "ja", "version": 1 },
+  "UI.MENU.FILE.OPEN": "開く",
+  "UI.MENU.FILE.SAVE": "保存",
+  "UI.MENU.FILE.SAVE_AS": "名前を付けて保存",
+  "UI.MENU.FILE.RECENT": "最近開いたファイル",
+  "UI.BUTTON.EXPORT": "出力",
+  "UI.BUTTON.NEST": "木取り",
+  "UI.SETTINGS.LANGUAGE": "言語",
+  "UI.SETTINGS.UNIT_SYSTEM": "単位系",
+  "UI.DIALOG.SUPPORT.TITLE": "サポート",
+  "UI.PANEL.ERROR.TITLE": "エラー",
+  "UI.PANEL.ERROR.DETAIL": "詳細",
+  "UI.ONBOARDING.TITLE": "はじめに"
+}
