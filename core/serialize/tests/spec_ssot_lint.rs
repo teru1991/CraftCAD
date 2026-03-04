@@ -1784,3 +1784,132 @@ fn ssot_a11y_required_shortcuts_validate_basic() {
         );
     }
 }
+
+fn read_file(p: &Path) -> String {
+    fs::read_to_string(p).unwrap_or_else(|e| panic!("failed to read {}: {}", p.display(), e))
+}
+
+fn extract_ssot_yaml(md: &str) -> Result<String, String> {
+    let begin = "<!-- SSOT:BEGIN -->";
+    let end = "<!-- SSOT:END -->";
+
+    let b = md
+        .find(begin)
+        .ok_or_else(|| "missing SSOT:BEGIN".to_string())?;
+    let e = md.find(end).ok_or_else(|| "missing SSOT:END".to_string())?;
+
+    if e <= b {
+        return Err("SSOT markers are in wrong order".to_string());
+    }
+
+    let inner = &md[b + begin.len()..e];
+    Ok(inner.trim().to_string())
+}
+
+fn ux_specs_dir() -> PathBuf {
+    repo_root_from_manifest().join("docs/specs/ux")
+}
+
+#[test]
+fn ssot_lint_ux_specs() {
+    let dir = ux_specs_dir();
+    assert!(dir.exists(), "missing docs/specs/ux directory");
+
+    let mut md_files: Vec<PathBuf> = fs::read_dir(&dir)
+        .expect("failed to read docs/specs/ux")
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| p.extension().map(|x| x == "md").unwrap_or(false))
+        .collect();
+    md_files.sort();
+
+    let required = [
+        "README.md",
+        "onboarding_flow.md",
+        "error_ux_policy.md",
+        "mode_policy.md",
+        "navigation_policy.md",
+        "sample_library.md",
+    ];
+    for r in required {
+        let p = dir.join(r);
+        assert!(p.exists(), "required ux spec missing: {}", p.display());
+    }
+
+    let mut parsed_kinds = BTreeSet::new();
+
+    for p in md_files {
+        let md = read_file(&p);
+        if p.file_name().and_then(|n| n.to_str()) == Some("README.md") {
+            continue;
+        }
+
+        let yaml = extract_ssot_yaml(&md).unwrap_or_else(|e| panic!("{}: {}", p.display(), e));
+        let doc: craftcad_serialize::spec::ux_ssot::UxSsotDoc = serde_yaml::from_str(&yaml)
+            .unwrap_or_else(|e| panic!("{}: yaml parse error: {}", p.display(), e));
+
+        match &doc {
+            craftcad_serialize::spec::ux_ssot::UxSsotDoc::OnboardingFlow(flow) => {
+                assert_eq!(flow.version, 1, "onboarding_flow version must be 1 for now");
+                craftcad_serialize::spec::ux_ssot::ensure_steps_chain(flow)
+                    .unwrap_or_else(|e| panic!("{}: {}", p.display(), e));
+                parsed_kinds.insert("onboarding_flow");
+            }
+            craftcad_serialize::spec::ux_ssot::UxSsotDoc::ErrorUxPolicy(pol) => {
+                assert_eq!(pol.version, 1, "error_ux_policy version must be 1 for now");
+                craftcad_serialize::spec::ux_ssot::ensure_actions_subset(pol)
+                    .unwrap_or_else(|e| panic!("{}: {}", p.display(), e));
+                assert!(pol.ui_contract.actions_max >= 1 && pol.ui_contract.actions_max <= 5);
+                parsed_kinds.insert("error_ux_policy");
+            }
+            craftcad_serialize::spec::ux_ssot::UxSsotDoc::ModePolicy(mp) => {
+                assert_eq!(mp.version, 1, "mode_policy version must be 1 for now");
+                craftcad_serialize::spec::ux_ssot::ensure_unique_transitions(mp)
+                    .unwrap_or_else(|e| panic!("{}: {}", p.display(), e));
+                assert!(!mp.modes.is_empty(), "mode_policy.modes must not be empty");
+                parsed_kinds.insert("mode_policy");
+            }
+            craftcad_serialize::spec::ux_ssot::UxSsotDoc::NavigationPolicy(nav) => {
+                assert_eq!(
+                    nav.version, 1,
+                    "navigation_policy version must be 1 for now"
+                );
+                assert!(
+                    !nav.breadcrumbs.pattern.is_empty(),
+                    "breadcrumbs.pattern must not be empty"
+                );
+                assert!(nav.backstack.max_depth >= 1 && nav.backstack.max_depth <= 500);
+                parsed_kinds.insert("navigation_policy");
+            }
+            craftcad_serialize::spec::ux_ssot::UxSsotDoc::SampleLibrary(sl) => {
+                assert_eq!(sl.version, 1, "sample_library version must be 1 for now");
+                let mut ids = BTreeSet::new();
+                for s in &sl.samples {
+                    assert!(ids.insert(&s.id), "duplicate sample id: {}", s.id);
+                    assert!(
+                        s.file.starts_with("app/samples/"),
+                        "sample file must be under app/samples/: {}",
+                        s.file
+                    );
+                }
+                parsed_kinds.insert("sample_library");
+            }
+        }
+    }
+
+    let expected = [
+        "onboarding_flow",
+        "error_ux_policy",
+        "mode_policy",
+        "navigation_policy",
+        "sample_library",
+    ];
+
+    for k in expected {
+        assert!(
+            parsed_kinds.contains(k),
+            "missing ux SSOT kind parsed: {}",
+            k
+        );
+    }
+}
