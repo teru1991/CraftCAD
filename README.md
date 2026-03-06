@@ -61,6 +61,27 @@ flutter analyze
 flutter test
 ```
 
+
+## Desktop app
+
+Official desktop build/run route:
+
+```bash
+./scripts/build_desktop.sh
+./scripts/run_desktop.sh
+```
+
+`just desktop-build` may also be available in local setups, but `./scripts/build_desktop.sh` is the canonical command used for reproducible Desktop builds.
+
+Requirements:
+- Qt6 development packages
+- CMake >= 3.21
+- Rust toolchain (`rust-toolchain.toml`)
+
+Notes:
+- The official build route uses release→release linkage (`craftcad_ffi_desktop` + desktop app).
+- CI may skip desktop build if Qt6 development packages are unavailable.
+
 ## 初期セットアップ完了条件
 
 - clone 直後に上記ディレクトリが揃っていること。

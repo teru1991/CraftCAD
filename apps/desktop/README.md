@@ -13,39 +13,47 @@ Qt6 desktop skeleton that opens `.diycad`, renders entities, and routes editing 
 - Numeric input while drawing (Enter/Backspace/Escape)
 - Undo/redo through Rust history (`Ctrl+Z`, `Ctrl+Y`, `Ctrl+Shift+Z`)
 
-## Build
+## Prerequisites
 
-### 1) Build Rust FFI cdylib
-```bash
-cd core/ffi_desktop
-cargo build
-```
+- Qt6 development packages (e.g. `Qt6Core`, `Qt6Widgets`)
+- CMake >= 3.21
+- Rust toolchain (see `rust-toolchain.toml` in repo root)
 
-### 2) Build desktop app
-From repo root:
-```bash
-cmake -S apps/desktop -B build/desktop -DFFI_LIB_DIR=$(pwd)/core/target/debug
-cmake --build build/desktop
-```
+## Build (official)
 
-### 3) Library path
-Linux:
+From this directory (`apps/desktop`):
+
 ```bash
-export LD_LIBRARY_PATH=$(pwd)/core/target/debug:$LD_LIBRARY_PATH
-```
-macOS:
-```bash
-export DYLD_LIBRARY_PATH=$(pwd)/core/target/debug:$DYLD_LIBRARY_PATH
-```
-Windows (PowerShell):
-```powershell
-$env:PATH = "$(Get-Location)\core\target\debug;" + $env:PATH
+../../scripts/build_desktop.sh
 ```
 
-### 4) Run
+From repository root:
+
 ```bash
-./build/desktop/craftcad_desktop /path/to/project.diycad
+./scripts/build_desktop.sh
 ```
+
+The official route builds Rust FFI (`craftcad_ffi_desktop`) in **release**, then builds the desktop app in **release** with `FFI_LIB_DIR` fixed to `core/target/release`. For normal usage, manual `-DFFI_LIB_DIR=...` is not required.
+
+## Run (official)
+
+From this directory (`apps/desktop`):
+
+```bash
+../../scripts/run_desktop.sh
+```
+
+From repository root:
+
+```bash
+./scripts/run_desktop.sh /path/to/project.diycad
+```
+
+## Troubleshooting
+
+- Qt6 missing (`pkg-config --exists Qt6Core` fails): install Qt6 dev packages. CI may skip desktop build when Qt6 is unavailable.
+- `craftcad_ffi_desktop` build fails: run `cargo build --release -p craftcad_ffi_desktop` in `core/` and fix Rust-side errors first.
+- CMake cannot find desktop FFI library: verify `core/target/release` exists. For custom layouts only, pass `-DFFI_LIB_DIR=<path>` manually.
 
 
 ## Drawing tools (v1)

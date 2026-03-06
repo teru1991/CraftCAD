@@ -63,11 +63,8 @@ run_step perf_smoke "${ROOT_DIR}" scripts/ci/perf_smoke.sh
 
 if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
   if pkg-config --exists Qt6Core 2>/dev/null; then
-    run_step rust_ffi_desktop "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
     DESKTOP_BUILD_DIR="${ROOT_DIR}/build/desktop"
-    run_step rust_ffi_build "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
-    run_step cmake_configure "${ROOT_DIR}" cmake -S apps/desktop -B "${DESKTOP_BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release
-    run_step cmake_build "${ROOT_DIR}" cmake --build "${DESKTOP_BUILD_DIR}" --parallel
+    run_step desktop_build "${ROOT_DIR}" scripts/build_desktop.sh
 
     if [ -f "${DESKTOP_BUILD_DIR}/CTestTestfile.cmake" ] || [ -d "${DESKTOP_BUILD_DIR}/Testing" ]; then
       run_step ctest "${ROOT_DIR}" ctest --test-dir "${DESKTOP_BUILD_DIR}" --output-on-failure

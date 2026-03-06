@@ -640,6 +640,22 @@
         "json lint/format check",
         "diff of trace-index limited to this task"
       ]
+    },
+    "G1-STEP1-DESKTOP-BUILD-001": {
+      "branch": "feature/g1-step1-desktop-build-001",
+      "artifacts": [
+        "scripts/build_desktop.sh",
+        "scripts/run_desktop.sh",
+        "apps/desktop/README.md",
+        "README.md",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G1-STEP1-DESKTOP-BUILD-001.md"
+      ],
+      "verification": "docs/verification/G1-STEP1-DESKTOP-BUILD-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G1-STEP1-DESKTOP-BUILD-001.md",
+        "tests": "./scripts/build_desktop.sh; ./scripts/run_desktop.sh --help; ./scripts/ci/run_all.sh"
+      }
     }
   }
 }
