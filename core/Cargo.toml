@@ -34,6 +34,7 @@ members = [
   "crates/library",
   "crates/jobs",
   "crates/ssot_lint",
+  "crates/craftcad_ssot",
   "serialize",
   "commands",
   "edit_ops",

@@ -47,6 +47,7 @@ Mobile **must not recompute**. Therefore, project save must embed a snapshot of 
 - thumbnails
 
 ### Missing artifact behavior
+- Viewer pack uses SSOT snapshot; if snapshot is missing, viewer must show "Not generated".
 - If an artifact is missing, mobile must show “Not generated” and never attempt generation.
 
 ## Links

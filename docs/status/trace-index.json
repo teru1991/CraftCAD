@@ -656,6 +656,26 @@
         "head_sha": "see docs/verification/G1-STEP1-DESKTOP-BUILD-001.md",
         "tests": "./scripts/build_desktop.sh; ./scripts/run_desktop.sh --help; ./scripts/ci/run_all.sh"
       }
+    },
+    "G2-STEP1-SSOT-SAVE-001": {
+      "branch": "feature/g2-step1-ssot-save-001",
+      "artifacts": [
+        "docs/specs/product/contracts/master-model.md",
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "core/Cargo.toml",
+        "core/Cargo.lock",
+        "core/crates/craftcad_ssot/Cargo.toml",
+        "core/crates/craftcad_ssot/src/lib.rs",
+        "core/crates/craftcad_ssot/tests/deterministic_uuid.rs",
+        "core/crates/diycad_project/Cargo.toml",
+        "core/crates/diycad_project/src/lib.rs",
+        "docs/verification/G2-STEP1-SSOT-SAVE-001.md"
+      ],
+      "verification": "docs/verification/G2-STEP1-SSOT-SAVE-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G2-STEP1-SSOT-SAVE-001.md",
+        "tests": "cargo test -p craftcad_ssot; cargo test -p diycad_project"
+      }
     }
   }
 }
