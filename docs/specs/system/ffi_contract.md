@@ -47,5 +47,8 @@ Exported symbols (snapshot):
 - `craftcad_history_begin_group`
 - `craftcad_history_end_group`
 - `craftcad_export_diagnostic_pack`
+- `craftcad_view3d_get_part_boxes`
+- `craftcad_view3d_free_part_boxes`
+- `craftcad_last_error_message`
 
-ffi_symbols_sha256: `4c79f268cb54bd27ef183d3faf1f810f22316bcf39b1233a277f5f297ccc99c8`
+ffi_symbols_sha256: `f63981ee213106a97d3c04cdcc86708eecb05cd02342e03c457e6ae85f76e644`

@@ -9,6 +9,8 @@ authors.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+diycad_project = { path = "../crates/diycad_project" }
+craftcad_ssot = { path = "../crates/craftcad_ssot" }
 craftcad_serialize = { path = "../serialize" }
 craftcad_commands = { path = "../commands" }
 craftcad_part_ops = { path = "../part_ops" }
@@ -26,6 +28,7 @@ uuid = { version = "1", features = ["serde"] }
 base64 = "0.22"
 zip = "0.6"
 diycad_common = { path = "../crates/diycad_common" }
+sha2 = "0.10"
 
 [dev-dependencies]
 sha2 = "0.10"

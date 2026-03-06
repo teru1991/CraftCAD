@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGLWidgets)
 
 add_executable(craftcad_desktop
   src/main.cpp
@@ -36,6 +36,7 @@ add_executable(craftcad_desktop
   src/tools/fillet_tool.cpp
   src/tools/ambiguity_controller.cpp
   src/ffi/craftcad_ffi.cpp
+  src/view3d_widget.cpp
 )
 
 target_include_directories(craftcad_desktop PRIVATE
@@ -56,4 +57,4 @@ if (NOT CRAFTCAD_DESKTOP_FFI_LIB)
   message(FATAL_ERROR "craftcad_ffi_desktop library not found. Build Rust FFI first and set -DFFI_LIB_DIR=<path>.")
 endif()
 
-target_link_libraries(craftcad_desktop PRIVATE Qt6::Widgets ${CRAFTCAD_DESKTOP_FFI_LIB})
+target_link_libraries(craftcad_desktop PRIVATE Qt6::Widgets Qt6::OpenGLWidgets ${CRAFTCAD_DESKTOP_FFI_LIB})

@@ -6,6 +6,8 @@ Generated from SSOT (`Part/Material/FeatureGraph`):
 1) **3D View Artifact**
 - lightweight render representation (mesh/scene) suitable for desktop + mobile viewing.
 - must include per-part identifiers for selection and note linking.
+- Step1 minimal model: `part_id` + AABB (`min_x/min_y/min_z`, `max_x/max_y/max_z`) + deterministic `display_color` (RGBA).
+- This minimal artifact is sufficient for desktop rendering and click-selection in Step1.
 
 2) **2D Drawing Sheets**
 - projection views (front/top/side/iso) + dimensions/notes/title block/print presets

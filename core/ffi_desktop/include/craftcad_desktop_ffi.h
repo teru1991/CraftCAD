@@ -2,6 +2,7 @@
 #define CRAFTCAD_DESKTOP_FFI_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,6 +20,25 @@ char *craftcad_geom_intersect(const char *a_json, const char *b_json, const char
 char *craftcad_geom_split_at_t(const char *geom_json, double t, const char *eps_json);
 void craftcad_free_string(char *ptr);
 char *craftcad_i18n_resolve_message(const char *user_msg_key_utf8, const char *params_json, const char *locale_utf8);
+
+typedef struct craftcad_aabb_t {
+  double min_x;
+  double min_y;
+  double min_z;
+  double max_x;
+  double max_y;
+  double max_z;
+} craftcad_aabb_t;
+
+typedef struct craftcad_part_box_t {
+  unsigned char part_id_utf8[37];
+  craftcad_aabb_t aabb;
+  uint32_t color_rgba;
+} craftcad_part_box_t;
+
+int craftcad_view3d_get_part_boxes(const char *project_path_utf8, craftcad_part_box_t **out_ptr, size_t *out_len);
+void craftcad_view3d_free_part_boxes(craftcad_part_box_t *ptr, size_t len);
+char *craftcad_last_error_message(void);
 
 uint64_t craftcad_history_new(void);
 void craftcad_history_free(uint64_t h);

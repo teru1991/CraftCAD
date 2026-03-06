@@ -676,6 +676,30 @@
         "head_sha": "see docs/verification/G2-STEP1-SSOT-SAVE-001.md",
         "tests": "cargo test -p craftcad_ssot; cargo test -p diycad_project"
       }
+    },
+    "G3-STEP1-3D-VIEW-001": {
+      "branch": "feature/g3-step1-3d-view-001",
+      "artifacts": [
+        "docs/specs/product/feature-scope.md",
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "core/ffi_desktop/Cargo.toml",
+        "core/ffi_desktop/include/craftcad_desktop_ffi.h",
+        "core/ffi_desktop/src/lib.rs",
+        "apps/desktop/src/ffi/craftcad_ffi.h",
+        "apps/desktop/src/view3d_widget.h",
+        "apps/desktop/src/view3d_widget.cpp",
+        "apps/desktop/src/main.cpp",
+        "apps/desktop/CMakeLists.txt",
+        "scripts/ci/run_all.sh",
+        "scripts/ci/create_view3d_smoke_fixture.py",
+        "docs/specs/system/ffi_contract.md",
+        "docs/verification/G3-STEP1-3D-VIEW-001.md"
+      ],
+      "verification": "docs/verification/G3-STEP1-3D-VIEW-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G3-STEP1-3D-VIEW-001.md",
+        "tests": "cargo test -p craftcad_ffi_desktop; ./scripts/build_desktop.sh; ./scripts/run_desktop.sh --smoke-view3d <fixture>; ./scripts/ci/run_all.sh"
+      }
     }
   }
 }
