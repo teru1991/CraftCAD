@@ -6,10 +6,15 @@ Generated from SSOT (`Part/Material/FeatureGraph`):
 1) **3D View Artifact**
 - lightweight render representation (mesh/scene) suitable for desktop + mobile viewing.
 - must include per-part identifiers for selection and note linking.
+- Step1 minimal model: `part_id` + AABB (`min_x/min_y/min_z`, `max_x/max_y/max_z`) + deterministic `display_color` (RGBA).
+- This minimal artifact is sufficient for desktop rendering and click-selection in Step1.
 
 2) **2D Drawing Sheets**
 - projection views (front/top/side/iso) + dimensions/notes/title block/print presets
 - must maintain stable references to SSOT IDs (see master-model.md)
+- Step1 projection-lite uses 3D View Artifact Part AABB boxes to generate per-view 2D rectangle outlines.
+- Step1 `ViewSpec`: `{ view: front|top|side, scale: 1.0, units: mm }`.
+- Determinism contract: same SSOT snapshot must produce identical serialized sheet JSON hash.
 
 3) **Nesting Sheets**
 - for each material/stock choice: placement of outlines + labels + yield
@@ -19,6 +24,11 @@ Generated from SSOT (`Part/Material/FeatureGraph`):
 - materials summary
 - fasteners summary (from ScrewFeature)
 - optional: packaging units (later)
+- EstimateLite (Step1):
+  - inputs: SSOT (`materials` + `parts` + `manufacturing_outline_2d`)
+  - outputs per `material_id`: `{material_name, thickness_mm, parts_count, total_area_mm2, total_area_m2}`
+  - deterministic ordering: sorted by `material_id`
+  - hash: `sha256(canonical json bytes)`
 
 5) **Manufacturing Hints + Build Steps**
 - minimal steps list (cut → drill → chamfer → assemble)
@@ -47,6 +57,7 @@ Mobile **must not recompute**. Therefore, project save must embed a snapshot of 
 - thumbnails
 
 ### Missing artifact behavior
+- Viewer pack uses SSOT snapshot; if snapshot is missing, viewer must show "Not generated".
 - If an artifact is missing, mobile must show “Not generated” and never attempt generation.
 
 ## Links

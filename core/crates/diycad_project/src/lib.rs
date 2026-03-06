@@ -1,3 +1,7 @@
+use craftcad_ssot::{
+    deterministic_uuid, derive_minimal_ssot_v1, FeatureGraphV1, GrainPolicyV1, MaterialCategoryV1,
+    MaterialV1, PartLabelV1, PartV1, SsotDeriveConfig, SsotV1,
+};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Write};
@@ -29,6 +33,7 @@ pub struct DiycadProject {
     pub manifest: Manifest,
     pub data: DataJson,
     pub thumbnail_png: Option<Vec<u8>>,
+    pub ssot_v1: Option<SsotV1>,
 }
 
 #[derive(Debug, Error)]
@@ -70,6 +75,7 @@ pub fn create_empty_project(app_version: &str, units: &str, timestamp: &str) -> 
         },
         data: DataJson::default(),
         thumbnail_png: None,
+        ssot_v1: None,
     }
 }
 
@@ -86,6 +92,11 @@ pub fn save(path: impl AsRef<Path>, project: &DiycadProject) -> ProjectResult<()
 
     writer.start_file("data.json", options)?;
     writer.write_all(serde_json::to_string_pretty(&project.data)?.as_bytes())?;
+
+    if let Some(ssot) = &project.ssot_v1 {
+        writer.start_file("ssot_v1.json", options)?;
+        writer.write_all(serde_json::to_string_pretty(ssot)?.as_bytes())?;
+    }
 
     if let Some(thumbnail) = &project.thumbnail_png {
         writer.start_file("assets/thumbnail.png", options)?;
@@ -123,11 +134,72 @@ pub fn load(path: impl AsRef<Path>) -> ProjectResult<DiycadProject> {
         })
         .transpose()?;
 
+    let project_name = path_ref
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or_default();
+
+    let ssot_v1 = read_json_file_optional::<SsotV1>(&mut zip, "ssot_v1.json")?
+        .map(SsotV1::canonicalize)
+        .or_else(|| Some(derive_ssot_from_legacy(project_name, &data, SsotDeriveConfig::default())));
+
     Ok(DiycadProject {
         manifest,
         data,
         thumbnail_png,
+        ssot_v1,
     })
+}
+
+
+fn derive_ssot_from_legacy(project_name: &str, data: &DataJson, cfg: SsotDeriveConfig) -> SsotV1 {
+    if data.entities.is_empty() {
+        return derive_minimal_ssot_v1(project_name, cfg);
+    }
+
+    let stable_key = project_name.trim();
+    let material_id = deterministic_uuid("material", stable_key);
+    let material = MaterialV1 {
+        material_id,
+        category: MaterialCategoryV1::Unspecified,
+        name: "unspecified".to_string(),
+        thickness_mm: None,
+        grain_policy: GrainPolicyV1::None,
+        kerf_mm: cfg.default_kerf_mm,
+        margin_mm: cfg.default_margin_mm,
+        estimate_loss_factor: None,
+    };
+
+    let mut entities = data.entities.clone();
+    entities.sort();
+
+    let parts = entities
+        .into_iter()
+        .map(|entity| {
+            let trimmed = entity.trim();
+            let part_name = if trimmed.is_empty() {
+                "root".to_string()
+            } else {
+                format!("part:{}", trimmed)
+            };
+            PartV1 {
+                part_id: deterministic_uuid("part", &format!("{}:{}", stable_key, part_name)),
+                name: part_name,
+                material_id,
+                quantity: 1,
+                manufacturing_outline_2d: None,
+                thickness_mm: None,
+                grain_direction: None,
+                labels: vec![PartLabelV1 {
+                    key: "generated".to_string(),
+                    value: "true".to_string(),
+                }],
+                feature_ids: Vec::new(),
+            }
+        })
+        .collect();
+
+    SsotV1::new(vec![material], parts, FeatureGraphV1::empty()).canonicalize()
 }
 
 fn read_json_file<T: for<'de> Deserialize<'de>>(
@@ -145,9 +217,28 @@ fn read_json_file<T: for<'de> Deserialize<'de>>(
     Ok(serde_json::from_str(&content)?)
 }
 
+fn read_json_file_optional<T: for<'de> Deserialize<'de>>(
+    zip: &mut ZipArchive<File>,
+    path: &str,
+) -> ProjectResult<Option<T>> {
+    match zip.by_name(path) {
+        Ok(mut file) => {
+            let mut content = String::new();
+            file.read_to_string(&mut content)?;
+            Ok(Some(serde_json::from_str(&content)?))
+        }
+        Err(zip::result::ZipError::FileNotFound) => Ok(None),
+        Err(e) => Err(ProjectError::InvalidZip(e)),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use craftcad_ssot::{
+        deterministic_uuid, FeatureGraphV1, GrainPolicyV1, MaterialCategoryV1, MaterialV1, PartV1,
+        SsotV1,
+    };
     use tempfile::tempdir;
 
     fn sample_project() -> DiycadProject {
@@ -170,6 +261,7 @@ mod tests {
         assert_eq!(project.manifest.schema_version, SUPPORTED_SCHEMA_VERSION);
         assert_eq!(project.data.entities.len(), 0);
         assert!(project.thumbnail_png.is_none());
+        assert!(project.ssot_v1.is_none());
     }
 
     #[test]
@@ -195,5 +287,63 @@ mod tests {
         let err = load(&file_path).expect_err("load should fail");
 
         assert!(matches!(err, ProjectError::SchemaVersionMismatch { .. }));
+    }
+
+    #[test]
+    fn roundtrip_persists_ssot_v1() {
+        let dir = tempdir().expect("tempdir must be created");
+        let file_path = dir.path().join("ssot_roundtrip.diycad");
+        let mut project = sample_project();
+
+        let material_id = deterministic_uuid("material", "roundtrip");
+        let part_id = deterministic_uuid("part", "roundtrip");
+        let ssot = SsotV1::new(
+            vec![MaterialV1 {
+                material_id,
+                category: MaterialCategoryV1::Unspecified,
+                name: "unspecified".to_string(),
+                thickness_mm: None,
+                grain_policy: GrainPolicyV1::None,
+                kerf_mm: 2.0,
+                margin_mm: 5.0,
+                estimate_loss_factor: None,
+            }],
+            vec![PartV1 {
+                part_id,
+                name: "root:ssot_roundtrip".to_string(),
+                material_id,
+                quantity: 1,
+                manufacturing_outline_2d: None,
+                thickness_mm: None,
+                grain_direction: None,
+                labels: Vec::new(),
+                feature_ids: Vec::new(),
+            }],
+            FeatureGraphV1::empty(),
+        )
+        .canonicalize();
+
+        project.ssot_v1 = Some(ssot.clone());
+
+        save(&file_path, &project).expect("save should succeed");
+        let loaded = load(&file_path).expect("load should succeed");
+
+        assert_eq!(loaded.ssot_v1, Some(ssot));
+    }
+
+    #[test]
+    fn legacy_load_derives_ssot_v1() {
+        let dir = tempdir().expect("tempdir must be created");
+        let file_path = dir.path().join("legacy_project.diycad");
+        let project = create_empty_project("0.1.0", "mm", "2026-02-28T00:00:00Z"); // ssot_v1 stays None (legacy)
+
+        save(&file_path, &project).expect("save should succeed");
+        let loaded = load(&file_path).expect("load should succeed");
+
+        let ssot = loaded.ssot_v1.expect("ssot should be derived");
+        assert_eq!(ssot.ssot_version, SsotV1::VERSION);
+        assert_eq!(ssot.materials.len(), 1);
+        assert_eq!(ssot.parts.len(), 1);
+        assert_eq!(ssot.parts[0].name, "root:legacy_project");
     }
 }

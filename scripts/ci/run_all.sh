@@ -63,11 +63,13 @@ run_step perf_smoke "${ROOT_DIR}" scripts/ci/perf_smoke.sh
 
 if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
   if pkg-config --exists Qt6Core 2>/dev/null; then
-    run_step rust_ffi_desktop "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
     DESKTOP_BUILD_DIR="${ROOT_DIR}/build/desktop"
-    run_step rust_ffi_build "${ROOT_DIR}/core" cargo build -p craftcad_ffi_desktop
-    run_step cmake_configure "${ROOT_DIR}" cmake -S apps/desktop -B "${DESKTOP_BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release
-    run_step cmake_build "${ROOT_DIR}" cmake --build "${DESKTOP_BUILD_DIR}" --parallel
+    DESKTOP_SMOKE_FIXTURE="${ROOT_DIR}/build/desktop/view3d_smoke_fixture.diycad"
+    run_step desktop_build "${ROOT_DIR}" scripts/build_desktop.sh
+    run_step desktop_smoke_fixture "${ROOT_DIR}" python3 scripts/ci/create_view3d_smoke_fixture.py "${DESKTOP_SMOKE_FIXTURE}"
+    run_step desktop_smoke_view3d "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-view3d "${DESKTOP_SMOKE_FIXTURE}"
+    run_step desktop_smoke_projection_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-projection-lite "${DESKTOP_SMOKE_FIXTURE}"
+    run_step desktop_smoke_estimate_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-estimate-lite "${DESKTOP_SMOKE_FIXTURE}"
 
     if [ -f "${DESKTOP_BUILD_DIR}/CTestTestfile.cmake" ] || [ -d "${DESKTOP_BUILD_DIR}/Testing" ]; then
       run_step ctest "${ROOT_DIR}" ctest --test-dir "${DESKTOP_BUILD_DIR}" --output-on-failure

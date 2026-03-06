@@ -31,16 +31,22 @@ use craftcad_commands::commands::transform_selection::{
 use craftcad_commands::commands::trim_entity::{TrimEntityCommand, TrimEntityInput};
 use craftcad_commands::{Command, CommandContext, History};
 use craftcad_diag::{build_diagnostic_pack, DiagnosticOptions};
+use craftcad_estimate_lite::{compute_estimate_lite, estimate_hash_hex};
 use craftcad_export::{
     export_drawing_pdf, export_svg, export_tiled_pdf, DrawingPdfOptions, SvgExportOptions,
     TiledPdfOptions,
 };
 use craftcad_faces::{extract_faces, Face};
 use craftcad_i18n::resolve_user_message;
+use craftcad_projection_lite::{
+    project_to_sheet_lite, sheet_hash_hex, Aabb as ProjAabb, PartBox as ProjPartBox, ViewLite,
+};
 use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
 use diycad_nesting::RunLimits;
+use diycad_project::load as load_project_file;
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::ffi::{c_char, CStr, CString};
 use std::path::Path;
@@ -94,6 +100,11 @@ pub const EXPORTED_SYMBOLS: &[&str] = &[
     "craftcad_history_begin_group",
     "craftcad_history_end_group",
     "craftcad_export_diagnostic_pack",
+    "craftcad_view3d_get_part_boxes",
+    "craftcad_view3d_free_part_boxes",
+    "craftcad_last_error_message",
+    "craftcad_projection_lite_hashes",
+    "craftcad_estimate_lite_hash",
 ];
 
 fn reason_json(reason: &Reason) -> serde_json::Value {
@@ -1325,4 +1336,418 @@ pub unsafe extern "C" fn craftcad_export_diagnostic_pack(
         "filename": "diagnostic_pack.zip",
         "mime": "application/zip"
     }))
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct CraftcadAabb {
+    pub min_x: f64,
+    pub min_y: f64,
+    pub min_z: f64,
+    pub max_x: f64,
+    pub max_y: f64,
+    pub max_z: f64,
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct CraftcadPartBox {
+    pub part_id_utf8: [u8; 37],
+    pub aabb: CraftcadAabb,
+    pub color_rgba: u32,
+}
+
+static LAST_ERROR: OnceLock<Mutex<String>> = OnceLock::new();
+
+fn set_last_error(msg: impl Into<String>) {
+    let lock = LAST_ERROR.get_or_init(|| Mutex::new(String::new()));
+    if let Ok(mut g) = lock.lock() {
+        *g = msg.into();
+    }
+}
+
+fn get_last_error() -> String {
+    let lock = LAST_ERROR.get_or_init(|| Mutex::new(String::new()));
+    lock.lock().map(|g| g.clone()).unwrap_or_default()
+}
+
+fn color_for_part_id(part_id: Uuid) -> u32 {
+    let mut hasher = Sha256::new();
+    hasher.update(part_id.as_bytes());
+    let hash = hasher.finalize();
+    let r = hash[0] as u32;
+    let g = hash[1] as u32;
+    let b = hash[2] as u32;
+    (r << 24) | (g << 16) | (b << 8) | 0xff
+}
+
+fn default_box(thickness: Option<f64>) -> CraftcadAabb {
+    let z = thickness.unwrap_or(18.0).max(0.0);
+    CraftcadAabb {
+        min_x: 0.0,
+        min_y: 0.0,
+        min_z: 0.0,
+        max_x: 100.0,
+        max_y: 100.0,
+        max_z: z,
+    }
+}
+
+fn part_id_buf(id: Uuid) -> [u8; 37] {
+    let mut buf = [0u8; 37];
+    let s = id.to_string();
+    let bytes = s.as_bytes();
+    buf[..bytes.len()].copy_from_slice(bytes);
+    buf[bytes.len()] = 0;
+    buf
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct CraftcadProjectionLiteHashes {
+    pub front_hash_hex: [u8; 65],
+    pub top_hash_hex: [u8; 65],
+    pub side_hash_hex: [u8; 65],
+    pub part_count: usize,
+}
+
+fn hash_buf(hash: &str) -> [u8; 65] {
+    let mut out = [0u8; 65];
+    let bytes = hash.as_bytes();
+    let len = bytes.len().min(64);
+    out[..len].copy_from_slice(&bytes[..len]);
+    out[len] = 0;
+    out
+}
+
+fn load_ssot_for_project(path: &Path) -> std::result::Result<craftcad_ssot::SsotV1, String> {
+    load_project_file(path)
+        .map(|project| {
+            project.ssot_v1.unwrap_or_else(|| {
+                craftcad_ssot::derive_minimal_ssot_v1(
+                    "",
+                    craftcad_ssot::SsotDeriveConfig::default(),
+                )
+            })
+        })
+        .map_err(|e| e.to_string())
+}
+
+fn to_projection_part_boxes(ssot: &craftcad_ssot::SsotV1) -> Vec<ProjPartBox> {
+    let mut parts = ssot.parts.clone();
+    parts.sort_by_key(|p| p.part_id);
+    parts
+        .into_iter()
+        .map(|part| {
+            let aabb = match part.manufacturing_outline_2d {
+                Some(outline) => ProjAabb {
+                    min_x: outline.min_x.min(outline.max_x),
+                    min_y: outline.min_y.min(outline.max_y),
+                    min_z: 0.0,
+                    max_x: outline.max_x.max(outline.min_x),
+                    max_y: outline.max_y.max(outline.min_y),
+                    max_z: part.thickness_mm.unwrap_or(0.0).max(0.0),
+                },
+                None => {
+                    let d = default_box(part.thickness_mm);
+                    ProjAabb {
+                        min_x: d.min_x,
+                        min_y: d.min_y,
+                        min_z: d.min_z,
+                        max_x: d.max_x,
+                        max_y: d.max_y,
+                        max_z: d.max_z,
+                    }
+                }
+            };
+            ProjPartBox {
+                part_id: part.part_id,
+                aabb,
+            }
+        })
+        .collect()
+}
+
+fn ssot_to_part_boxes(ssot: &craftcad_ssot::SsotV1) -> Vec<CraftcadPartBox> {
+    let mut parts = ssot.parts.clone();
+    parts.sort_by_key(|p| p.part_id);
+    parts
+        .into_iter()
+        .map(|part| {
+            let aabb = match part.manufacturing_outline_2d {
+                Some(outline) => CraftcadAabb {
+                    min_x: outline.min_x.min(outline.max_x),
+                    min_y: outline.min_y.min(outline.max_y),
+                    min_z: 0.0,
+                    max_x: outline.max_x.max(outline.min_x),
+                    max_y: outline.max_y.max(outline.min_y),
+                    max_z: part.thickness_mm.unwrap_or(0.0).max(0.0),
+                },
+                None => default_box(part.thickness_mm),
+            };
+            CraftcadPartBox {
+                part_id_utf8: part_id_buf(part.part_id),
+                aabb,
+                color_rgba: color_for_part_id(part.part_id),
+            }
+        })
+        .collect()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_view3d_get_part_boxes(
+    project_path_utf8: *const c_char,
+    out_ptr: *mut *mut CraftcadPartBox,
+    out_len: *mut usize,
+) -> i32 {
+    if project_path_utf8.is_null() || out_ptr.is_null() || out_len.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+
+    match load_ssot_for_project(Path::new(&path)) {
+        Ok(ssot) => {
+            let mut boxes = ssot_to_part_boxes(&ssot);
+            let len = boxes.len();
+            let ptr = if len == 0 {
+                std::ptr::null_mut()
+            } else {
+                let ptr = boxes.as_mut_ptr();
+                std::mem::forget(boxes);
+                ptr
+            };
+            *out_ptr = ptr;
+            *out_len = len;
+            set_last_error("");
+            0
+        }
+        Err(e) => {
+            set_last_error(e.to_string());
+            3
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_view3d_free_part_boxes(ptr: *mut CraftcadPartBox, len: usize) {
+    if ptr.is_null() || len == 0 {
+        return;
+    }
+    let _ = Vec::from_raw_parts(ptr, len, len);
+}
+
+#[no_mangle]
+pub extern "C" fn craftcad_last_error_message() -> *mut c_char {
+    match CString::new(get_last_error()) {
+        Ok(s) => s.into_raw(),
+        Err(_) => std::ptr::null_mut(),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_projection_lite_hashes(
+    project_path_utf8: *const c_char,
+    out_hashes: *mut CraftcadProjectionLiteHashes,
+) -> i32 {
+    if project_path_utf8.is_null() || out_hashes.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+
+    let ssot = match load_ssot_for_project(Path::new(&path)) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 3;
+        }
+    };
+
+    let parts = to_projection_part_boxes(&ssot);
+    let front = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, parts.clone()));
+    let top = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Top, parts.clone()));
+    let side = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Side, parts.clone()));
+
+    *out_hashes = CraftcadProjectionLiteHashes {
+        front_hash_hex: hash_buf(&front),
+        top_hash_hex: hash_buf(&top),
+        side_hash_hex: hash_buf(&side),
+        part_count: parts.len(),
+    };
+    set_last_error("");
+    0
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct CraftcadEstimateLiteHash {
+    pub hash_hex: [u8; 65],
+    pub item_count: usize,
+    pub first_material_id_utf8: [u8; 37],
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_estimate_lite_hash(
+    project_path_utf8: *const c_char,
+    out_est: *mut CraftcadEstimateLiteHash,
+) -> i32 {
+    if project_path_utf8.is_null() || out_est.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+
+    let ssot = match load_ssot_for_project(Path::new(&path)) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 3;
+        }
+    };
+
+    let est = compute_estimate_lite(&ssot);
+    let hash = estimate_hash_hex(&est);
+    let first_material_id_utf8 = est
+        .items
+        .first()
+        .map(|i| part_id_buf(i.material_id))
+        .unwrap_or([0u8; 37]);
+
+    *out_est = CraftcadEstimateLiteHash {
+        hash_hex: hash_buf(&hash),
+        item_count: est.items.len(),
+        first_material_id_utf8,
+    };
+    set_last_error("");
+    0
+}
+
+#[cfg(test)]
+mod view3d_tests {
+    use super::*;
+    use craftcad_ssot::{
+        FeatureGraphV1, GrainPolicyV1, MaterialCategoryV1, MaterialV1, PartLabelV1, PartV1, SsotV1,
+    };
+
+    fn sample_ssot() -> SsotV1 {
+        let material_id = Uuid::parse_str("00000000-0000-0000-0000-000000000001").unwrap();
+        SsotV1::new(
+            vec![MaterialV1 {
+                material_id,
+                category: MaterialCategoryV1::Unspecified,
+                name: "unspecified".to_string(),
+                thickness_mm: None,
+                grain_policy: GrainPolicyV1::None,
+                kerf_mm: 2.0,
+                margin_mm: 5.0,
+                estimate_loss_factor: None,
+            }],
+            vec![
+                PartV1 {
+                    part_id: Uuid::parse_str("00000000-0000-0000-0000-0000000000b2").unwrap(),
+                    name: "b".to_string(),
+                    material_id,
+                    quantity: 1,
+                    manufacturing_outline_2d: None,
+                    thickness_mm: Some(12.0),
+                    grain_direction: None,
+                    labels: vec![PartLabelV1 {
+                        key: "generated".into(),
+                        value: "true".into(),
+                    }],
+                    feature_ids: vec![],
+                },
+                PartV1 {
+                    part_id: Uuid::parse_str("00000000-0000-0000-0000-0000000000a1").unwrap(),
+                    name: "a".to_string(),
+                    material_id,
+                    quantity: 1,
+                    manufacturing_outline_2d: Some(craftcad_ssot::ManufacturingOutline2dV1 {
+                        min_x: 1.0,
+                        min_y: 2.0,
+                        max_x: 10.0,
+                        max_y: 20.0,
+                    }),
+                    thickness_mm: Some(5.0),
+                    grain_direction: None,
+                    labels: vec![],
+                    feature_ids: vec![],
+                },
+            ],
+            FeatureGraphV1::empty(),
+        )
+    }
+
+    #[test]
+    fn deterministic_ordering_by_part_id() {
+        let boxes = ssot_to_part_boxes(&sample_ssot());
+        let first = std::ffi::CStr::from_bytes_until_nul(&boxes[0].part_id_utf8)
+            .unwrap()
+            .to_str()
+            .unwrap();
+        assert_eq!(first, "00000000-0000-0000-0000-0000000000a1");
+    }
+
+    #[test]
+    fn same_part_id_same_color() {
+        let id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a1").unwrap();
+        assert_eq!(color_for_part_id(id), color_for_part_id(id));
+    }
+
+    #[test]
+    fn missing_outline_default_box_stable() {
+        let boxes = ssot_to_part_boxes(&sample_ssot());
+        let b = boxes.iter().find(|b| b.aabb.max_x == 100.0).unwrap();
+        assert_eq!(b.aabb.min_x, 0.0);
+        assert_eq!(b.aabb.max_z, 12.0);
+    }
+
+    #[test]
+    fn empty_list_ok() {
+        let empty = SsotV1::new(vec![], vec![], craftcad_ssot::FeatureGraphV1::empty());
+        let boxes = ssot_to_part_boxes(&empty);
+        assert!(boxes.is_empty());
+    }
+
+    #[test]
+    fn projection_hashes_are_deterministic() {
+        let ssot = sample_ssot();
+        let parts_a = to_projection_part_boxes(&ssot);
+        let mut parts_b = parts_a.clone();
+        parts_b.reverse();
+
+        let h1 = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, parts_a));
+        let h2 = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, parts_b));
+        assert_eq!(h1, h2);
+    }
+
+    #[test]
+    fn estimate_hash_is_deterministic() {
+        let ssot = sample_ssot();
+        let h1 = estimate_hash_hex(&compute_estimate_lite(&ssot));
+        let h2 = estimate_hash_hex(&compute_estimate_lite(&ssot));
+        assert_eq!(h1, h2);
+    }
 }

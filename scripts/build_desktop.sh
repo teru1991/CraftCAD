@@ -3,14 +3,24 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${ROOT_DIR}/build/desktop"
+CORE_DIR="${ROOT_DIR}/core"
+FFI_LIB_DIR="${CORE_DIR}/target/release"
 
-# Ensure desktop FFI is available for CMake find_library(CRAFTCAD_DESKTOP_FFI_LIB ...).
+echo "[craftcad] building Rust desktop FFI (release)…"
 (
-  cd "${ROOT_DIR}/core"
-  cargo build -p craftcad_ffi_desktop
+  cd "${CORE_DIR}"
+  cargo build --release -p craftcad_ffi_desktop
 )
 
-cmake -S "${ROOT_DIR}/apps/desktop" -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE=Release
+echo "[craftcad] configuring CMake (release)…"
+cmake -S "${ROOT_DIR}/apps/desktop" -B "${BUILD_DIR}" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DFFI_LIB_DIR="${FFI_LIB_DIR}"
+
+echo "[craftcad] building desktop (release)…"
 cmake --build "${BUILD_DIR}" --parallel
 
-echo "Desktop build complete: ${BUILD_DIR}"
+echo
+echo "[craftcad] Desktop build complete:"
+echo "  build dir: ${BUILD_DIR}"
+echo "  run:       ${ROOT_DIR}/scripts/run_desktop.sh"

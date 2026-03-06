@@ -2,6 +2,7 @@
 
 ## Desktop (authoring)
 ### 3D (wood/leather focused 2.5D core)
+- Step1 3D viewport uses Part manufacturing bbox + thickness to render simple boxes; supports orbit/pan/zoom and click-to-select (PartId).
 - FeatureGraph-based modeling:
   - Extrude (add/cut), Hole, Pattern (linear/circular), Chamfer (minimal)
 - Material thickness as a first-class attribute (parts are thickness-driven).
@@ -13,6 +14,7 @@
 - Title block + print presets must render consistently (no layout drift).
 
 ### Nesting & Cutlist (automatic)
+- Step1 provides immediate estimate based on Part manufacturing bbox area grouped by material; outputs hash for determinism.
 - Immediate estimate: area/length based.
 - Confirmed nesting: job-based layout generation → nesting sheet + yield + cutlist.
 - Respect grain direction and rotation constraints (where defined).

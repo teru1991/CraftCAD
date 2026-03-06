@@ -57,3 +57,19 @@ Fields (minimum):
 - Determinism SSOT: ../determinism/
 - Project file SSOT: ../project_file/
 - Part/BOM SSOT: ../part_bom/
+
+
+## Persistence & Backward Compatibility (Step1)
+- Project file may include optional `ssot_v1` snapshot block. Missing `ssot_v1` is valid for backward compatibility.
+- Loader fallback when `ssot_v1` is missing derives a minimal snapshot:
+  - one Material named `unspecified` (`thickness_mm` may be null)
+  - Parts derived from existing project parts/entities when available; otherwise one root Part
+  - `FeatureGraph` is empty
+- Stable identity contract:
+  - `part_id` / `material_id` / `feature_id` are UUIDs persisted in the project file
+  - fallback derivation generates UUIDs deterministically from stable inputs and preserves deterministic ordering
+- Versioning contract:
+  - `ssot_version = 1`
+  - future versions are additive-only; removals are forbidden (deprecated fields must remain)
+
+For overall project file layout, see `../project_file/`.

@@ -2,24 +2,34 @@
 #include "doc_store.h"
 #include "face_part_panel.h"
 #include "ffi/craftcad_ffi.h"
+#include "view3d_widget.h"
 #include <QApplication>
+#include <QCheckBox>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QDockWidget>
 #include <QFile>
 #include <QFileDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLabel>
 #include <QMainWindow>
-#include <QDockWidget>
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QStandardPaths>
+#include <QStatusBar>
 #include <QTimer>
-#include <QDialog>
 #include <QVBoxLayout>
-#include <QDialogButtonBox>
-#include <QCheckBox>
+#include <algorithm>
+#include <cstdio>
 
-static QString take(char* ptr){ if(!ptr) return {}; QString s=QString::fromUtf8(ptr); craftcad_free_string(ptr); return s; }
+static QString take(char* ptr) {
+    if (!ptr) return {};
+    QString s = QString::fromUtf8(ptr);
+    craftcad_free_string(ptr);
+    return s;
+}
 
 static QString localizeReason(const QJsonObject& reasonObj) {
     const QString key = reasonObj.value("user_msg_key").toString();
@@ -33,14 +43,12 @@ static QString localizeReason(const QJsonObject& reasonObj) {
     return root.value("data").toObject().value("message").toString();
 }
 
-static bool runExportAction(
-    QWidget* parent,
-    DocStore& store,
-    char* (*ffi_fn)(const char*, const char*),
-    const QJsonObject& options,
-    const QString& filter,
-    const QString& defaultName
-) {
+static bool runExportAction(QWidget* parent,
+                            DocStore& store,
+                            char* (*ffi_fn)(const char*, const char*),
+                            const QJsonObject& options,
+                            const QString& filter,
+                            const QString& defaultName) {
     auto docJson = store.documentJson().toUtf8();
     auto opts = QJsonDocument(options).toJson(QJsonDocument::Compact);
     QString env = take(ffi_fn(docJson.constData(), opts.constData()));
@@ -63,8 +71,114 @@ static bool runExportAction(
     return true;
 }
 
+static QVector<View3dWidget::PartBox> loadView3dPartBoxes(const QString& path, QString* error) {
+    QVector<View3dWidget::PartBox> out;
+    craftcad_part_box_t* ptr = nullptr;
+    size_t len = 0;
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_view3d_get_part_boxes(p.constData(), &ptr, &len);
+    if (rc != 0) {
+        if (error) *error = take(craftcad_last_error_message());
+        return out;
+    }
+
+    out.reserve(static_cast<qsizetype>(len));
+    for (size_t i = 0; i < len; ++i) {
+        const craftcad_part_box_t& b = ptr[i];
+        const char* id = reinterpret_cast<const char*>(b.part_id_utf8);
+        View3dWidget::PartBox box;
+        box.partId = QString::fromUtf8(id);
+        box.min = QVector3D(b.aabb.min_x, b.aabb.min_y, b.aabb.min_z);
+        box.max = QVector3D(b.aabb.max_x, b.aabb.max_y, b.aabb.max_z);
+        box.color = static_cast<QRgb>(b.color_rgba);
+        out.push_back(box);
+    }
+    craftcad_view3d_free_part_boxes(ptr, len);
+    std::sort(out.begin(), out.end(), [](const auto& a, const auto& b) { return a.partId < b.partId; });
+    return out;
+}
+
+
+
+
+
+static int runSmokeEstimateLite(const QString& path) {
+    craftcad_estimate_lite_hash_t est{};
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_estimate_lite_hash(p.constData(), &est);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "ESTIMATE_LITE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const char* hash = reinterpret_cast<const char*>(est.hash_hex);
+    const char* first = reinterpret_cast<const char*>(est.first_material_id_utf8);
+    std::fprintf(
+        stdout,
+        "ESTIMATE_LITE_SMOKE_OK hash=%s items=%zu first_material=%s\n",
+        hash,
+        est.item_count,
+        est.item_count > 0 ? first : "none");
+    return 0;
+}
+
+static int runSmokeProjectionLite(const QString& path) {
+    craftcad_projection_lite_hashes_t hashes{};
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_projection_lite_hashes(p.constData(), &hashes);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "PROJ_LITE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const char* front = reinterpret_cast<const char*>(hashes.front_hash_hex);
+    const char* top = reinterpret_cast<const char*>(hashes.top_hash_hex);
+    const char* side = reinterpret_cast<const char*>(hashes.side_hash_hex);
+    std::fprintf(
+        stdout,
+        "PROJ_LITE_SMOKE_OK front=%s top=%s side=%s parts=%zu\n",
+        front,
+        top,
+        side,
+        hashes.part_count);
+    return 0;
+}
+
+static int runSmokeView3d(const QString& path) {
+    QString err;
+    auto boxes = loadView3dPartBoxes(path, &err);
+    if (!err.isEmpty()) {
+        std::fprintf(stderr, "VIEW3D_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+    const QString first = boxes.isEmpty() ? QString("none") : boxes.first().partId;
+    std::fprintf(stdout, "VIEW3D_SMOKE_OK parts=%d first_part=%s\n", boxes.size(), first.toUtf8().constData());
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
+
+    const QStringList args = app.arguments();
+    const int smokeProjectionIdx = args.indexOf("--smoke-projection-lite");
+    if (smokeProjectionIdx >= 0) {
+        if (smokeProjectionIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "PROJ_LITE_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeProjectionLite(args.at(smokeProjectionIdx + 1));
+    }
+
+    const int smokeIdx = args.indexOf("--smoke-view3d");
+    if (smokeIdx >= 0) {
+        if (smokeIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "VIEW3D_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeView3d(args.at(smokeIdx + 1));
+    }
 
     QString path;
     if (app.arguments().size() > 1) path = app.arguments()[1];
@@ -91,9 +205,27 @@ int main(int argc, char* argv[]) {
     w.setWindowTitle("CraftCAD Desktop");
     auto* canvas = new CanvasWidget(&store);
     w.setCentralWidget(canvas);
+
     auto* dock = new QDockWidget("Faces/Parts", &w);
     dock->setWidget(new FacePartPanel(&store, canvas));
     w.addDockWidget(Qt::RightDockWidgetArea, dock);
+
+    auto* view3dDock = new QDockWidget("3D", &w);
+    auto* view3d = new View3dWidget(&w);
+    view3dDock->setWidget(view3d);
+    w.addDockWidget(Qt::LeftDockWidgetArea, view3dDock);
+
+    auto* selectedLabel = new QLabel("Selected PartId: (none)", &w);
+    w.statusBar()->addPermanentWidget(selectedLabel);
+    QObject::connect(view3d, &View3dWidget::selectedPartChanged, [&selectedLabel](const QString& id) {
+        selectedLabel->setText(QString("Selected PartId: %1").arg(id));
+    });
+
+    const auto boxes = loadView3dPartBoxes(path, &err);
+    if (!err.isEmpty()) {
+        QMessageBox::warning(&w, "3D View", QString("Failed to load 3D part boxes: %1").arg(err));
+    }
+    view3d->setPartBoxes(boxes);
 
     auto* exportMenu = w.menuBar()->addMenu("&Export");
     auto* tiledAction = exportMenu->addAction("Tiled PDF (1:1)");
@@ -103,9 +235,13 @@ int main(int argc, char* argv[]) {
     auto* diagAction = helpMenu->addAction("Export Diagnostic Pack");
 
     QObject::connect(tiledAction, &QAction::triggered, [&]() {
-        QJsonObject opts{{"page_size", "A4"}, {"orientation", "Portrait"}, {"margin_mm", 10.0},
-                         {"include_crop_marks", true}, {"include_scale_gauge", true},
-                         {"title", "CraftCAD Tiled"}, {"include_metadata", true}};
+        QJsonObject opts{{"page_size", "A4"},
+                         {"orientation", "Portrait"},
+                         {"margin_mm", 10.0},
+                         {"include_crop_marks", true},
+                         {"include_scale_gauge", true},
+                         {"title", "CraftCAD Tiled"},
+                         {"include_metadata", true}};
         runExportAction(&w, store, craftcad_export_tiled_pdf, opts, "PDF Files (*.pdf)", "tiled.pdf");
     });
     QObject::connect(drawingAction, &QAction::triggered, [&]() {
@@ -134,7 +270,8 @@ int main(int argc, char* argv[]) {
 
         QJsonArray logs;
         for (const auto& line : store.latestReasonLogs(100)) logs.append(line);
-        QJsonObject opts{{"max_logs", 100}, {"latest_n", 100},
+        QJsonObject opts{{"max_logs", 100},
+                         {"latest_n", 100},
                          {"include_doc", includeDoc->isChecked()},
                          {"include_doc_snapshot", includeDoc->isChecked()},
                          {"include_system", includeSystem->isChecked()},
