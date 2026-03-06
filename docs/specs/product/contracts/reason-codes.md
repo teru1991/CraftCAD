@@ -24,6 +24,13 @@
 - `RULE_HOLE_SPACING_VIOLATION`
 - `RULE_GRAIN_POLICY_VIOLATION`
 
+### Rule details payload (minimum)
+- `RULE_EDGE_DISTANCE_VIOLATION` findings must include `details` with:
+  - `part_id`
+  - `feature_id`
+  - `min_distance_mm`
+  - `threshold_mm`
+
 ## Build steps (Pillar 4)
 - `PLAN_INCOMPLETE_DATA`
 - `PLAN_UNSUPPORTED_FEATURE`

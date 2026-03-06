@@ -748,6 +748,28 @@
         "head_sha": "see docs/verification/G5-STEP1-ESTIMATE-LITE-001.md",
         "tests": "cargo test -p craftcad_estimate_lite; ./scripts/build_desktop.sh; ./scripts/run_desktop.sh --smoke-estimate-lite <fixture>; ./scripts/ci/run_all.sh"
       }
+    },
+    "G7-STEP1-RULES-EDGE-001": {
+      "branch": "feature/g7-step1-rules-edge-001",
+      "artifacts": [
+        "docs/specs/product/contracts/rules-wood.md",
+        "docs/specs/product/contracts/reason-codes.md",
+        "docs/specs/product/contracts/jobs.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_screw_lite/**",
+        "core/crates/craftcad_rules_engine/**",
+        "core/ffi_desktop/Cargo.toml",
+        "core/ffi_desktop/include/craftcad_desktop_ffi.h",
+        "core/ffi_desktop/src/lib.rs",
+        "apps/desktop/src/ffi/craftcad_ffi.h",
+        "apps/desktop/src/main.cpp",
+        "scripts/ci/create_rules_edge_smoke_fixture.py",
+        "scripts/ci/run_all.sh",
+        "tests/fixtures/rules_edge_smoke_fixture.json",
+        "docs/specs/system/ffi_contract.md",
+        "docs/verification/G7-STEP1-RULES-EDGE-001.md"
+      ],
+      "verification": "docs/verification/G7-STEP1-RULES-EDGE-001.md"
     }
   }
 }

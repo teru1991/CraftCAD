@@ -46,6 +46,9 @@
   - human summary + fix hints (UI layer)
   - optional diagnostic attachments (SupportZip integration; see ../diagnostics/)
 
+Preflight rules must run before export, nesting-confirm, and regen jobs that emit manufacturing outputs.
+If any preflight finding is `FATAL`, the job must fail with its `ReasonCode` and no output artifact is produced.
+
 ## Links
 - Determinism SSOT: ../determinism/
 - Diagnostics SSOT: ../diagnostics/

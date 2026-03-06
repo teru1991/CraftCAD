@@ -1,0 +1,4 @@
+{
+  "description": "Fixture contract for edge-distance smoke: point at x=5,y=50 in 0..100 bbox should be fatal for threshold 10mm.",
+  "expected_reason_code": "RULE_EDGE_DISTANCE_VIOLATION"
+}

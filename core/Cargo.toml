@@ -37,6 +37,8 @@ members = [
   "crates/craftcad_ssot",
   "crates/craftcad_projection_lite",
   "crates/craftcad_estimate_lite",
+  "crates/craftcad_screw_lite",
+  "crates/craftcad_rules_engine",
   "serialize",
   "commands",
   "edit_ops",

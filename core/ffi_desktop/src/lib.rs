@@ -41,6 +41,9 @@ use craftcad_i18n::resolve_user_message;
 use craftcad_projection_lite::{
     project_to_sheet_lite, sheet_hash_hex, Aabb as ProjAabb, PartBox as ProjPartBox, ViewLite,
 };
+use craftcad_rules_engine::{
+    preflight_rules, run_rules_edge_distance, RuleConfig, RuleReport, RuleSeverity,
+};
 use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
 use diycad_nesting::RunLimits;
@@ -105,6 +108,9 @@ pub const EXPORTED_SYMBOLS: &[&str] = &[
     "craftcad_last_error_message",
     "craftcad_projection_lite_hashes",
     "craftcad_estimate_lite_hash",
+    "craftcad_rules_edge_report",
+    "craftcad_rules_edge_free_json",
+    "craftcad_export_preflight_check",
 ];
 
 fn reason_json(reason: &Reason) -> serde_json::Value {
@@ -1433,6 +1439,18 @@ fn load_ssot_for_project(path: &Path) -> std::result::Result<craftcad_ssot::Ssot
         .map_err(|e| e.to_string())
 }
 
+fn run_edge_report_for_project(path: &Path) -> std::result::Result<RuleReport, String> {
+    let ssot = load_ssot_for_project(path)?;
+    run_rules_edge_distance(&ssot, RuleConfig::default()).map_err(|e| e.to_string())
+}
+
+fn c_string_and_len(s: String) -> std::result::Result<(*mut c_char, usize), String> {
+    let len = s.len();
+    CString::new(s)
+        .map(|c| (c.into_raw(), len))
+        .map_err(|e| e.to_string())
+}
+
 fn to_projection_part_boxes(ssot: &craftcad_ssot::SsotV1) -> Vec<ProjPartBox> {
     let mut parts = ssot.parts.clone();
     parts.sort_by_key(|p| p.part_id);
@@ -1642,6 +1660,94 @@ pub unsafe extern "C" fn craftcad_estimate_lite_hash(
     };
     set_last_error("");
     0
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_rules_edge_report(
+    project_path_utf8: *const c_char,
+    out_json_ptr: *mut *mut c_char,
+    out_len: *mut usize,
+) -> i32 {
+    if project_path_utf8.is_null() || out_json_ptr.is_null() || out_len.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+
+    let report = match run_edge_report_for_project(Path::new(&path)) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 3;
+        }
+    };
+    let json = match serde_json::to_string(&report) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.to_string());
+            return 4;
+        }
+    };
+    match c_string_and_len(json) {
+        Ok((ptr, len)) => {
+            *out_json_ptr = ptr;
+            *out_len = len;
+            set_last_error("");
+            0
+        }
+        Err(e) => {
+            set_last_error(e);
+            5
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_rules_edge_free_json(ptr: *mut c_char) {
+    craftcad_free_string(ptr);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_export_preflight_check(project_path_utf8: *const c_char) -> i32 {
+    if project_path_utf8.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+    let ssot = match load_ssot_for_project(Path::new(&path)) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 3;
+        }
+    };
+    match preflight_rules(&ssot, RuleConfig::default()) {
+        Ok(report) => {
+            let warns = report
+                .findings
+                .iter()
+                .filter(|f| f.severity == RuleSeverity::Warn)
+                .count();
+            set_last_error(format!("PRECHECK_OK warns={warns}"));
+            0
+        }
+        Err(err) => {
+            set_last_error(serde_json::to_string(&err.report).unwrap_or_else(|_| err.reason_code));
+            10
+        }
+    }
 }
 
 #[cfg(test)]

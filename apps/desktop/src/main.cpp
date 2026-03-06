@@ -158,10 +158,63 @@ static int runSmokeView3d(const QString& path) {
     return 0;
 }
 
+static int runSmokeRulesEdge(const QString& path) {
+    char* jsonPtr = nullptr;
+    size_t len = 0;
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_rules_edge_report(p.constData(), &jsonPtr, &len);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "RULES_EDGE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const QByteArray payload = QByteArray::fromRawData(jsonPtr, static_cast<qsizetype>(len));
+    const QJsonObject root = QJsonDocument::fromJson(payload).object();
+    craftcad_rules_edge_free_json(jsonPtr);
+    const QJsonArray findings = root.value("findings").toArray();
+    int fatals = 0;
+    int warns = 0;
+    for (const auto& f : findings) {
+        const QString sev = f.toObject().value("severity").toString();
+        if (sev == "fatal") {
+            ++fatals;
+        } else if (sev == "warn") {
+            ++warns;
+        }
+    }
+    std::fprintf(stdout, "RULES_EDGE_SMOKE_OK fatals=%d warns=%d HAS_FATAL=%d\n", fatals, warns, fatals > 0 ? 1 : 0);
+    return 0;
+}
+
+static int runSmokeExportPreflight(const QString& path) {
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_export_preflight_check(p.constData());
+    if (rc == 0) {
+        std::fprintf(stdout, "EXPORT_PREFLIGHT_OK BLOCKED=0\n");
+        return 0;
+    }
+    const QString err = take(craftcad_last_error_message());
+    if (rc == 10) {
+        std::fprintf(stderr, "EXPORT_PREFLIGHT_BLOCKED BLOCKED=1 report=%s\n", err.toUtf8().constData());
+        return 3;
+    }
+    std::fprintf(stderr, "EXPORT_PREFLIGHT_FAIL error=%s\n", err.toUtf8().constData());
+    return 2;
+}
+
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
     const QStringList args = app.arguments();
+    const int smokeEstimateIdx = args.indexOf("--smoke-estimate-lite");
+    if (smokeEstimateIdx >= 0) {
+        if (smokeEstimateIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "ESTIMATE_LITE_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeEstimateLite(args.at(smokeEstimateIdx + 1));
+    }
     const int smokeProjectionIdx = args.indexOf("--smoke-projection-lite");
     if (smokeProjectionIdx >= 0) {
         if (smokeProjectionIdx + 1 >= args.size()) {
@@ -169,6 +222,24 @@ int main(int argc, char* argv[]) {
             return 2;
         }
         return runSmokeProjectionLite(args.at(smokeProjectionIdx + 1));
+    }
+
+    const int smokeRulesIdx = args.indexOf("--smoke-rules-edge");
+    if (smokeRulesIdx >= 0) {
+        if (smokeRulesIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "RULES_EDGE_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeRulesEdge(args.at(smokeRulesIdx + 1));
+    }
+
+    const int smokePreflightIdx = args.indexOf("--smoke-export-preflight");
+    if (smokePreflightIdx >= 0) {
+        if (smokePreflightIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "EXPORT_PREFLIGHT_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeExportPreflight(args.at(smokePreflightIdx + 1));
     }
 
     const int smokeIdx = args.indexOf("--smoke-view3d");

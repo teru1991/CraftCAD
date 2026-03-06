@@ -31,6 +31,32 @@ run_step() {
   fi
 }
 
+run_step_expect_fail_grep() {
+  local name="$1"
+  local workdir="$2"
+  local expect="$3"
+  shift 3
+  local log_file="${LOG_DIR}/${name}.log"
+
+  echo "==> ${name}" | tee "${log_file}"
+  (
+    cd "${workdir}" && "$@"
+  ) >>"${log_file}" 2>&1
+  local status=$?
+
+  if [ ${status} -eq 0 ]; then
+    echo "[FAIL] ${name} expected failure but got success" | tee -a "${log_file}"
+    overall_status=1
+    return
+  fi
+  if ! grep -q "${expect}" "${log_file}"; then
+    echo "[FAIL] ${name} missing expected pattern: ${expect}" | tee -a "${log_file}"
+    overall_status=1
+    return
+  fi
+  echo "[PASS] ${name}" | tee -a "${log_file}"
+}
+
 # Sprint14 final PR-gate checklist (must stay aligned with docs/verification/SPRINT14-STEP8.md):
 # 1) ssot-lint (required files + schema hash)
 # 2) diycad_format tests: unit/determinism/limits/atomic-save/schema-compat + test_latest_2 hook
@@ -65,11 +91,15 @@ if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
   if pkg-config --exists Qt6Core 2>/dev/null; then
     DESKTOP_BUILD_DIR="${ROOT_DIR}/build/desktop"
     DESKTOP_SMOKE_FIXTURE="${ROOT_DIR}/build/desktop/view3d_smoke_fixture.diycad"
+    DESKTOP_RULES_FIXTURE="${ROOT_DIR}/build/desktop/rules_edge_smoke_fixture.diycad"
     run_step desktop_build "${ROOT_DIR}" scripts/build_desktop.sh
     run_step desktop_smoke_fixture "${ROOT_DIR}" python3 scripts/ci/create_view3d_smoke_fixture.py "${DESKTOP_SMOKE_FIXTURE}"
+    run_step desktop_rules_smoke_fixture "${ROOT_DIR}" python3 scripts/ci/create_rules_edge_smoke_fixture.py "${DESKTOP_RULES_FIXTURE}"
     run_step desktop_smoke_view3d "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-view3d "${DESKTOP_SMOKE_FIXTURE}"
     run_step desktop_smoke_projection_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-projection-lite "${DESKTOP_SMOKE_FIXTURE}"
     run_step desktop_smoke_estimate_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-estimate-lite "${DESKTOP_SMOKE_FIXTURE}"
+    run_step desktop_smoke_rules_edge "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-rules-edge "${DESKTOP_RULES_FIXTURE}"
+    run_step_expect_fail_grep desktop_smoke_export_preflight "${ROOT_DIR}" "BLOCKED=1" ./scripts/run_desktop.sh --smoke-export-preflight "${DESKTOP_RULES_FIXTURE}"
 
     if [ -f "${DESKTOP_BUILD_DIR}/CTestTestfile.cmake" ] || [ -d "${DESKTOP_BUILD_DIR}/Testing" ]; then
       run_step ctest "${ROOT_DIR}" ctest --test-dir "${DESKTOP_BUILD_DIR}" --output-on-failure
