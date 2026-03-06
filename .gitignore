@@ -48,6 +48,10 @@ build/
 .idea/
 *.iml
 
+# --- Generated test artifacts ---
+failure_artifacts/
+tests/perf/artifacts/
+
 # --- Logs / temp ---
 *.log
 *.tmp
