@@ -200,16 +200,17 @@ pub fn parse_path_segments(
     let mut prev_quad_q: Option<Point2D> = None;
 
     let next_num = |toks: &[Tok], i: &mut usize| -> Option<f64> {
-        while *i < toks.len() {
+        if *i < toks.len() {
             match toks[*i] {
                 Tok::Num(v) => {
                     *i += 1;
-                    return Some(v);
+                    Some(v)
                 }
-                Tok::Cmd(_) => return None,
+                Tok::Cmd(_) => None,
             }
+        } else {
+            None
         }
-        None
     };
 
     while i < toks.len() {

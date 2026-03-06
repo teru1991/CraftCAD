@@ -1,16 +1,16 @@
 [
   {
-    "context": {},
-    "hint": null,
-    "is_fatal": false,
+    "reason": "IO_TEXT_FALLBACK_FONT",
     "message": "DXF TEXT imported best-effort",
-    "reason": "IO_TEXT_FALLBACK_FONT"
+    "hint": null,
+    "context": {},
+    "is_fatal": false
   },
   {
-    "context": {},
-    "hint": null,
-    "is_fatal": false,
+    "reason": "IO_FALLBACK_024",
     "message": "DXF TEXT imported best-effort",
-    "reason": "IO_FALLBACK_024"
+    "hint": null,
+    "context": {},
+    "is_fatal": false
   }
 ]

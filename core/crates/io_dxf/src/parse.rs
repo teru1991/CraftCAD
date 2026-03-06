@@ -52,8 +52,7 @@ pub fn parse_dxf_groups(bytes: &[u8], opts: &ImportOptions) -> AppResult<Vec<Dxf
     let mut groups = Vec::new();
     let mut line_count = 0usize;
 
-    loop {
-        let Some(code_line) = lines.next() else { break };
+    while let Some(code_line) = lines.next() {
         let Some(val_line) = lines.next() else {
             return Err(
                 AppError::new(ReasonCode::IO_PARSE_DXF_MALFORMED, "odd number of lines").fatal(),
@@ -110,16 +109,18 @@ pub fn parse_header_insunits(groups: &[DxfGroup]) -> Option<i32> {
 
     while i < groups.len() {
         let g = &groups[i];
-        if g.code == 0 && upper(&g.value) == "SECTION" {
-            if i + 1 < groups.len() && groups[i + 1].code == 2 {
-                sec = match upper(&groups[i + 1].value).as_str() {
-                    "HEADER" => Section::Header,
-                    "ENTITIES" => Section::Entities,
-                    _ => Section::Other,
-                };
-                i += 2;
-                continue;
-            }
+        if g.code == 0
+            && upper(&g.value) == "SECTION"
+            && i + 1 < groups.len()
+            && groups[i + 1].code == 2
+        {
+            sec = match upper(&groups[i + 1].value).as_str() {
+                "HEADER" => Section::Header,
+                "ENTITIES" => Section::Entities,
+                _ => Section::Other,
+            };
+            i += 2;
+            continue;
         }
         if g.code == 0 && upper(&g.value) == "ENDSEC" {
             sec = Section::None;
@@ -128,13 +129,13 @@ pub fn parse_header_insunits(groups: &[DxfGroup]) -> Option<i32> {
         }
 
         if sec == Section::Header && g.code == 9 && g.value.trim() == "$INSUNITS" {
-            for j in (i + 1)..(i + 12).min(groups.len()) {
-                if groups[j].code == 70 {
-                    if let Ok(v) = groups[j].value.trim().parse::<i32>() {
+            for g in &groups[(i + 1)..(i + 12).min(groups.len())] {
+                if g.code == 70 {
+                    if let Ok(v) = g.value.trim().parse::<i32>() {
                         return Some(v);
                     }
                 }
-                if groups[j].code == 9 || groups[j].code == 0 {
+                if g.code == 9 || g.code == 0 {
                     break;
                 }
             }
@@ -154,16 +155,18 @@ pub fn split_entities(groups: &[DxfGroup]) -> Vec<DxfEntity> {
     while i < groups.len() {
         let g = &groups[i];
 
-        if g.code == 0 && upper(&g.value) == "SECTION" {
-            if i + 1 < groups.len() && groups[i + 1].code == 2 {
-                sec = match upper(&groups[i + 1].value).as_str() {
-                    "HEADER" => Section::Header,
-                    "ENTITIES" => Section::Entities,
-                    _ => Section::Other,
-                };
-                i += 2;
-                continue;
-            }
+        if g.code == 0
+            && upper(&g.value) == "SECTION"
+            && i + 1 < groups.len()
+            && groups[i + 1].code == 2
+        {
+            sec = match upper(&groups[i + 1].value).as_str() {
+                "HEADER" => Section::Header,
+                "ENTITIES" => Section::Entities,
+                _ => Section::Other,
+            };
+            i += 2;
+            continue;
         }
         if g.code == 0 && upper(&g.value) == "ENDSEC" {
             sec = Section::None;

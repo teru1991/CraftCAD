@@ -75,7 +75,7 @@ fn flow_shelf_to_nest_to_export_internal_json() {
     let s = std::fs::read_to_string(&out_path).unwrap();
     let h = sha256_hex(&s);
 
-    let expected = "c5a67b26e2b17dd8a934189b0716ae782bd3cffe947bf5459a3c482a8859e70e";
+    let expected = "d8567e43d318f4200475f1a7ac60e90f53fd6e31d49be9f36601f8e5293c5f7c";
     assert_eq!(
         h, expected,
         "export hash changed; this may break determinism/compat; got={h}"

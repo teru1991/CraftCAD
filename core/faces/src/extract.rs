@@ -190,7 +190,7 @@ pub fn extract_faces(polylines: &[Geom2D], eps: &EpsilonPolicy) -> Result<FaceSe
 
     let mut faces = Vec::new();
     for i in 0..loops.len() {
-        if loops[i].depth % 2 != 0 {
+        if !loops[i].depth.is_multiple_of(2) {
             continue;
         }
         let mut outer_pts = loops[i].pts.clone();

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -356,7 +357,7 @@ fn is_valid_dataset_id(value: &str) -> bool {
     if bytes.len() < 3 || bytes.len() > 64 {
         return false;
     }
-    if !matches!(bytes[0], b'a'..=b'z') {
+    if !bytes[0].is_ascii_lowercase() {
         return false;
     }
     bytes

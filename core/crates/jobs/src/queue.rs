@@ -4,7 +4,7 @@
 
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
-use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread;
 

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use craftcad_io::options::{ExportOptions, ImportOptions};
 use craftcad_io::{Exporter, Importer};
 use craftcad_io_bridge::default_engine;
@@ -65,6 +66,7 @@ fn write_text(path: &Path, bytes: &[u8]) {
     let _ = fs::write(path, bytes);
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn write_compat_failure_text(
     repo_root: &Path,
     case_id: &str,
@@ -248,7 +250,7 @@ pub fn run_preset_case(repo_root: &Path, case: &CompatCase) -> Result<(), Compat
         .get("schema_version")
         .and_then(|v| v.as_i64())
         .unwrap_or(-1);
-    if schema_v < 1 || schema_v > 1 {
+    if schema_v != 1 {
         let meta = json!({"compat_case_id":case.id,"kind":"preset","path":case.rel_path,"schema_version":schema_v});
         let dir = write_compat_failure_text(
             repo_root,

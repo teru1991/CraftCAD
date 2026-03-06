@@ -5,6 +5,8 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+type ReasonCountsMap = BTreeMap<String, (i64, Option<String>, Option<String>, Option<Severity>)>;
+
 fn repo_root() -> PathBuf {
     let mut p = std::env::current_dir().unwrap();
     for _ in 0..8 {
@@ -136,8 +138,7 @@ fn diagnostics_golden_outputs_match() {
         &oplog_json,
     );
 
-    let mut counts: BTreeMap<String, (i64, Option<String>, Option<String>, Option<Severity>)> =
-        BTreeMap::new();
+    let mut counts: ReasonCountsMap = BTreeMap::new();
     for r in &joblog.reasons {
         counts.insert(
             r.code.clone(),

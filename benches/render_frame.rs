@@ -7,7 +7,9 @@ use std::path::Path;
 
 fn main() {
     let dataset_id = "heavy_sample_v1";
-    let dataset = load_dataset_json(Path::new("tests/datasets/heavy_sample_v1/heavy_sample_v1.json"));
+    let dataset = load_dataset_json(Path::new(
+        "tests/datasets/heavy_sample_v1/heavy_sample_v1.json",
+    ));
 
     let s = session(dataset_id);
 

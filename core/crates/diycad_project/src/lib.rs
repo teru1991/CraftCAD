@@ -1,5 +1,5 @@
 use craftcad_ssot::{
-    deterministic_uuid, derive_minimal_ssot_v1, FeatureGraphV1, GrainPolicyV1, MaterialCategoryV1,
+    derive_minimal_ssot_v1, deterministic_uuid, FeatureGraphV1, GrainPolicyV1, MaterialCategoryV1,
     MaterialV1, PartLabelV1, PartV1, SsotDeriveConfig, SsotV1,
 };
 use serde::{Deserialize, Serialize};
@@ -141,7 +141,13 @@ pub fn load(path: impl AsRef<Path>) -> ProjectResult<DiycadProject> {
 
     let ssot_v1 = read_json_file_optional::<SsotV1>(&mut zip, "ssot_v1.json")?
         .map(SsotV1::canonicalize)
-        .or_else(|| Some(derive_ssot_from_legacy(project_name, &data, SsotDeriveConfig::default())));
+        .or_else(|| {
+            Some(derive_ssot_from_legacy(
+                project_name,
+                &data,
+                SsotDeriveConfig::default(),
+            ))
+        });
 
     Ok(DiycadProject {
         manifest,
@@ -150,7 +156,6 @@ pub fn load(path: impl AsRef<Path>) -> ProjectResult<DiycadProject> {
         ssot_v1,
     })
 }
-
 
 fn derive_ssot_from_legacy(project_name: &str, data: &DataJson, cfg: SsotDeriveConfig) -> SsotV1 {
     if data.entities.is_empty() {

@@ -121,7 +121,9 @@ pub fn check_report_against_budgets(report: &PerfReport, budgets: &PerfBudgets) 
             .iter()
             .filter(|s| s.name == name)
             .map(|s| s.duration_ms)
-            .fold(None, |acc: Option<f64>, v| Some(acc.map_or(v, |a| a.max(v))))
+            .fold(None, |acc: Option<f64>, v| {
+                Some(acc.map_or(v, |a| a.max(v)))
+            })
     };
 
     if let (Some(limit), Some(actual)) = (ds.open_p95_ms, find("open")) {

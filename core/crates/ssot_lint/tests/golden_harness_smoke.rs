@@ -1,7 +1,10 @@
 use serde_json::json;
+use std::sync::Mutex;
 
 #[path = "../../../src/testing/golden_harness.rs"]
 mod golden_harness;
+
+static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 use golden_harness::{
     canonical_reason_codes, compare_bytes_hash, compare_expected, compare_json_struct,
@@ -21,6 +24,7 @@ fn repo_root() -> std::path::PathBuf {
 
 #[test]
 fn golden_harness_smoke_json_and_reasoncodes_and_bytes() {
+    let _guard = ENV_LOCK.lock().unwrap();
     let root = repo_root();
     let temp = tempfile::tempdir().unwrap();
     std::env::set_var("CRAFTCAD_FAILURE_ARTIFACTS_DIR", temp.path());
@@ -102,6 +106,7 @@ fn golden_harness_smoke_json_and_reasoncodes_and_bytes() {
 
 #[test]
 fn write_failure_artifacts_creates_expected_files() {
+    let _guard = ENV_LOCK.lock().unwrap();
     let root = repo_root();
     let temp = tempfile::tempdir().unwrap();
     std::env::set_var("CRAFTCAD_FAILURE_ARTIFACTS_DIR", temp.path());

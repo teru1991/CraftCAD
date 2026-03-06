@@ -172,7 +172,10 @@ impl CacheStore {
     fn compact_epochs_locked(g: &mut Inner) {
         g.epochs.clear();
         for (k, meta) in &g.map {
-            g.epochs.entry(meta.last_used_epoch).or_default().push(k.clone());
+            g.epochs
+                .entry(meta.last_used_epoch)
+                .or_default()
+                .push(k.clone());
         }
     }
 
@@ -208,12 +211,16 @@ impl CacheStore {
                 g.stats.evictions += 1;
                 let max_total_bytes = g.policy.max_total_bytes;
                 g.warnings.push(
-                    CacheWarning::new(CacheReason::CacheEvicted, format!("key:{k}"), "entry evicted")
-                        .with_context(serde_json::json!({
-                            "entry_bytes": meta.entry.bytes,
-                            "total_bytes": g.total_bytes,
-                            "max_total_bytes": max_total_bytes
-                        })),
+                    CacheWarning::new(
+                        CacheReason::CacheEvicted,
+                        format!("key:{k}"),
+                        "entry evicted",
+                    )
+                    .with_context(serde_json::json!({
+                        "entry_bytes": meta.entry.bytes,
+                        "total_bytes": g.total_bytes,
+                        "max_total_bytes": max_total_bytes
+                    })),
                 );
             }
         }
