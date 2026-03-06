@@ -68,6 +68,7 @@ if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
     run_step desktop_build "${ROOT_DIR}" scripts/build_desktop.sh
     run_step desktop_smoke_fixture "${ROOT_DIR}" python3 scripts/ci/create_view3d_smoke_fixture.py "${DESKTOP_SMOKE_FIXTURE}"
     run_step desktop_smoke_view3d "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-view3d "${DESKTOP_SMOKE_FIXTURE}"
+    run_step desktop_smoke_projection_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-projection-lite "${DESKTOP_SMOKE_FIXTURE}"
 
     if [ -f "${DESKTOP_BUILD_DIR}/CTestTestfile.cmake" ] || [ -d "${DESKTOP_BUILD_DIR}/Testing" ]; then
       run_step ctest "${ROOT_DIR}" ctest --test-dir "${DESKTOP_BUILD_DIR}" --output-on-failure

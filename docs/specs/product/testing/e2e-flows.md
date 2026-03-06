@@ -18,6 +18,7 @@ These flows are the acceptance criteria for the 6 pillars.
 ### Assertions
 - No silent failures; failures must produce ReasonCodes.
 - Determinism: repeated run with same seed yields identical nesting + drawing hashes.
+- Optional (projection-lite enabled): front/top/side projection hashes remain stable pre/post save+load for same SSOT snapshot.
 
 ## Flow B — Screw feature integration
 1. Add ScrewFeature (line pattern) on a part edge

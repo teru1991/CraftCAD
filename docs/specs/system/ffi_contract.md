@@ -50,5 +50,6 @@ Exported symbols (snapshot):
 - `craftcad_view3d_get_part_boxes`
 - `craftcad_view3d_free_part_boxes`
 - `craftcad_last_error_message`
+- `craftcad_projection_lite_hashes`
 
-ffi_symbols_sha256: `f63981ee213106a97d3c04cdcc86708eecb05cd02342e03c457e6ae85f76e644`
+ffi_symbols_sha256: `ff8560730ef4cbfcbd570f8c0531c17f3254f4918ab11b2078bd4f68e7331092`

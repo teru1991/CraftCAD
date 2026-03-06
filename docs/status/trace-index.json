@@ -700,6 +700,30 @@
         "head_sha": "see docs/verification/G3-STEP1-3D-VIEW-001.md",
         "tests": "cargo test -p craftcad_ffi_desktop; ./scripts/build_desktop.sh; ./scripts/run_desktop.sh --smoke-view3d <fixture>; ./scripts/ci/run_all.sh"
       }
+    },
+    "G4-STEP1-PROJECTION-001": {
+      "branch": "feature/g4-step1-projection-001",
+      "artifacts": [
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "docs/specs/product/testing/e2e-flows.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_projection_lite/Cargo.toml",
+        "core/crates/craftcad_projection_lite/src/lib.rs",
+        "core/crates/craftcad_projection_lite/tests/projection_lite.rs",
+        "core/ffi_desktop/Cargo.toml",
+        "core/ffi_desktop/include/craftcad_desktop_ffi.h",
+        "core/ffi_desktop/src/lib.rs",
+        "apps/desktop/src/ffi/craftcad_ffi.h",
+        "apps/desktop/src/main.cpp",
+        "scripts/ci/run_all.sh",
+        "docs/specs/system/ffi_contract.md",
+        "docs/verification/G4-STEP1-PROJECTION-001.md"
+      ],
+      "verification": "docs/verification/G4-STEP1-PROJECTION-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G4-STEP1-PROJECTION-001.md",
+        "tests": "cargo test -p craftcad_projection_lite; cargo test -p craftcad_ffi_desktop; ./scripts/build_desktop.sh; ./scripts/run_desktop.sh --smoke-projection-lite <fixture>; ./scripts/ci/run_all.sh"
+      }
     }
   }
 }

@@ -98,6 +98,31 @@ static QVector<View3dWidget::PartBox> loadView3dPartBoxes(const QString& path, Q
     return out;
 }
 
+
+
+static int runSmokeProjectionLite(const QString& path) {
+    craftcad_projection_lite_hashes_t hashes{};
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_projection_lite_hashes(p.constData(), &hashes);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "PROJ_LITE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const char* front = reinterpret_cast<const char*>(hashes.front_hash_hex);
+    const char* top = reinterpret_cast<const char*>(hashes.top_hash_hex);
+    const char* side = reinterpret_cast<const char*>(hashes.side_hash_hex);
+    std::fprintf(
+        stdout,
+        "PROJ_LITE_SMOKE_OK front=%s top=%s side=%s parts=%zu\n",
+        front,
+        top,
+        side,
+        hashes.part_count);
+    return 0;
+}
+
 static int runSmokeView3d(const QString& path) {
     QString err;
     auto boxes = loadView3dPartBoxes(path, &err);
@@ -114,6 +139,15 @@ int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
     const QStringList args = app.arguments();
+    const int smokeProjectionIdx = args.indexOf("--smoke-projection-lite");
+    if (smokeProjectionIdx >= 0) {
+        if (smokeProjectionIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "PROJ_LITE_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeProjectionLite(args.at(smokeProjectionIdx + 1));
+    }
+
     const int smokeIdx = args.indexOf("--smoke-view3d");
     if (smokeIdx >= 0) {
         if (smokeIdx + 1 >= args.size()) {

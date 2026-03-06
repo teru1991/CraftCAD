@@ -37,6 +37,9 @@ use craftcad_export::{
 };
 use craftcad_faces::{extract_faces, Face};
 use craftcad_i18n::resolve_user_message;
+use craftcad_projection_lite::{
+    project_to_sheet_lite, sheet_hash_hex, Aabb as ProjAabb, PartBox as ProjPartBox, ViewLite,
+};
 use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
 use diycad_nesting::RunLimits;
@@ -99,6 +102,7 @@ pub const EXPORTED_SYMBOLS: &[&str] = &[
     "craftcad_view3d_get_part_boxes",
     "craftcad_view3d_free_part_boxes",
     "craftcad_last_error_message",
+    "craftcad_projection_lite_hashes",
 ];
 
 fn reason_json(reason: &Reason) -> serde_json::Value {
@@ -1396,6 +1400,72 @@ fn part_id_buf(id: Uuid) -> [u8; 37] {
     buf
 }
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct CraftcadProjectionLiteHashes {
+    pub front_hash_hex: [u8; 65],
+    pub top_hash_hex: [u8; 65],
+    pub side_hash_hex: [u8; 65],
+    pub part_count: usize,
+}
+
+fn hash_buf(hash: &str) -> [u8; 65] {
+    let mut out = [0u8; 65];
+    let bytes = hash.as_bytes();
+    let len = bytes.len().min(64);
+    out[..len].copy_from_slice(&bytes[..len]);
+    out[len] = 0;
+    out
+}
+
+fn load_ssot_for_project(path: &Path) -> std::result::Result<craftcad_ssot::SsotV1, String> {
+    load_project_file(path)
+        .map(|project| {
+            project.ssot_v1.unwrap_or_else(|| {
+                craftcad_ssot::derive_minimal_ssot_v1(
+                    "",
+                    craftcad_ssot::SsotDeriveConfig::default(),
+                )
+            })
+        })
+        .map_err(|e| e.to_string())
+}
+
+fn to_projection_part_boxes(ssot: &craftcad_ssot::SsotV1) -> Vec<ProjPartBox> {
+    let mut parts = ssot.parts.clone();
+    parts.sort_by_key(|p| p.part_id);
+    parts
+        .into_iter()
+        .map(|part| {
+            let aabb = match part.manufacturing_outline_2d {
+                Some(outline) => ProjAabb {
+                    min_x: outline.min_x.min(outline.max_x),
+                    min_y: outline.min_y.min(outline.max_y),
+                    min_z: 0.0,
+                    max_x: outline.max_x.max(outline.min_x),
+                    max_y: outline.max_y.max(outline.min_y),
+                    max_z: part.thickness_mm.unwrap_or(0.0).max(0.0),
+                },
+                None => {
+                    let d = default_box(part.thickness_mm);
+                    ProjAabb {
+                        min_x: d.min_x,
+                        min_y: d.min_y,
+                        min_z: d.min_z,
+                        max_x: d.max_x,
+                        max_y: d.max_y,
+                        max_z: d.max_z,
+                    }
+                }
+            };
+            ProjPartBox {
+                part_id: part.part_id,
+                aabb,
+            }
+        })
+        .collect()
+}
+
 fn ssot_to_part_boxes(ssot: &craftcad_ssot::SsotV1) -> Vec<CraftcadPartBox> {
     let mut parts = ssot.parts.clone();
     parts.sort_by_key(|p| p.part_id);
@@ -1441,15 +1511,8 @@ pub unsafe extern "C" fn craftcad_view3d_get_part_boxes(
         }
     };
 
-    match load_project_file(Path::new(&path)) {
-        Ok(project) => {
-            let ssot = match project.ssot_v1 {
-                Some(s) => s,
-                None => craftcad_ssot::derive_minimal_ssot_v1(
-                    "",
-                    craftcad_ssot::SsotDeriveConfig::default(),
-                ),
-            };
+    match load_ssot_for_project(Path::new(&path)) {
+        Ok(ssot) => {
             let mut boxes = ssot_to_part_boxes(&ssot);
             let len = boxes.len();
             let ptr = if len == 0 {
@@ -1485,6 +1548,47 @@ pub extern "C" fn craftcad_last_error_message() -> *mut c_char {
         Ok(s) => s.into_raw(),
         Err(_) => std::ptr::null_mut(),
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_projection_lite_hashes(
+    project_path_utf8: *const c_char,
+    out_hashes: *mut CraftcadProjectionLiteHashes,
+) -> i32 {
+    if project_path_utf8.is_null() || out_hashes.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+
+    let ssot = match load_ssot_for_project(Path::new(&path)) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 3;
+        }
+    };
+
+    let parts = to_projection_part_boxes(&ssot);
+    let front = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, parts.clone()));
+    let top = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Top, parts.clone()));
+    let side = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Side, parts.clone()));
+
+    *out_hashes = CraftcadProjectionLiteHashes {
+        front_hash_hex: hash_buf(&front),
+        top_hash_hex: hash_buf(&top),
+        side_hash_hex: hash_buf(&side),
+        part_count: parts.len(),
+    };
+    set_last_error("");
+    0
 }
 
 #[cfg(test)]
@@ -1572,5 +1676,17 @@ mod view3d_tests {
         let empty = SsotV1::new(vec![], vec![], craftcad_ssot::FeatureGraphV1::empty());
         let boxes = ssot_to_part_boxes(&empty);
         assert!(boxes.is_empty());
+    }
+
+    #[test]
+    fn projection_hashes_are_deterministic() {
+        let ssot = sample_ssot();
+        let parts_a = to_projection_part_boxes(&ssot);
+        let mut parts_b = parts_a.clone();
+        parts_b.reverse();
+
+        let h1 = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, parts_a));
+        let h2 = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, parts_b));
+        assert_eq!(h1, h2);
     }
 }

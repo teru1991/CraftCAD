@@ -40,6 +40,15 @@ int craftcad_view3d_get_part_boxes(const char *project_path_utf8, craftcad_part_
 void craftcad_view3d_free_part_boxes(craftcad_part_box_t *ptr, size_t len);
 char *craftcad_last_error_message(void);
 
+typedef struct craftcad_projection_lite_hashes_t {
+  unsigned char front_hash_hex[65];
+  unsigned char top_hash_hex[65];
+  unsigned char side_hash_hex[65];
+  size_t part_count;
+} craftcad_projection_lite_hashes_t;
+
+int craftcad_projection_lite_hashes(const char *project_path_utf8, craftcad_projection_lite_hashes_t *out_hashes);
+
 uint64_t craftcad_history_new(void);
 void craftcad_history_free(uint64_t h);
 char *craftcad_history_apply_create_line(uint64_t h, const char *doc_json, const char *layer_id_uuid, const char *a_json, const char *b_json);

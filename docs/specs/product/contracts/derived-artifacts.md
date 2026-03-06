@@ -12,6 +12,9 @@ Generated from SSOT (`Part/Material/FeatureGraph`):
 2) **2D Drawing Sheets**
 - projection views (front/top/side/iso) + dimensions/notes/title block/print presets
 - must maintain stable references to SSOT IDs (see master-model.md)
+- Step1 projection-lite uses 3D View Artifact Part AABB boxes to generate per-view 2D rectangle outlines.
+- Step1 `ViewSpec`: `{ view: front|top|side, scale: 1.0, units: mm }`.
+- Determinism contract: same SSOT snapshot must produce identical serialized sheet JSON hash.
 
 3) **Nesting Sheets**
 - for each material/stock choice: placement of outlines + labels + yield
