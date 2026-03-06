@@ -14,6 +14,7 @@
 - Title block + print presets must render consistently (no layout drift).
 
 ### Nesting & Cutlist (automatic)
+- Step1 provides immediate estimate based on Part manufacturing bbox area grouped by material; outputs hash for determinism.
 - Immediate estimate: area/length based.
 - Confirmed nesting: job-based layout generation → nesting sheet + yield + cutlist.
 - Respect grain direction and rotation constraints (where defined).

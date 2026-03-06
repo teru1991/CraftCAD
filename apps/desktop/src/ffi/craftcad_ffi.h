@@ -49,6 +49,14 @@ typedef struct craftcad_projection_lite_hashes_t {
 
 int craftcad_projection_lite_hashes(const char *project_path_utf8, craftcad_projection_lite_hashes_t *out_hashes);
 
+typedef struct craftcad_estimate_lite_hash_t {
+  unsigned char hash_hex[65];
+  size_t item_count;
+  unsigned char first_material_id_utf8[37];
+} craftcad_estimate_lite_hash_t;
+
+int craftcad_estimate_lite_hash(const char *project_path_utf8, craftcad_estimate_lite_hash_t *out_est);
+
 uint64_t craftcad_history_new(void);
 void craftcad_history_free(uint64_t h);
 char *craftcad_history_apply_create_line(uint64_t h, const char *doc_json, const char *layer_id_uuid, const char *a_json, const char *b_json);

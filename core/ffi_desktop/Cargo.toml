@@ -12,6 +12,7 @@ crate-type = ["cdylib", "rlib"]
 diycad_project = { path = "../crates/diycad_project" }
 craftcad_ssot = { path = "../crates/craftcad_ssot" }
 craftcad_projection_lite = { path = "../crates/craftcad_projection_lite" }
+craftcad_estimate_lite = { path = "../crates/craftcad_estimate_lite" }
 craftcad_serialize = { path = "../serialize" }
 craftcad_commands = { path = "../commands" }
 craftcad_part_ops = { path = "../part_ops" }

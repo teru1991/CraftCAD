@@ -36,6 +36,7 @@ members = [
   "crates/ssot_lint",
   "crates/craftcad_ssot",
   "crates/craftcad_projection_lite",
+  "crates/craftcad_estimate_lite",
   "serialize",
   "commands",
   "edit_ops",

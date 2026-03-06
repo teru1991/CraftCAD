@@ -100,6 +100,29 @@ static QVector<View3dWidget::PartBox> loadView3dPartBoxes(const QString& path, Q
 
 
 
+
+
+static int runSmokeEstimateLite(const QString& path) {
+    craftcad_estimate_lite_hash_t est{};
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_estimate_lite_hash(p.constData(), &est);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "ESTIMATE_LITE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const char* hash = reinterpret_cast<const char*>(est.hash_hex);
+    const char* first = reinterpret_cast<const char*>(est.first_material_id_utf8);
+    std::fprintf(
+        stdout,
+        "ESTIMATE_LITE_SMOKE_OK hash=%s items=%zu first_material=%s\n",
+        hash,
+        est.item_count,
+        est.item_count > 0 ? first : "none");
+    return 0;
+}
+
 static int runSmokeProjectionLite(const QString& path) {
     craftcad_projection_lite_hashes_t hashes{};
     const QByteArray p = path.toUtf8();

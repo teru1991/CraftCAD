@@ -724,6 +724,30 @@
         "head_sha": "see docs/verification/G4-STEP1-PROJECTION-001.md",
         "tests": "cargo test -p craftcad_projection_lite; cargo test -p craftcad_ffi_desktop; ./scripts/build_desktop.sh; ./scripts/run_desktop.sh --smoke-projection-lite <fixture>; ./scripts/ci/run_all.sh"
       }
+    },
+    "G5-STEP1-ESTIMATE-LITE-001": {
+      "branch": "feature/g5-step1-estimate-lite-001",
+      "artifacts": [
+        "docs/specs/product/feature-scope.md",
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_estimate_lite/Cargo.toml",
+        "core/crates/craftcad_estimate_lite/src/lib.rs",
+        "core/crates/craftcad_estimate_lite/tests/estimate_lite.rs",
+        "core/ffi_desktop/Cargo.toml",
+        "core/ffi_desktop/include/craftcad_desktop_ffi.h",
+        "core/ffi_desktop/src/lib.rs",
+        "apps/desktop/src/ffi/craftcad_ffi.h",
+        "apps/desktop/src/main.cpp",
+        "scripts/ci/run_all.sh",
+        "docs/specs/system/ffi_contract.md",
+        "docs/verification/G5-STEP1-ESTIMATE-LITE-001.md"
+      ],
+      "verification": "docs/verification/G5-STEP1-ESTIMATE-LITE-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G5-STEP1-ESTIMATE-LITE-001.md",
+        "tests": "cargo test -p craftcad_estimate_lite; ./scripts/build_desktop.sh; ./scripts/run_desktop.sh --smoke-estimate-lite <fixture>; ./scripts/ci/run_all.sh"
+      }
     }
   }
 }

@@ -31,6 +31,7 @@ use craftcad_commands::commands::transform_selection::{
 use craftcad_commands::commands::trim_entity::{TrimEntityCommand, TrimEntityInput};
 use craftcad_commands::{Command, CommandContext, History};
 use craftcad_diag::{build_diagnostic_pack, DiagnosticOptions};
+use craftcad_estimate_lite::{compute_estimate_lite, estimate_hash_hex};
 use craftcad_export::{
     export_drawing_pdf, export_svg, export_tiled_pdf, DrawingPdfOptions, SvgExportOptions,
     TiledPdfOptions,
@@ -103,6 +104,7 @@ pub const EXPORTED_SYMBOLS: &[&str] = &[
     "craftcad_view3d_free_part_boxes",
     "craftcad_last_error_message",
     "craftcad_projection_lite_hashes",
+    "craftcad_estimate_lite_hash",
 ];
 
 fn reason_json(reason: &Reason) -> serde_json::Value {
@@ -1591,6 +1593,57 @@ pub unsafe extern "C" fn craftcad_projection_lite_hashes(
     0
 }
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct CraftcadEstimateLiteHash {
+    pub hash_hex: [u8; 65],
+    pub item_count: usize,
+    pub first_material_id_utf8: [u8; 37],
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_estimate_lite_hash(
+    project_path_utf8: *const c_char,
+    out_est: *mut CraftcadEstimateLiteHash,
+) -> i32 {
+    if project_path_utf8.is_null() || out_est.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+
+    let ssot = match load_ssot_for_project(Path::new(&path)) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 3;
+        }
+    };
+
+    let est = compute_estimate_lite(&ssot);
+    let hash = estimate_hash_hex(&est);
+    let first_material_id_utf8 = est
+        .items
+        .first()
+        .map(|i| part_id_buf(i.material_id))
+        .unwrap_or([0u8; 37]);
+
+    *out_est = CraftcadEstimateLiteHash {
+        hash_hex: hash_buf(&hash),
+        item_count: est.items.len(),
+        first_material_id_utf8,
+    };
+    set_last_error("");
+    0
+}
+
 #[cfg(test)]
 mod view3d_tests {
     use super::*;
@@ -1687,6 +1740,14 @@ mod view3d_tests {
 
         let h1 = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, parts_a));
         let h2 = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, parts_b));
+        assert_eq!(h1, h2);
+    }
+
+    #[test]
+    fn estimate_hash_is_deterministic() {
+        let ssot = sample_ssot();
+        let h1 = estimate_hash_hex(&compute_estimate_lite(&ssot));
+        let h2 = estimate_hash_hex(&compute_estimate_lite(&ssot));
         assert_eq!(h1, h2);
     }
 }

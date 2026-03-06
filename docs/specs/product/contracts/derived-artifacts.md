@@ -24,6 +24,11 @@ Generated from SSOT (`Part/Material/FeatureGraph`):
 - materials summary
 - fasteners summary (from ScrewFeature)
 - optional: packaging units (later)
+- EstimateLite (Step1):
+  - inputs: SSOT (`materials` + `parts` + `manufacturing_outline_2d`)
+  - outputs per `material_id`: `{material_name, thickness_mm, parts_count, total_area_mm2, total_area_m2}`
+  - deterministic ordering: sorted by `material_id`
+  - hash: `sha256(canonical json bytes)`
 
 5) **Manufacturing Hints + Build Steps**
 - minimal steps list (cut → drill → chamfer → assemble)
