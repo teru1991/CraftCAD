@@ -99,13 +99,23 @@ fn build_ir_is_deterministic_sorted_and_batched() {
     let keys: Vec<String> = ir1
         .batches
         .iter()
-        .map(|b| format!("{}:{}:{:?}", b.key.layer_order, b.key.style.0.clone(), b.key.kind))
+        .map(|b| {
+            format!(
+                "{}:{}:{:?}",
+                b.key.layer_order,
+                b.key.style.0.clone(),
+                b.key.kind
+            )
+        })
         .collect();
-    assert_eq!(keys, vec![
-        "1:a:Line".to_string(),
-        "1:a:Circle".to_string(),
-        "2:b:Line".to_string(),
-    ]);
+    assert_eq!(
+        keys,
+        vec![
+            "1:a:Line".to_string(),
+            "1:a:Circle".to_string(),
+            "2:b:Line".to_string(),
+        ]
+    );
 }
 
 #[test]
@@ -202,7 +212,14 @@ fn lod_hysteresis_is_deterministic_and_filters_complexity() {
         ),
     ];
 
-    let ir_med = build_ir(&primitives, viewport, 0.5, (800, 600), Some(LodMode::Full), &cfg);
+    let ir_med = build_ir(
+        &primitives,
+        viewport,
+        0.5,
+        (800, 600),
+        Some(LodMode::Full),
+        &cfg,
+    );
     assert!(matches!(ir_med.lod_mode, LodMode::Medium | LodMode::Coarse));
 
     let ids: Vec<u64> = ir_med

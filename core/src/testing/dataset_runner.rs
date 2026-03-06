@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -61,7 +62,7 @@ fn rotate_vec<T>(v: &mut [T], seed: u64) {
     v.rotate_left(r);
 }
 
-fn find_input<'a>(ds: &'a Dataset, kind: InputKind) -> Result<&'a str, String> {
+fn find_input(ds: &Dataset, kind: InputKind) -> Result<&str, String> {
     ds.inputs
         .iter()
         .find(|i| std::mem::discriminant(&i.kind) == std::mem::discriminant(&kind))
@@ -188,6 +189,22 @@ pub fn run_dataset_by_id(
                 exported_svg: None,
                 exported_json: None,
                 extra_outputs: extra,
+            }
+        }
+        "heavy_sample_v1" => {
+            let json_path = find_input(ds, InputKind::Json)?;
+            let data = read_json(repo_root, json_path)?;
+            let entity_count = data
+                .get("entities")
+                .and_then(|v| v.as_array())
+                .map(|a| a.len())
+                .unwrap_or(0);
+            RunOutputs {
+                normalized_model: json!({"dataset": ds.id, "entity_count": entity_count}),
+                warnings: json!({"warnings": []}),
+                exported_svg: None,
+                exported_json: None,
+                extra_outputs: BTreeMap::new(),
             }
         }
         other => return Err(format!("unsupported dataset id: {other}")),

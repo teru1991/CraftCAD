@@ -198,6 +198,7 @@ fn circle_to_segments(
         .collect()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn walk_svg(
     node: &SvgNode,
     parent_tf: Affine2,

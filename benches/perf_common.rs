@@ -28,7 +28,8 @@ pub fn artifacts_dir() -> PathBuf {
 }
 
 pub fn write_report(name: &str, report: &PerfReport) {
-    let budgets = load_budgets(repo_root().join("docs/specs/perf/budgets.json")).expect("load budgets");
+    let budgets =
+        load_budgets(repo_root().join("docs/specs/perf/budgets.json")).expect("load budgets");
     let violations = check_report_against_budgets(report, &budgets);
 
     let out = json!({

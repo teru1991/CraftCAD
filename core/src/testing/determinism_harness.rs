@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::golden_harness::{
     canonical_reason_codes, hash_bytes, normalize_json, normalize_svg, DatasetMeta, OrderingPolicy,
 };
@@ -68,6 +69,7 @@ pub fn fingerprint_from_outputs(
     }
 }
 
+#[allow(clippy::result_large_err)]
 pub fn assert_deterministic<F>(
     repo_root: &Path,
     meta: &DatasetMeta,

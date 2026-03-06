@@ -35,8 +35,7 @@ pub fn normalize(mut d: PartsDraft) -> PartsDraft {
                 }
             }
         }
-        p.features
-            .sort_by(|a, b| feature_key(a).cmp(&feature_key(b)));
+        p.features.sort_by_key(feature_key);
         p.tags.sort();
         p.tags.dedup();
     }

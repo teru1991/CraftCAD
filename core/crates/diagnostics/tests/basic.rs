@@ -86,9 +86,9 @@ fn oplog_seq_monotonic_no_gaps() {
         "a2",
         "RunNest",
         &json!({"seed":1}),
-        &vec!["id2".into(), "id1".into()],
+        &["id2".into(), "id1".into()],
         ActionResult::Failed,
-        &vec!["X".into(), "A".into()],
+        &["X".into(), "A".into()],
     );
     let op = o.finish();
     assert_eq!(op.actions.len(), 2);

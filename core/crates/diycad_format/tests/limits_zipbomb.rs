@@ -27,10 +27,12 @@ fn rejects_too_many_entries_without_crash() {
     }
     zw.finish().expect("finish zip");
 
-    let mut opt = OpenOptions::default();
-    opt.limits = Limits {
-        max_entries: 100,
-        ..Limits::default()
+    let opt = OpenOptions {
+        limits: Limits {
+            max_entries: 100,
+            ..Limits::default()
+        },
+        ..OpenOptions::default()
     };
 
     let err = open_package(&p, opt)

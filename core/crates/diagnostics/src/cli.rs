@@ -4,6 +4,8 @@ use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+type ReasonCountsMap = BTreeMap<String, (i64, Option<String>, Option<String>, Option<Severity>)>;
+
 #[derive(Parser, Debug)]
 #[command(
     name = "craftcad-diagnostics",
@@ -272,8 +274,7 @@ fn build_cli_joblog(
 }
 
 fn build_reason_summary(joblog: &JobLog) -> ReasonSummary {
-    let mut counts: BTreeMap<String, (i64, Option<String>, Option<String>, Option<Severity>)> =
-        BTreeMap::new();
+    let mut counts: ReasonCountsMap = BTreeMap::new();
     for r in &joblog.reasons {
         counts.insert(
             r.code.clone(),

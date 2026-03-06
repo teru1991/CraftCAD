@@ -148,7 +148,7 @@ impl DiagnosticsStore {
             while let Some(d) = stack.pop() {
                 if let Ok(rd) = fs::read_dir(&d) {
                     let mut ents = rd.filter_map(|e| e.ok()).collect::<Vec<_>>();
-                    ents.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
+                    ents.sort_by_key(|e| e.file_name());
                     for e in ents {
                         let path = e.path();
                         if let Ok(md) = e.metadata() {

@@ -1,6 +1,8 @@
 #![forbid(unsafe_code)]
 
-use craftcad_cache::{CacheEntry, CacheKey, CacheKeyMaterial, CacheStore, DefaultCachePolicy, Sha256Hex};
+use craftcad_cache::{
+    CacheEntry, CacheKey, CacheKeyMaterial, CacheStore, DefaultCachePolicy, Sha256Hex,
+};
 use serde_json::json;
 
 fn keymat(ssot_hash: &str, inputs: &str, opts: &str) -> CacheKeyMaterial {
@@ -48,7 +50,10 @@ fn cache_key_is_deterministic_and_changes_on_material_change() {
 fn canonical_json_hash_is_order_independent_for_objects() {
     let v1 = json!({"b": 2, "a": {"y": 2, "x": 1}});
     let v2 = json!({"a": {"x": 1, "y": 2}, "b": 2});
-    assert_eq!(Sha256Hex::from_json_value(v1), Sha256Hex::from_json_value(v2));
+    assert_eq!(
+        Sha256Hex::from_json_value(v1),
+        Sha256Hex::from_json_value(v2)
+    );
 }
 
 #[test]
@@ -64,15 +69,43 @@ fn lru_eviction_respects_total_bytes_and_is_silent_by_default() {
     let k2 = CacheKey::new(&keymat("aaaaaaaa", "aa222222", "ab111111")).unwrap();
     let k3 = CacheKey::new(&keymat("aaaaaaaa", "aa333333", "ab111111")).unwrap();
 
-    s.put(&k1, CacheEntry { bytes: 1, value: json!({"v": 1}) }).unwrap();
-    s.put(&k2, CacheEntry { bytes: 1, value: json!({"v": 2}) }).unwrap();
+    s.put(
+        &k1,
+        CacheEntry {
+            bytes: 1,
+            value: json!({"v": 1}),
+        },
+    )
+    .unwrap();
+    s.put(
+        &k2,
+        CacheEntry {
+            bytes: 1,
+            value: json!({"v": 2}),
+        },
+    )
+    .unwrap();
 
     assert!(s.get(&k1).unwrap().is_some());
 
-    s.put(&k3, CacheEntry { bytes: 1, value: json!({"v": 3}) }).unwrap();
+    s.put(
+        &k3,
+        CacheEntry {
+            bytes: 1,
+            value: json!({"v": 3}),
+        },
+    )
+    .unwrap();
 
     let k4 = CacheKey::new(&keymat("aaaaaaaa", "aa444444", "ab111111")).unwrap();
-    s.put(&k4, CacheEntry { bytes: 1, value: json!({"v": 4}) }).unwrap();
+    s.put(
+        &k4,
+        CacheEntry {
+            bytes: 1,
+            value: json!({"v": 4}),
+        },
+    )
+    .unwrap();
 
     let v1 = s.get(&k1).unwrap();
     let v2 = s.get(&k2).unwrap();
@@ -85,7 +118,10 @@ fn lru_eviction_respects_total_bytes_and_is_silent_by_default() {
     assert!(v2.is_none(), "k2 should be evicted as LRU");
 
     let ws = s.drain_warnings().unwrap();
-    assert!(!ws.is_empty(), "eviction should be recorded for diagnostics");
+    assert!(
+        !ws.is_empty(),
+        "eviction should be recorded for diagnostics"
+    );
 }
 
 #[test]
@@ -96,10 +132,20 @@ fn invalidation_is_natural_via_key_material() {
     let k_a = CacheKey::new(&keymat("aaaaaaaa", "aaaaaaaa", "abaaaaaa")).unwrap();
     let k_b = CacheKey::new(&keymat("bbbbbbbb", "aaaaaaaa", "abaaaaaa")).unwrap();
 
-    s.put(&k_a, CacheEntry { bytes: 10, value: json!({"ok": true}) }).unwrap();
+    s.put(
+        &k_a,
+        CacheEntry {
+            bytes: 10,
+            value: json!({"ok": true}),
+        },
+    )
+    .unwrap();
 
     assert!(s.get(&k_a).unwrap().is_some());
-    assert!(s.get(&k_b).unwrap().is_none(), "ssot hash changed => different key => naturally invalidated");
+    assert!(
+        s.get(&k_b).unwrap().is_none(),
+        "ssot hash changed => different key => naturally invalidated"
+    );
 }
 
 #[test]
@@ -109,7 +155,14 @@ fn oversized_entry_is_rejected_without_insertion() {
     let s = CacheStore::new(p);
 
     let k = CacheKey::new(&keymat("aaaaaaaa", "abcdef12", "abcdef34")).unwrap();
-    s.put(&k, CacheEntry { bytes: 2, value: json!({"too": "big"}) }).unwrap();
+    s.put(
+        &k,
+        CacheEntry {
+            bytes: 2,
+            value: json!({"too": "big"}),
+        },
+    )
+    .unwrap();
 
     assert!(s.get(&k).unwrap().is_none());
 }

@@ -8,6 +8,7 @@ fn num(v: &serde_json::Value) -> Result<f64, WizardReason> {
         .ok_or_else(|| WizardReason::new(WizardReasonCode::WizardDslInvalid, "expected number"))
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn build_from_evaluated(
     tpl_id: &str,
     seed: u64,

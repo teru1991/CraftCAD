@@ -23,10 +23,8 @@ fn get_i32(groups: &[(i32, String)], code: i32) -> Option<i32> {
 fn collect_text(groups: &[(i32, String)]) -> String {
     let mut out: Vec<String> = Vec::new();
     for (c, v) in groups {
-        if *c == 1 || *c == 3 {
-            if !v.is_empty() {
-                out.push(v.clone());
-            }
+        if (*c == 1 || *c == 3) && !v.is_empty() {
+            out.push(v.clone());
         }
     }
     if out.is_empty() {
@@ -186,10 +184,14 @@ pub fn import_dxf(
 
     for e in ents {
         let kind = e.kind.to_uppercase();
-        let mut stroke = StrokeStyle::default();
-        stroke.layer = e.layer.clone();
-        stroke.linetype = e.linetype.clone();
-        stroke = map_stroke(&mr, stroke);
+        let stroke = map_stroke(
+            &mr,
+            StrokeStyle {
+                layer: e.layer.clone(),
+                linetype: e.linetype.clone(),
+                ..StrokeStyle::default()
+            },
+        );
         let g2: Vec<(i32, String)> = e.groups.iter().map(|g| (g.code, g.value.clone())).collect();
 
         match kind.as_str() {

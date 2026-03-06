@@ -2,8 +2,8 @@
 #![deny(missing_docs)]
 //! Cancellation token (cloneable) for cooperative cancellation.
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 /// Cooperative cancellation token.
 #[derive(Debug, Clone)]

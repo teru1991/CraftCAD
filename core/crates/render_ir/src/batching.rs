@@ -15,7 +15,9 @@ pub struct BatchingConfig {
 
 impl Default for BatchingConfig {
     fn default() -> Self {
-        Self { max_per_batch: 8192 }
+        Self {
+            max_per_batch: 8192,
+        }
     }
 }
 

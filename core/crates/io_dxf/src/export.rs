@@ -80,6 +80,7 @@ fn emit_lwpolyline(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn emit_arc(
     out: &mut String,
     layer: &str,
@@ -123,6 +124,7 @@ fn emit_circle(
     push_group(out, 40, &fmt_fixed(radius, dp));
 }
 
+#[allow(clippy::too_many_arguments)]
 fn emit_text(
     out: &mut String,
     layer: &str,

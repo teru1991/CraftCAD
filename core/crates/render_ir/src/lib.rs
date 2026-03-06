@@ -68,21 +68,12 @@ pub struct RenderIr {
 }
 
 /// Pipeline config.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct PipelineConfig {
     /// LOD config.
     pub lod: LodConfig,
     /// Batching config.
     pub batching: BatchingConfig,
-}
-
-impl Default for PipelineConfig {
-    fn default() -> Self {
-        Self {
-            lod: LodConfig::default(),
-            batching: BatchingConfig::default(),
-        }
-    }
 }
 
 /// Build IR deterministically:

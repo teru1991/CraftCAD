@@ -3,6 +3,8 @@ use serde_json::json;
 use std::collections::BTreeMap;
 use std::fs;
 
+type ReasonCountsMap = BTreeMap<String, (i64, Option<String>, Option<String>, Option<Severity>)>;
+
 struct AllowAllRedactor;
 impl Redactor for AllowAllRedactor {
     fn redact_str(&self, s: &str) -> String {
@@ -82,8 +84,7 @@ fn e2e_support_zip_build_and_validate_entries() {
     );
     let oplog = ob.finish();
 
-    let mut counts: BTreeMap<String, (i64, Option<String>, Option<String>, Option<Severity>)> =
-        BTreeMap::new();
+    let mut counts: ReasonCountsMap = BTreeMap::new();
     for r in &joblog.reasons {
         counts.insert(
             r.code.clone(),

@@ -2,6 +2,8 @@ use crate::reasons::Severity;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
+type ReasonCountsMap = BTreeMap<String, (i64, Option<String>, Option<String>, Option<Severity>)>;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ReasonSummaryItem {
     pub code: String,
@@ -40,7 +42,7 @@ impl ReasonCatalogLookup for EmptyCatalogLookup {
 
 impl ReasonSummary {
     pub fn from_reason_counts_stable(
-        counts: &BTreeMap<String, (i64, Option<String>, Option<String>, Option<Severity>)>,
+        counts: &ReasonCountsMap,
         catalog: &dyn ReasonCatalogLookup,
         top_n: usize,
     ) -> Self {
