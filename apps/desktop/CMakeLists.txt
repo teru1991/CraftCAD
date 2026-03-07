@@ -37,6 +37,7 @@ add_executable(craftcad_desktop
   src/tools/ambiguity_controller.cpp
   src/ffi/craftcad_ffi.cpp
   src/view3d_widget.cpp
+  src/resources/resource_locator.cpp
 )
 
 target_include_directories(craftcad_desktop PRIVATE

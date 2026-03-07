@@ -46,11 +46,17 @@ From this directory (`apps/desktop`):
 From repository root:
 
 ```bash
-./scripts/run_desktop.sh /path/to/project.diycad
+bash ./scripts/run_desktop.sh /path/to/project.diycad
 ```
 
-## Troubleshooting
+All desktop execution routes (including smoke flags such as `--smoke-view3d`) must use `bash ./scripts/run_desktop.sh [args...]`.
 
+Build artifacts and runtime shared libraries under `build/` and `target/` are local/CI runtime outputs only and must not be committed to Git.
+
+## Runtime troubleshooting
+
+- Missing shared libraries: `scripts/run_desktop.sh` runs `ldd` (Linux) or provides `otool -L` diagnostics (macOS) and prints actionable hints.
+- Qt platform plugin errors: `scripts/run_desktop.sh` prints best-effort `QT_PLUGIN_PATH` candidates when it detects plugin-load failures.
 - Qt6 missing (`pkg-config --exists Qt6Core` fails): install Qt6 dev packages. CI may skip desktop build when Qt6 is unavailable.
 - `craftcad_ffi_desktop` build fails: run `cargo build --release -p craftcad_ffi_desktop` in `core/` and fix Rust-side errors first.
 - CMake cannot find desktop FFI library: verify `core/target/release` exists. For custom layouts only, pass `-DFFI_LIB_DIR=<path>` manually.

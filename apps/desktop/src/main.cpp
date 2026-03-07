@@ -3,6 +3,7 @@
 #include "face_part_panel.h"
 #include "ffi/craftcad_ffi.h"
 #include "view3d_widget.h"
+#include "resources/resource_locator.h"
 #include <QApplication>
 #include <QCheckBox>
 #include <QDialog>
@@ -23,6 +24,7 @@
 #include <QStandardPaths>
 #include <QStatusBar>
 #include <QSpinBox>
+#include <QStringList>
 #include <QShortcut>
 #include <QFormLayout>
 #include <QTimer>
@@ -109,6 +111,34 @@ static QVector<View3dWidget::PartBox> loadView3dPartBoxes(const QString& path, Q
 
 
 
+
+static int runSmokeResources() {
+    const ResourceRoot located = locateResourceRoot();
+
+    QJsonObject evidence;
+    evidence.insert("root", located.root.absolutePath());
+
+    QJsonArray searched;
+    for (const QString& s : located.searched) searched.append(s);
+    evidence.insert("searched", searched);
+
+    QJsonArray missing;
+    for (const QString& m : located.missingRequired) missing.append(m);
+    evidence.insert("missing", missing);
+
+    QJsonObject out;
+    out.insert("kind", "smoke");
+    out.insert("name", "resources");
+    out.insert("ok", located.ok);
+    out.insert("reason_code", located.ok ? QJsonValue() : QJsonValue(located.reasonCode));
+    out.insert("message", located.ok ? QString("resources preflight ok") : located.message);
+    out.insert("evidence", evidence);
+
+    const QByteArray line = QJsonDocument(out).toJson(QJsonDocument::Compact);
+    std::fprintf(stdout, "%s\n", line.constData());
+    return located.ok ? 0 : 1;
+}
+
 static int runSmokeEstimateLite(const QString& path) {
     craftcad_estimate_lite_hash_t est{};
     const QByteArray p = path.toUtf8();
@@ -150,6 +180,22 @@ static int runSmokeProjectionLite(const QString& path) {
         top,
         side,
         hashes.part_count);
+    return 0;
+}
+
+
+static int runSmokeFastenerBomLite(const QString& path) {
+    craftcad_mfg_hints_lite_hash_t hints{};
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_mfg_hints_lite_hash(p.constData(), &hints);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "FASTENER_BOM_LITE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const char* hash = reinterpret_cast<const char*>(hints.hash_hex);
+    std::fprintf(stdout, "FASTENER_BOM_LITE_SMOKE_OK hash=%s items=%zu\n", hash, hints.item_count);
     return 0;
 }
 
@@ -286,6 +332,11 @@ int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
     const QStringList args = app.arguments();
+    const int smokeResourcesIdx = args.indexOf("--smoke-resources");
+    if (smokeResourcesIdx >= 0) {
+        return runSmokeResources();
+    }
+
     const int smokeEstimateIdx = args.indexOf("--smoke-estimate-lite");
     if (smokeEstimateIdx >= 0) {
         if (smokeEstimateIdx + 1 >= args.size()) {
@@ -301,6 +352,16 @@ int main(int argc, char* argv[]) {
             return 2;
         }
         return runSmokeProjectionLite(args.at(smokeProjectionIdx + 1));
+    }
+
+    const int smokeFastenerIdx = args.indexOf("--smoke-fastener-bom-lite");
+    if (smokeFastenerIdx >= 0) {
+        if (smokeFastenerIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "FASTENER_BOM_LITE_SMOKE_FAIL error=missing_project_path
+");
+            return 2;
+        }
+        return runSmokeFastenerBomLite(args.at(smokeFastenerIdx + 1));
     }
 
     const int smokeHintsIdx = args.indexOf("--smoke-mfg-hints-lite");

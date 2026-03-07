@@ -20,6 +20,24 @@ cmake -S "${ROOT_DIR}/apps/desktop" -B "${BUILD_DIR}" \
 echo "[craftcad] building desktop (release)…"
 cmake --build "${BUILD_DIR}" --parallel
 
+RESOURCE_SRC_DIR="${ROOT_DIR}/apps/desktop/resources"
+RESOURCE_DST_DIR="${BUILD_DIR}/resources"
+
+mkdir -p "${RESOURCE_SRC_DIR}/templates" "${RESOURCE_SRC_DIR}/samples" "${RESOURCE_SRC_DIR}/fonts" "${RESOURCE_SRC_DIR}/icons"
+: > "${RESOURCE_SRC_DIR}/templates/.keep"
+: > "${RESOURCE_SRC_DIR}/samples/.keep"
+: > "${RESOURCE_SRC_DIR}/fonts/.keep"
+: > "${RESOURCE_SRC_DIR}/icons/.keep"
+
+echo "[craftcad] syncing desktop resources..."
+mkdir -p "${RESOURCE_DST_DIR}"
+if command -v rsync >/dev/null 2>&1; then
+  rsync -a "${RESOURCE_SRC_DIR}/" "${RESOURCE_DST_DIR}/"
+else
+  cp -R "${RESOURCE_SRC_DIR}/." "${RESOURCE_DST_DIR}/"
+fi
+
+
 echo
 echo "[craftcad] Desktop build complete:"
 echo "  build dir: ${BUILD_DIR}"
