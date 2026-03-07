@@ -155,3 +155,10 @@ pub fn hints_hash_hex(h: &ManufacturingHintsLiteV1) -> String {
     hasher.update(bytes);
     hex::encode(hasher.finalize())
 }
+
+pub fn fastener_bom_hash_hex(b: &FastenerBomLiteV1) -> String {
+    let bytes = serde_json::to_vec(b).expect("fastener bom json serialize must not fail");
+    let mut hasher = Sha256::new();
+    hasher.update(bytes);
+    hex::encode(hasher.finalize())
+}

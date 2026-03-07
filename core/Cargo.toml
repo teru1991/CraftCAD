@@ -42,6 +42,7 @@ members = [
   "crates/craftcad_mfg_hints_lite",
   "crates/craftcad_viewpack_inspect",
   "crates/craftcad_viewpack",
+  "crates/craftcad_determinism_harness",
   "serialize",
   "commands",
   "edit_ops",

@@ -809,6 +809,21 @@
         "tests/**"
       ],
       "verification": "docs/verification/G9-STEP1-VIEWPACK-MIN-001.md"
+    },
+    "G10-STEP1-DETERMINISM-HARNESS-001": {
+      "branch": "feature/g10-step1-determinism-harness-001",
+      "artifacts": [
+        "docs/specs/product/contracts/jobs.md",
+        "docs/specs/product/testing/e2e-flows.md",
+        "docs/specs/determinism/wizard_policy.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_mfg_hints_lite/src/lib.rs",
+        "core/crates/craftcad_determinism_harness/**",
+        "tests/**",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G10-STEP1-DETERMINISM-HARNESS-001.md"
+      ],
+      "verification": "docs/verification/G10-STEP1-DETERMINISM-HARNESS-001.md"
     }
   }
 }

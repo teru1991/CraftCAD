@@ -38,3 +38,6 @@ These flows are the acceptance criteria for the 6 pillars.
 
 ## Link to existing testing SSOT
 - ../testing/
+
+## Acceptance note
+- Determinism gate must be green for every PR for lite artifacts (ProjectionLite / EstimateLite / FastenerBOMLite).

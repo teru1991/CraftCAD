@@ -39,6 +39,12 @@
 - Output: steps + manufacturing hints
 - Timeout: small; deterministic
 
+6) `JOB_DETERMINISM_CHECK`
+- Input: same SSOT snapshot (+ fixed seed/version context)
+- Output: lite-artifact hash report (`ProjectionLite`/`EstimateLite`/`FastenerBOMLite`)
+- Timeout: small
+- Determinism: must run hashes multiple times on identical input and require full equality
+
 ## Job failure requirements
 - Never crash silently.
 - Must return:

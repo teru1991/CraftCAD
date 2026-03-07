@@ -68,6 +68,7 @@ run_step rust_fmt "${ROOT_DIR}/core" cargo fmt --all -- --check
 run_step rust_clippy "${ROOT_DIR}/core" cargo clippy -p craftcad_wizards --all-targets -- -D warnings -A clippy::too-many-arguments -A clippy::unnecessary-sort-by
 run_step rust_test "${ROOT_DIR}/core" cargo test -p craftcad_wizards --all-targets
 run_step viewpack_build_verify "${ROOT_DIR}/core" cargo test -p craftcad_viewpack
+run_step determinism_harness "${ROOT_DIR}/core" cargo run -q -p craftcad_determinism_harness --bin craftcad-determinism-check
 run_step diycad_format_tests "${ROOT_DIR}/core" cargo test -p diycad_format --tests
 run_step diycad_format_tests_latest2 "${ROOT_DIR}/core" cargo test -p diycad_format --features test_latest_2 --test migrate_applies_under_feature
 run_step migration_tests "${ROOT_DIR}/core" cargo test -p migration
