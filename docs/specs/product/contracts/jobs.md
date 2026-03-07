@@ -39,12 +39,22 @@
 - Output: steps + manufacturing hints
 - Timeout: small; deterministic
 
+6) `JOB_DETERMINISM_CHECK`
+- Input: same SSOT snapshot (+ fixed seed/version context)
+- Output: lite-artifact hash report (`ProjectionLite`/`EstimateLite`/`FastenerBOMLite`)
+- Timeout: small
+- Determinism: must run hashes multiple times on identical input and require full equality
+
 ## Job failure requirements
 - Never crash silently.
 - Must return:
   - `ReasonCode` (machine readable)
   - human summary + fix hints (UI layer)
   - optional diagnostic attachments (SupportZip integration; see ../diagnostics/)
+
+Preflight rules must run before export, nesting-confirm, and regen jobs that emit manufacturing outputs.
+Command palette executions are UX primitives for triggering jobs and must surface job results/errors via ReasonCode.
+If any preflight finding is `FATAL`, the job must fail with its `ReasonCode` and no output artifact is produced.
 
 ## Links
 - Determinism SSOT: ../determinism/

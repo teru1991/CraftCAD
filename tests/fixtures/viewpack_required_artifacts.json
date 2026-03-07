@@ -1,0 +1,9 @@
+{
+  "viewer_pack_version": 1,
+  "required_artifacts": [
+    "estimate_lite_v1.json",
+    "projection_lite_front_v1.json",
+    "fastener_bom_lite_v1.json",
+    "mfg_hints_lite_v1.json"
+  ]
+}

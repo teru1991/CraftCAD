@@ -52,5 +52,12 @@ Exported symbols (snapshot):
 - `craftcad_last_error_message`
 - `craftcad_projection_lite_hashes`
 - `craftcad_estimate_lite_hash`
+- `craftcad_mfg_hints_lite_hash`
+- `craftcad_rules_edge_report`
+- `craftcad_rules_edge_free_json`
+- `craftcad_export_preflight_check`
+- `craftcad_ssot_get_part`
+- `craftcad_ssot_set_part_name`
+- `craftcad_ssot_set_part_quantity`
 
-ffi_symbols_sha256: `dbc0d474a282fc9aff4ebf17c8b47ffa7acd2c1b13d60f37805a60c8943621d3`
+ffi_symbols_sha256: `e3029daa68357779cc320397b81544601ab3d2e20aec82b1ccf78d665281d9c0`

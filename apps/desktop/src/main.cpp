@@ -14,15 +14,22 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
+#include <QLineEdit>
+#include <QListWidget>
 #include <QMainWindow>
 #include <QMenuBar>
+#include <QPushButton>
 #include <QMessageBox>
 #include <QStandardPaths>
 #include <QStatusBar>
+#include <QSpinBox>
+#include <QShortcut>
+#include <QFormLayout>
 #include <QTimer>
 #include <QVBoxLayout>
 #include <algorithm>
 #include <cstdio>
+#include <functional>
 
 static QString take(char* ptr) {
     if (!ptr) return {};
@@ -146,6 +153,21 @@ static int runSmokeProjectionLite(const QString& path) {
     return 0;
 }
 
+static int runSmokeMfgHintsLite(const QString& path) {
+    craftcad_mfg_hints_lite_hash_t hints{};
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_mfg_hints_lite_hash(p.constData(), &hints);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "MFG_HINTS_LITE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const char* hash = reinterpret_cast<const char*>(hints.hash_hex);
+    std::fprintf(stdout, "MFG_HINTS_LITE_SMOKE_OK hash=%s items=%zu\n", hash, hints.item_count);
+    return 0;
+}
+
 static int runSmokeView3d(const QString& path) {
     QString err;
     auto boxes = loadView3dPartBoxes(path, &err);
@@ -158,10 +180,120 @@ static int runSmokeView3d(const QString& path) {
     return 0;
 }
 
+static int runSmokeRulesEdge(const QString& path) {
+    char* jsonPtr = nullptr;
+    size_t len = 0;
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_rules_edge_report(p.constData(), &jsonPtr, &len);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "RULES_EDGE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const QByteArray payload = QByteArray::fromRawData(jsonPtr, static_cast<qsizetype>(len));
+    const QJsonObject root = QJsonDocument::fromJson(payload).object();
+    craftcad_rules_edge_free_json(jsonPtr);
+    const QJsonArray findings = root.value("findings").toArray();
+    int fatals = 0;
+    int warns = 0;
+    for (const auto& f : findings) {
+        const QString sev = f.toObject().value("severity").toString();
+        if (sev == "fatal") {
+            ++fatals;
+        } else if (sev == "warn") {
+            ++warns;
+        }
+    }
+    std::fprintf(stdout, "RULES_EDGE_SMOKE_OK fatals=%d warns=%d HAS_FATAL=%d\n", fatals, warns, fatals > 0 ? 1 : 0);
+    return 0;
+}
+
+static int runSmokeExportPreflight(const QString& path) {
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_export_preflight_check(p.constData());
+    if (rc == 0) {
+        std::fprintf(stdout, "EXPORT_PREFLIGHT_OK BLOCKED=0\n");
+        return 0;
+    }
+    const QString err = take(craftcad_last_error_message());
+    if (rc == 10) {
+        std::fprintf(stderr, "EXPORT_PREFLIGHT_BLOCKED BLOCKED=1 report=%s\n", err.toUtf8().constData());
+        return 3;
+    }
+    std::fprintf(stderr, "EXPORT_PREFLIGHT_FAIL error=%s\n", err.toUtf8().constData());
+    return 2;
+}
+
+static bool loadPartInspectorJson(const QString& projectPath, const QString& partId, QJsonObject* out, QString* err) {
+    char* ptr = nullptr;
+    size_t len = 0;
+    const QByteArray pathUtf8 = projectPath.toUtf8();
+    const QByteArray idUtf8 = partId.toUtf8();
+    const int rc = craftcad_ssot_get_part(pathUtf8.constData(), idUtf8.constData(), &ptr, &len);
+    if (rc != 0) {
+        if (err) *err = take(craftcad_last_error_message());
+        return false;
+    }
+    const QByteArray payload = QByteArray::fromRawData(ptr, static_cast<qsizetype>(len));
+    const QJsonDocument doc = QJsonDocument::fromJson(payload);
+    craftcad_free_string(ptr);
+    if (!doc.isObject()) {
+        if (err) *err = QStringLiteral("invalid_part_payload");
+        return false;
+    }
+    if (out) *out = doc.object();
+    if (err) err->clear();
+    return true;
+}
+
+static int runSmokeInspectorEdit(const QString& path) {
+    QString err;
+    const auto boxes = loadView3dPartBoxes(path, &err);
+    if (!err.isEmpty() || boxes.isEmpty()) {
+        std::fprintf(stderr, "INSPECTOR_SMOKE_FAIL error=%s\n", (!err.isEmpty() ? err : QStringLiteral("no_parts")).toUtf8().constData());
+        return 2;
+    }
+    const QString partId = boxes.first().partId;
+    const QByteArray p = path.toUtf8();
+    const QByteArray id = partId.toUtf8();
+    const QByteArray newName = QByteArray("smoke_name");
+
+    if (craftcad_ssot_set_part_name(p.constData(), id.constData(), newName.constData()) != 0) {
+        std::fprintf(stderr, "INSPECTOR_SMOKE_FAIL error=%s\n", take(craftcad_last_error_message()).toUtf8().constData());
+        return 3;
+    }
+    if (craftcad_ssot_set_part_quantity(p.constData(), id.constData(), 2) != 0) {
+        std::fprintf(stderr, "INSPECTOR_SMOKE_FAIL error=%s\n", take(craftcad_last_error_message()).toUtf8().constData());
+        return 4;
+    }
+
+    QJsonObject partObj;
+    if (!loadPartInspectorJson(path, partId, &partObj, &err)) {
+        std::fprintf(stderr, "INSPECTOR_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 5;
+    }
+    if (partObj.value("name").toString() != QStringLiteral("smoke_name") || partObj.value("quantity").toInt() != 2) {
+        std::fprintf(stderr, "INSPECTOR_SMOKE_FAIL error=persistence_mismatch\n");
+        return 6;
+    }
+
+    std::fprintf(stdout, "INSPECTOR_SMOKE_OK part=%s\n", partId.toUtf8().constData());
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
 
     const QStringList args = app.arguments();
+    const int smokeEstimateIdx = args.indexOf("--smoke-estimate-lite");
+    if (smokeEstimateIdx >= 0) {
+        if (smokeEstimateIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "ESTIMATE_LITE_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeEstimateLite(args.at(smokeEstimateIdx + 1));
+    }
     const int smokeProjectionIdx = args.indexOf("--smoke-projection-lite");
     if (smokeProjectionIdx >= 0) {
         if (smokeProjectionIdx + 1 >= args.size()) {
@@ -169,6 +301,42 @@ int main(int argc, char* argv[]) {
             return 2;
         }
         return runSmokeProjectionLite(args.at(smokeProjectionIdx + 1));
+    }
+
+    const int smokeHintsIdx = args.indexOf("--smoke-mfg-hints-lite");
+    if (smokeHintsIdx >= 0) {
+        if (smokeHintsIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "MFG_HINTS_LITE_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeMfgHintsLite(args.at(smokeHintsIdx + 1));
+    }
+
+    const int smokeRulesIdx = args.indexOf("--smoke-rules-edge");
+    if (smokeRulesIdx >= 0) {
+        if (smokeRulesIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "RULES_EDGE_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeRulesEdge(args.at(smokeRulesIdx + 1));
+    }
+
+    const int smokePreflightIdx = args.indexOf("--smoke-export-preflight");
+    if (smokePreflightIdx >= 0) {
+        if (smokePreflightIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "EXPORT_PREFLIGHT_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeExportPreflight(args.at(smokePreflightIdx + 1));
+    }
+
+    const int smokeInspectorEditIdx = args.indexOf("--smoke-inspector-edit");
+    if (smokeInspectorEditIdx >= 0) {
+        if (smokeInspectorEditIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "INSPECTOR_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeInspectorEdit(args.at(smokeInspectorEditIdx + 1));
     }
 
     const int smokeIdx = args.indexOf("--smoke-view3d");
@@ -217,9 +385,6 @@ int main(int argc, char* argv[]) {
 
     auto* selectedLabel = new QLabel("Selected PartId: (none)", &w);
     w.statusBar()->addPermanentWidget(selectedLabel);
-    QObject::connect(view3d, &View3dWidget::selectedPartChanged, [&selectedLabel](const QString& id) {
-        selectedLabel->setText(QString("Selected PartId: %1").arg(id));
-    });
 
     const auto boxes = loadView3dPartBoxes(path, &err);
     if (!err.isEmpty()) {
@@ -227,12 +392,145 @@ int main(int argc, char* argv[]) {
     }
     view3d->setPartBoxes(boxes);
 
+    auto* inspectorDock = new QDockWidget("Inspector", &w);
+    auto* inspectorWidget = new QWidget(inspectorDock);
+    auto* inspectorForm = new QFormLayout(inspectorWidget);
+    auto* inspectorPartId = new QLabel("(none)", inspectorWidget);
+    auto* inspectorMaterial = new QLabel("(none)", inspectorWidget);
+    auto* inspectorThickness = new QLabel("(none)", inspectorWidget);
+    auto* inspectorName = new QLineEdit(inspectorWidget);
+    auto* inspectorQty = new QSpinBox(inspectorWidget);
+    inspectorQty->setRange(1, 1'000'000);
+    inspectorForm->addRow("PartId", inspectorPartId);
+    inspectorForm->addRow("Material", inspectorMaterial);
+    inspectorForm->addRow("Thickness", inspectorThickness);
+    inspectorForm->addRow("Name", inspectorName);
+    inspectorForm->addRow("Quantity", inspectorQty);
+    inspectorWidget->setLayout(inspectorForm);
+    inspectorDock->setWidget(inspectorWidget);
+    w.addDockWidget(Qt::RightDockWidgetArea, inspectorDock);
+
+    QString selectedPartId;
+    bool inspectorUpdating = false;
+
+    auto refresh3d = [&]() {
+        QString refreshErr;
+        const auto refreshed = loadView3dPartBoxes(path, &refreshErr);
+        if (!refreshErr.isEmpty()) {
+            w.statusBar()->showMessage(QString("3D refresh failed: %1").arg(refreshErr), 4000);
+            return;
+        }
+        view3d->setPartBoxes(refreshed);
+    };
+
+    auto loadPartIntoInspector = [&](const QString& partId) {
+        inspectorUpdating = true;
+        selectedPartId = partId;
+        inspectorPartId->setText(partId.isEmpty() ? QStringLiteral("(none)") : partId);
+        inspectorName->setEnabled(!partId.isEmpty());
+        inspectorQty->setEnabled(!partId.isEmpty());
+
+        if (partId.isEmpty()) {
+            inspectorName->clear();
+            inspectorQty->setValue(1);
+            inspectorMaterial->setText("(none)");
+            inspectorThickness->setText("(none)");
+            inspectorUpdating = false;
+            return;
+        }
+
+        QJsonObject partObj;
+        QString loadErr;
+        if (!loadPartInspectorJson(path, partId, &partObj, &loadErr)) {
+            w.statusBar()->showMessage(QString("Inspector load failed: %1").arg(loadErr), 5000);
+            inspectorUpdating = false;
+            return;
+        }
+
+        inspectorName->setText(partObj.value("name").toString());
+        inspectorQty->setValue(partObj.value("quantity").toInt(1));
+        const QJsonObject material = partObj.value("material").toObject();
+        inspectorMaterial->setText(material.value("name").toString("(none)"));
+        if (material.value("thickness_mm").isDouble()) {
+            inspectorThickness->setText(QString::number(material.value("thickness_mm").toDouble()) + " mm");
+        } else {
+            inspectorThickness->setText("(none)");
+        }
+        inspectorUpdating = false;
+    };
+
+    QObject::connect(view3d, &View3dWidget::selectedPartChanged, [&selectedLabel, &loadPartIntoInspector](const QString& id) {
+        selectedLabel->setText(QString("Selected PartId: %1").arg(id));
+        loadPartIntoInspector(id);
+    });
+
+    QObject::connect(inspectorName, &QLineEdit::editingFinished, [&]() {
+        if (inspectorUpdating || selectedPartId.isEmpty()) return;
+        const QByteArray p = path.toUtf8();
+        const QByteArray id = selectedPartId.toUtf8();
+        const QByteArray name = inspectorName->text().toUtf8();
+        const int rc = craftcad_ssot_set_part_name(p.constData(), id.constData(), name.constData());
+        if (rc != 0) {
+            QMessageBox::warning(&w, "Inspector", take(craftcad_last_error_message()));
+            loadPartIntoInspector(selectedPartId);
+            return;
+        }
+        w.statusBar()->showMessage("Saved", 2000);
+        refresh3d();
+        loadPartIntoInspector(selectedPartId);
+    });
+
+    QObject::connect(inspectorQty, qOverload<int>(&QSpinBox::valueChanged), [&](int value) {
+        if (inspectorUpdating || selectedPartId.isEmpty()) return;
+        const QByteArray p = path.toUtf8();
+        const QByteArray id = selectedPartId.toUtf8();
+        const int rc = craftcad_ssot_set_part_quantity(p.constData(), id.constData(), static_cast<uint32_t>(value));
+        if (rc != 0) {
+            QMessageBox::warning(&w, "Inspector", take(craftcad_last_error_message()));
+            loadPartIntoInspector(selectedPartId);
+            return;
+        }
+        w.statusBar()->showMessage("Saved", 2000);
+        refresh3d();
+    });
+
+    auto* fileMenu = w.menuBar()->addMenu("&File");
+    auto* openAction = fileMenu->addAction("Open Project…");
+    auto* saveAction = fileMenu->addAction("Save Project");
     auto* exportMenu = w.menuBar()->addMenu("&Export");
     auto* tiledAction = exportMenu->addAction("Tiled PDF (1:1)");
     auto* drawingAction = exportMenu->addAction("Drawing PDF");
     auto* svgAction = exportMenu->addAction("SVG");
     auto* helpMenu = w.menuBar()->addMenu("&Help");
     auto* diagAction = helpMenu->addAction("Export Diagnostic Pack");
+
+    auto reloadProject = [&](const QString& newPath) {
+        QString loadErr;
+        if (!store.loadDiycad(newPath, &loadErr)) {
+            QMessageBox::critical(&w, "Open failed", loadErr);
+            return false;
+        }
+        path = newPath;
+        refresh3d();
+        loadPartIntoInspector(QString());
+        w.statusBar()->showMessage("Project loaded", 2000);
+        return true;
+    };
+
+    QObject::connect(openAction, &QAction::triggered, [&]() {
+        const QString newPath = QFileDialog::getOpenFileName(&w, "Open .diycad", QString(), "DIYCAD Files (*.diycad)");
+        if (!newPath.isEmpty()) {
+            reloadProject(newPath);
+        }
+    });
+    QObject::connect(saveAction, &QAction::triggered, [&]() {
+        QString saveErr;
+        if (store.autosaveNow(&saveErr)) {
+            w.statusBar()->showMessage("Project saved", 2000);
+        } else {
+            QMessageBox::warning(&w, "Save failed", saveErr);
+        }
+    });
 
     QObject::connect(tiledAction, &QAction::triggered, [&]() {
         QJsonObject opts{{"page_size", "A4"},
@@ -280,6 +578,64 @@ int main(int argc, char* argv[]) {
                          {"eps", QJsonDocument::fromJson(store.epsPolicyJson().toUtf8()).object()}};
         runExportAction(&w, store, craftcad_export_diagnostic_pack, opts, "ZIP Files (*.zip)", "diagnostic_pack.zip");
     });
+
+    struct PaletteCommand {
+        QString name;
+        std::function<void()> run;
+    };
+
+    QVector<PaletteCommand> paletteCommands{
+        {"Open Project…", [&]() { openAction->trigger(); }},
+        {"Save Project", [&]() { saveAction->trigger(); }},
+        {"Run: Smoke View3D", [&]() { w.statusBar()->showMessage(runSmokeView3d(path) == 0 ? "OK" : "FAIL", 2500); }},
+        {"Run: Smoke Projection Lite", [&]() { w.statusBar()->showMessage(runSmokeProjectionLite(path) == 0 ? "OK" : "FAIL", 2500); }},
+        {"Run: Smoke Estimate Lite", [&]() { w.statusBar()->showMessage(runSmokeEstimateLite(path) == 0 ? "OK" : "FAIL", 2500); }},
+        {"Run: Smoke Fastener BOM Lite", [&]() { w.statusBar()->showMessage("Not implemented", 2500); }},
+        {"Run: Smoke Rules Edge", [&]() { w.statusBar()->showMessage(runSmokeRulesEdge(path) == 0 ? "OK" : "FAIL", 2500); }},
+        {"Run: Smoke Mfg Hints Lite", [&]() { w.statusBar()->showMessage(runSmokeMfgHintsLite(path) == 0 ? "OK" : "FAIL", 2500); }},
+        {"Run: Smoke ViewPack Inspect", [&]() { w.statusBar()->showMessage("Use craftcad-viewpack-inspect CLI", 3000); }},
+    };
+
+    auto showPalette = [&]() {
+        QDialog dlg(&w);
+        dlg.setWindowTitle("Command Palette");
+        auto* layout = new QVBoxLayout(&dlg);
+        auto* input = new QLineEdit(&dlg);
+        auto* list = new QListWidget(&dlg);
+        layout->addWidget(input);
+        layout->addWidget(list);
+
+        auto refreshList = [&]() {
+            list->clear();
+            const QString q = input->text().trimmed();
+            for (const auto& cmd : paletteCommands) {
+                if (q.isEmpty() || cmd.name.contains(q, Qt::CaseInsensitive)) {
+                    list->addItem(cmd.name);
+                }
+            }
+            if (list->count() > 0) list->setCurrentRow(0);
+        };
+
+        QObject::connect(input, &QLineEdit::textChanged, &dlg, refreshList);
+        QObject::connect(list, &QListWidget::itemDoubleClicked, &dlg, [&](QListWidgetItem*) { dlg.accept(); });
+        refreshList();
+
+        if (dlg.exec() != QDialog::Accepted) return;
+        const auto* item = list->currentItem();
+        if (!item) return;
+        const QString selected = item->text();
+        for (const auto& cmd : paletteCommands) {
+            if (cmd.name == selected) {
+                cmd.run();
+                break;
+            }
+        }
+    };
+
+    auto* paletteShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+K")), &w);
+    QObject::connect(paletteShortcut, &QShortcut::activated, &w, showPalette);
+    auto* paletteSlashShortcut = new QShortcut(QKeySequence(QStringLiteral("/")), &w);
+    QObject::connect(paletteSlashShortcut, &QShortcut::activated, &w, showPalette);
 
     QTimer autosave;
     autosave.setInterval(5000);

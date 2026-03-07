@@ -55,7 +55,20 @@ typedef struct craftcad_estimate_lite_hash_t {
   unsigned char first_material_id_utf8[37];
 } craftcad_estimate_lite_hash_t;
 
+typedef struct craftcad_mfg_hints_lite_hash_t {
+  unsigned char hash_hex[65];
+  size_t item_count;
+} craftcad_mfg_hints_lite_hash_t;
+
 int craftcad_estimate_lite_hash(const char *project_path_utf8, craftcad_estimate_lite_hash_t *out_est);
+int craftcad_mfg_hints_lite_hash(const char *project_path_utf8, craftcad_mfg_hints_lite_hash_t *out_hints);
+int craftcad_rules_edge_report(const char *project_path_utf8, char **out_json_ptr, size_t *out_len);
+void craftcad_rules_edge_free_json(char *ptr);
+int craftcad_export_preflight_check(const char *project_path_utf8);
+
+int craftcad_ssot_get_part(const char *project_path_utf8, const char *part_id_utf8, char **out_json_ptr, size_t *out_len);
+int craftcad_ssot_set_part_name(const char *project_path_utf8, const char *part_id_utf8, const char *new_name_utf8);
+int craftcad_ssot_set_part_quantity(const char *project_path_utf8, const char *part_id_utf8, uint32_t quantity_u32);
 
 uint64_t craftcad_history_new(void);
 void craftcad_history_free(uint64_t h);

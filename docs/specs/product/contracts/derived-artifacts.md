@@ -34,6 +34,17 @@ Generated from SSOT (`Part/Material/FeatureGraph`):
 - minimal steps list (cut → drill → chamfer → assemble)
 - link each step to relevant parts/features (IDs)
 
+6) **ManufacturingHintsLiteV1 (Step1)**
+- inputs: SSOT `feature_graph` (`ScrewFeature` only in Step1)
+- item shape (per feature):
+  - `{feature_id, part_id, spec_name, pilot_hole_mm, countersink, note_text}`
+- deterministic ordering: sorted by `(part_id, feature_id)`
+- hash: `sha256(canonical json bytes)`
+
+7) **AnnotationPayloadLite (Step1 contract note)**
+- manufacturing hints are emitted as machine-readable payloads that can be mapped into 2D note annotations in later steps.
+- Step1 stores payload only (no GUI placement/layout generation in this task).
+
 ## Update & invalidation rules
 - Any SSOT change marks impacted artifacts dirty.
 - Immediate update: BOM estimate / simple labels.
@@ -41,6 +52,19 @@ Generated from SSOT (`Part/Material/FeatureGraph`):
 
 ## Mobile packaging (offline read-only)
 Mobile **must not recompute**. Therefore, project save must embed a snapshot of derived artifacts.
+
+### ViewerPackV1 (Step1 minimal)
+- `viewer_pack_version = 1`
+- manifest fields:
+  - `ssot_hash_hex`: hash of canonical SSOT JSON bytes (`sha256`)
+  - `artifacts`: list of `{name, schema_version, sha256_hex, bytes_len}`
+- required Step1 artifact names:
+  - `estimate_lite_v1.json`
+  - `projection_lite_front_v1.json` (thumbnail basis)
+  - `fastener_bom_lite_v1.json`
+  - `mfg_hints_lite_v1.json`
+- optional Step1 artifacts: none
+- manifest ordering must be deterministic (sorted by `name`).
 
 ### Packaging requirements
 - Project file contains:
@@ -57,9 +81,13 @@ Mobile **must not recompute**. Therefore, project save must embed a snapshot of 
 - thumbnails
 
 ### Missing artifact behavior
-- Viewer pack uses SSOT snapshot; if snapshot is missing, viewer must show "Not generated".
-- If an artifact is missing, mobile must show “Not generated” and never attempt generation.
+- If the viewer pack is missing or the required artifact is missing, viewer must show "Not generated" and **never** attempt recomputation.
+
+### Hash mismatch behavior
+- If an artifact hash mismatches manifest (`sha256_hex`), viewer must show "Corrupt pack" for that artifact only.
+- Other artifacts with valid hashes may still be shown.
 
 ## Links
 - Mobile SSOT: ../mobile/
 - Testing SSOT: ../testing/
+- Mobile read-only scope: ../feature-scope.md

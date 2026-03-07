@@ -34,6 +34,7 @@
 - Exportable as a sheet/page or a checklist view.
 
 ### UX primitives (AutoCAD/Fusion-inspired, bounded)
+- Step1: command palette and selection-driven property inspector are implemented and wired to SSOT updates/persistence.
 - Command palette + history
 - Selection-driven property inspector
 - Context toolbar + mark menu (radial)

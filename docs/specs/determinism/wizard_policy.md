@@ -7,3 +7,5 @@
 - 丸め規約
   - すべてmm、内部はf64でも出力は 0.001mm に丸め
 - “同入力→同出力” をテストで担保（Step7で追加）
+
+- CI determinism harness (lite artifacts): see `core/crates/craftcad_determinism_harness` and `docs/specs/product/contracts/jobs.md` (`JOB_DETERMINISM_CHECK`).

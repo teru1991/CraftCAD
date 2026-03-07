@@ -748,6 +748,97 @@
         "head_sha": "see docs/verification/G5-STEP1-ESTIMATE-LITE-001.md",
         "tests": "cargo test -p craftcad_estimate_lite; ./scripts/build_desktop.sh; ./scripts/run_desktop.sh --smoke-estimate-lite <fixture>; ./scripts/ci/run_all.sh"
       }
+    },
+    "G7-STEP1-RULES-EDGE-001": {
+      "branch": "feature/g7-step1-rules-edge-001",
+      "artifacts": [
+        "docs/specs/product/contracts/rules-wood.md",
+        "docs/specs/product/contracts/reason-codes.md",
+        "docs/specs/product/contracts/jobs.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_screw_lite/**",
+        "core/crates/craftcad_rules_engine/**",
+        "core/ffi_desktop/Cargo.toml",
+        "core/ffi_desktop/include/craftcad_desktop_ffi.h",
+        "core/ffi_desktop/src/lib.rs",
+        "apps/desktop/src/ffi/craftcad_ffi.h",
+        "apps/desktop/src/main.cpp",
+        "scripts/ci/create_rules_edge_smoke_fixture.py",
+        "scripts/ci/run_all.sh",
+        "tests/fixtures/rules_edge_smoke_fixture.json",
+        "docs/specs/system/ffi_contract.md",
+        "docs/verification/G7-STEP1-RULES-EDGE-001.md"
+      ],
+      "verification": "docs/verification/G7-STEP1-RULES-EDGE-001.md"
+    },
+    "G8-STEP1-MFG-HINTS-001": {
+      "branch": "feature/g8-step1-mfg-hints-001",
+      "artifacts": [
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "docs/specs/product/contracts/master-model.md",
+        "docs/specs/product/contracts/reason-codes.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_mfg_hints_lite/**",
+        "core/ffi_desktop/Cargo.toml",
+        "core/ffi_desktop/include/craftcad_desktop_ffi.h",
+        "core/ffi_desktop/src/lib.rs",
+        "apps/desktop/src/ffi/craftcad_ffi.h",
+        "apps/desktop/src/main.cpp",
+        "scripts/ci/create_rules_edge_smoke_fixture.py",
+        "scripts/ci/run_all.sh",
+        "docs/specs/system/ffi_contract.md",
+        "docs/verification/G8-STEP1-MFG-HINTS-001.md",
+        "tests/**"
+      ],
+      "verification": "docs/verification/G8-STEP1-MFG-HINTS-001.md"
+    },
+    "G9-STEP1-VIEWPACK-MIN-001": {
+      "branch": "feature/g9-step1-viewpack-min-001",
+      "artifacts": [
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "docs/specs/product/contracts/master-model.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_viewpack/**",
+        "core/crates/craftcad_viewpack_inspect/**",
+        "core/crates/diycad_project/Cargo.toml",
+        "core/crates/diycad_project/src/lib.rs",
+        "core/crates/diycad_ffi/src/lib.rs",
+        "apps/mobile/README.md",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G9-STEP1-VIEWPACK-MIN-001.md",
+        "tests/**"
+      ],
+      "verification": "docs/verification/G9-STEP1-VIEWPACK-MIN-001.md"
+    },
+    "G10-STEP1-DETERMINISM-HARNESS-001": {
+      "branch": "feature/g10-step1-determinism-harness-001",
+      "artifacts": [
+        "docs/specs/product/contracts/jobs.md",
+        "docs/specs/product/testing/e2e-flows.md",
+        "docs/specs/determinism/wizard_policy.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_mfg_hints_lite/src/lib.rs",
+        "core/crates/craftcad_determinism_harness/**",
+        "tests/**",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G10-STEP1-DETERMINISM-HARNESS-001.md"
+      ],
+      "verification": "docs/verification/G10-STEP1-DETERMINISM-HARNESS-001.md"
+    },
+    "G11-STEP1-PALETTE-INSPECTOR-001": {
+      "branch": "feature/g11-step1-palette-inspector-001",
+      "artifacts": [
+        "docs/specs/product/feature-scope.md",
+        "docs/specs/product/contracts/jobs.md",
+        "core/ffi_desktop/src/lib.rs",
+        "core/ffi_desktop/include/craftcad_desktop_ffi.h",
+        "apps/desktop/src/ffi/craftcad_ffi.h",
+        "apps/desktop/src/main.cpp",
+        "scripts/ci/run_all.sh",
+        "tests/fixtures/inspector_smoke_expected.json",
+        "docs/verification/G11-STEP1-PALETTE-INSPECTOR-001.md"
+      ],
+      "verification": "docs/verification/G11-STEP1-PALETTE-INSPECTOR-001.md"
     }
   }
 }

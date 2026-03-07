@@ -48,6 +48,13 @@ Fields (minimum):
   - stable floating rounding/eps policy (see ../determinism/)
   - seed captured in project for randomized heuristics (nesting)
 
+### ScrewFeature params v1 (Step1 clarification)
+- `params` for `ScrewFeature` may optionally include:
+  - `pilot_hole_mm` (`f64`, optional)
+  - `countersink` (`bool`, optional)
+  - `countersink_depth_mm` (`f64`, optional)
+- Absence is valid; Step1 manufacturing-hints derivation applies defaults.
+
 ## “2D drives 3D” scope limitation (initial)
 - 2D dimensions can modify parameters only if explicitly mapped:
   - `DimensionRef → ParameterRef` mapping must exist, otherwise 2D edit is display-only.
@@ -61,6 +68,8 @@ Fields (minimum):
 
 ## Persistence & Backward Compatibility (Step1)
 - Project file may include optional `ssot_v1` snapshot block. Missing `ssot_v1` is valid for backward compatibility.
+- Project file may include optional `viewer_pack_v1` block/file for offline read-only viewers.
+- Viewers must not recompute missing artifacts from `ssot_v1`; they only read embedded `viewer_pack_v1` and show `Not generated` when absent.
 - Loader fallback when `ssot_v1` is missing derives a minimal snapshot:
   - one Material named `unspecified` (`thickness_mm` may be null)
   - Parts derived from existing project parts/entities when available; otherwise one root Part
