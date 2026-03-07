@@ -357,8 +357,7 @@ int main(int argc, char* argv[]) {
     const int smokeFastenerIdx = args.indexOf("--smoke-fastener-bom-lite");
     if (smokeFastenerIdx >= 0) {
         if (smokeFastenerIdx + 1 >= args.size()) {
-            std::fprintf(stderr, "FASTENER_BOM_LITE_SMOKE_FAIL error=missing_project_path
-");
+            std::fprintf(stderr, "FASTENER_BOM_LITE_SMOKE_FAIL error=missing_project_path\n");
             return 2;
         }
         return runSmokeFastenerBomLite(args.at(smokeFastenerIdx + 1));
