@@ -10,6 +10,12 @@
 
 This keeps mobile viewer-safe and avoids any risk of corrupting source-of-truth `.diycad` files.
 
+## Viewer Pack Step1 contract
+- Mobile/offline viewer reads only embedded `viewer_pack_v1` artifacts.
+- If a required artifact is missing, UI must show `Not generated`.
+- Mobile must never recompute missing artifacts from SSOT.
+- If artifact hash verification fails, UI shows `Corrupt pack` for that artifact.
+
 ## Supported v1 features
 
 - Open `.diycad` and render supported drawing entities deterministically.

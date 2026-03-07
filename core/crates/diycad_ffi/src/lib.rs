@@ -94,6 +94,7 @@ mod tests {
             data: DataJson::default(),
             thumbnail_png: None,
             ssot_v1: None,
+            viewer_pack_v1: None,
         }
     }
 

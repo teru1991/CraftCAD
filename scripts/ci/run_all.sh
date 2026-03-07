@@ -67,6 +67,7 @@ run_step_expect_fail_grep() {
 run_step rust_fmt "${ROOT_DIR}/core" cargo fmt --all -- --check
 run_step rust_clippy "${ROOT_DIR}/core" cargo clippy -p craftcad_wizards --all-targets -- -D warnings -A clippy::too-many-arguments -A clippy::unnecessary-sort-by
 run_step rust_test "${ROOT_DIR}/core" cargo test -p craftcad_wizards --all-targets
+run_step viewpack_build_verify "${ROOT_DIR}/core" cargo test -p craftcad_viewpack
 run_step diycad_format_tests "${ROOT_DIR}/core" cargo test -p diycad_format --tests
 run_step diycad_format_tests_latest2 "${ROOT_DIR}/core" cargo test -p diycad_format --features test_latest_2 --test migrate_applies_under_feature
 run_step migration_tests "${ROOT_DIR}/core" cargo test -p migration
@@ -95,6 +96,7 @@ if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
     run_step desktop_build "${ROOT_DIR}" scripts/build_desktop.sh
     run_step desktop_smoke_fixture "${ROOT_DIR}" python3 scripts/ci/create_view3d_smoke_fixture.py "${DESKTOP_SMOKE_FIXTURE}"
     run_step desktop_rules_smoke_fixture "${ROOT_DIR}" python3 scripts/ci/create_rules_edge_smoke_fixture.py "${DESKTOP_RULES_FIXTURE}"
+    run_step viewpack_inspect "${ROOT_DIR}/core" cargo run -q -p craftcad_viewpack_inspect --bin craftcad-viewpack-inspect -- "${DESKTOP_RULES_FIXTURE}"
     run_step desktop_smoke_view3d "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-view3d "${DESKTOP_SMOKE_FIXTURE}"
     run_step desktop_smoke_projection_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-projection-lite "${DESKTOP_SMOKE_FIXTURE}"
     run_step desktop_smoke_estimate_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-estimate-lite "${DESKTOP_SMOKE_FIXTURE}"

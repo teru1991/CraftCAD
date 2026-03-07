@@ -7,6 +7,7 @@ authors.workspace = true
 
 [dependencies]
 craftcad_ssot = { path = "../craftcad_ssot" }
+craftcad_viewpack = { path = "../craftcad_viewpack" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror.workspace = true

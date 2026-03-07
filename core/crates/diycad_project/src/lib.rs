@@ -2,6 +2,7 @@ use craftcad_ssot::{
     derive_minimal_ssot_v1, deterministic_uuid, FeatureGraphV1, GrainPolicyV1, MaterialCategoryV1,
     MaterialV1, PartLabelV1, PartV1, SsotDeriveConfig, SsotV1,
 };
+use craftcad_viewpack::{build_viewpack_from_ssot, ViewerPackV1};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Write};
@@ -34,6 +35,7 @@ pub struct DiycadProject {
     pub data: DataJson,
     pub thumbnail_png: Option<Vec<u8>>,
     pub ssot_v1: Option<SsotV1>,
+    pub viewer_pack_v1: Option<ViewerPackV1>,
 }
 
 #[derive(Debug, Error)]
@@ -76,6 +78,7 @@ pub fn create_empty_project(app_version: &str, units: &str, timestamp: &str) -> 
         data: DataJson::default(),
         thumbnail_png: None,
         ssot_v1: None,
+        viewer_pack_v1: None,
     }
 }
 
@@ -96,6 +99,15 @@ pub fn save(path: impl AsRef<Path>, project: &DiycadProject) -> ProjectResult<()
     if let Some(ssot) = &project.ssot_v1 {
         writer.start_file("ssot_v1.json", options)?;
         writer.write_all(serde_json::to_string_pretty(ssot)?.as_bytes())?;
+    }
+
+    let viewer_pack_v1 = match &project.ssot_v1 {
+        Some(ssot) => build_viewpack_from_ssot(ssot).ok(),
+        None => project.viewer_pack_v1.clone(),
+    };
+    if let Some(viewpack) = &viewer_pack_v1 {
+        writer.start_file("viewer_pack_v1.json", options)?;
+        writer.write_all(serde_json::to_string_pretty(viewpack)?.as_bytes())?;
     }
 
     if let Some(thumbnail) = &project.thumbnail_png {
@@ -148,12 +160,14 @@ pub fn load(path: impl AsRef<Path>) -> ProjectResult<DiycadProject> {
                 SsotDeriveConfig::default(),
             ))
         });
+    let viewer_pack_v1 = read_json_file_optional::<ViewerPackV1>(&mut zip, "viewer_pack_v1.json")?;
 
     Ok(DiycadProject {
         manifest,
         data,
         thumbnail_png,
         ssot_v1,
+        viewer_pack_v1,
     })
 }
 
@@ -244,6 +258,7 @@ mod tests {
         deterministic_uuid, FeatureGraphV1, GrainPolicyV1, MaterialCategoryV1, MaterialV1, PartV1,
         SsotV1,
     };
+    use craftcad_viewpack::verify_viewpack;
     use tempfile::tempdir;
 
     fn sample_project() -> DiycadProject {
@@ -267,6 +282,7 @@ mod tests {
         assert_eq!(project.data.entities.len(), 0);
         assert!(project.thumbnail_png.is_none());
         assert!(project.ssot_v1.is_none());
+        assert!(project.viewer_pack_v1.is_none());
     }
 
     #[test]
@@ -334,6 +350,20 @@ mod tests {
         let loaded = load(&file_path).expect("load should succeed");
 
         assert_eq!(loaded.ssot_v1, Some(ssot));
+        let vp = loaded
+            .viewer_pack_v1
+            .expect("viewer pack must be generated");
+        let names: Vec<_> = vp.artifacts.iter().map(|a| a.name.as_str()).collect();
+        assert_eq!(
+            names,
+            vec![
+                "estimate_lite_v1.json",
+                "fastener_bom_lite_v1.json",
+                "mfg_hints_lite_v1.json",
+                "projection_lite_front_v1.json"
+            ]
+        );
+        assert!(verify_viewpack(&vp).is_empty());
     }
 
     #[test]

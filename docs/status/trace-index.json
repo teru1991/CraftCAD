@@ -791,6 +791,24 @@
         "tests/**"
       ],
       "verification": "docs/verification/G8-STEP1-MFG-HINTS-001.md"
+    },
+    "G9-STEP1-VIEWPACK-MIN-001": {
+      "branch": "feature/g9-step1-viewpack-min-001",
+      "artifacts": [
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "docs/specs/product/contracts/master-model.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_viewpack/**",
+        "core/crates/craftcad_viewpack_inspect/**",
+        "core/crates/diycad_project/Cargo.toml",
+        "core/crates/diycad_project/src/lib.rs",
+        "core/crates/diycad_ffi/src/lib.rs",
+        "apps/mobile/README.md",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G9-STEP1-VIEWPACK-MIN-001.md",
+        "tests/**"
+      ],
+      "verification": "docs/verification/G9-STEP1-VIEWPACK-MIN-001.md"
     }
   }
 }

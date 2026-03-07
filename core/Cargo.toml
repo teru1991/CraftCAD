@@ -40,6 +40,8 @@ members = [
   "crates/craftcad_screw_lite",
   "crates/craftcad_rules_engine",
   "crates/craftcad_mfg_hints_lite",
+  "crates/craftcad_viewpack_inspect",
+  "crates/craftcad_viewpack",
   "serialize",
   "commands",
   "edit_ops",
