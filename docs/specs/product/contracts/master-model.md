@@ -41,19 +41,14 @@ Fields (minimum):
 - Each feature:
   - `feature_id`
   - `type` (ExtrudeAdd/ExtrudeCut/Hole/Pattern/Chamfer/ScrewFeature/…)
-  - `params` (typed + versioned)
+  - `params` (typed + versioned; registry-defined)
   - `targets` (stable refs to parts or sketches)
+- Params schema is defined by `docs/specs/product/contracts/feature-params.md`
+  and enforced by `craftcad_params_registry`.
 - Feature evaluation must be deterministic:
   - stable sorting for generated instances
   - stable floating rounding/eps policy (see ../determinism/)
   - seed captured in project for randomized heuristics (nesting)
-
-### ScrewFeature params v1 (Step1 clarification)
-- `params` for `ScrewFeature` may optionally include:
-  - `pilot_hole_mm` (`f64`, optional)
-  - `countersink` (`bool`, optional)
-  - `countersink_depth_mm` (`f64`, optional)
-- Absence is valid; Step1 manufacturing-hints derivation applies defaults.
 
 ## “2D drives 3D” scope limitation (initial)
 - 2D dimensions can modify parameters only if explicitly mapped:

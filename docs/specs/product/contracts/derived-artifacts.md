@@ -46,6 +46,7 @@ Generated from SSOT (`Part/Material/FeatureGraph`):
 - Step1 stores payload only (no GUI placement/layout generation in this task).
 
 ## Update & invalidation rules
+- Invalidation mapping SSOT is defined in `dirty-deps.md`.
 - Any SSOT change marks impacted artifacts dirty.
 - Immediate update: BOM estimate / simple labels.
 - Job update: nesting, drawing regeneration, 3D mesh regeneration.

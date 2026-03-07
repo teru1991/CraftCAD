@@ -43,10 +43,12 @@ jobs:
         shell: pwsh
         run: ./scripts/ci/run_all.ps1
 
-      - name: Upload CI logs
+      - name: Upload CI logs and failure artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ci-logs-${{ matrix.os }}
-          path: .ci_logs/
+          name: ci_artifacts-${{ matrix.os }}
+          path: |
+            .ci_logs/
+            build/ci_artifacts/**
           if-no-files-found: warn

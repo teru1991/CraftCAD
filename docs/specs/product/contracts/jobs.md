@@ -54,6 +54,8 @@
 
 Preflight rules must run before export, nesting-confirm, and regen jobs that emit manufacturing outputs.
 Command palette executions are UX primitives for triggering jobs and must surface job results/errors via ReasonCode.
+
+REGEN job consumes DirtyPlan and updates artifact_store/viewpack; failures must return ReasonCode and must not write partial state.
 If any preflight finding is `FATAL`, the job must fail with its `ReasonCode` and no output artifact is produced.
 
 ## Links

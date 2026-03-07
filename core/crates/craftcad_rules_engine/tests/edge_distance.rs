@@ -40,6 +40,7 @@ fn base_ssot(with_outline: bool, feature_id: Uuid, part_id: Uuid) -> SsotV1 {
                 feature_id,
                 feature_type: FeatureTypeV1::ScrewFeature,
                 params: serde_json::json!({
+                    "v": 1,
                     "points": [
                         {"x": 5.0, "y": 50.0}
                     ]

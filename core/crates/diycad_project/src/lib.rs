@@ -1,3 +1,4 @@
+use craftcad_artifact_store::ArtifactStoreV1;
 use craftcad_ssot::{
     derive_minimal_ssot_v1, deterministic_uuid, FeatureGraphV1, GrainPolicyV1, MaterialCategoryV1,
     MaterialV1, PartLabelV1, PartV1, SsotDeriveConfig, SsotV1,
@@ -36,6 +37,7 @@ pub struct DiycadProject {
     pub thumbnail_png: Option<Vec<u8>>,
     pub ssot_v1: Option<SsotV1>,
     pub viewer_pack_v1: Option<ViewerPackV1>,
+    pub artifact_store_v1: Option<ArtifactStoreV1>,
 }
 
 #[derive(Debug, Error)]
@@ -79,6 +81,7 @@ pub fn create_empty_project(app_version: &str, units: &str, timestamp: &str) -> 
         thumbnail_png: None,
         ssot_v1: None,
         viewer_pack_v1: None,
+        artifact_store_v1: None,
     }
 }
 
@@ -108,6 +111,13 @@ pub fn save(path: impl AsRef<Path>, project: &DiycadProject) -> ProjectResult<()
     if let Some(viewpack) = &viewer_pack_v1 {
         writer.start_file("viewer_pack_v1.json", options)?;
         writer.write_all(serde_json::to_string_pretty(viewpack)?.as_bytes())?;
+    }
+
+    if let Some(artifact_store) = &project.artifact_store_v1 {
+        writer.start_file("artifact_store_v1.json", options)?;
+        writer.write_all(
+            serde_json::to_string_pretty(&artifact_store.clone().canonicalize())?.as_bytes(),
+        )?;
     }
 
     if let Some(thumbnail) = &project.thumbnail_png {
@@ -161,6 +171,9 @@ pub fn load(path: impl AsRef<Path>) -> ProjectResult<DiycadProject> {
             ))
         });
     let viewer_pack_v1 = read_json_file_optional::<ViewerPackV1>(&mut zip, "viewer_pack_v1.json")?;
+    let artifact_store_v1 =
+        read_json_file_optional::<ArtifactStoreV1>(&mut zip, "artifact_store_v1.json")?
+            .map(ArtifactStoreV1::canonicalize);
 
     Ok(DiycadProject {
         manifest,
@@ -168,6 +181,7 @@ pub fn load(path: impl AsRef<Path>) -> ProjectResult<DiycadProject> {
         thumbnail_png,
         ssot_v1,
         viewer_pack_v1,
+        artifact_store_v1,
     })
 }
 
@@ -283,6 +297,7 @@ mod tests {
         assert!(project.thumbnail_png.is_none());
         assert!(project.ssot_v1.is_none());
         assert!(project.viewer_pack_v1.is_none());
+        assert!(project.artifact_store_v1.is_none());
     }
 
     #[test]
@@ -364,6 +379,23 @@ mod tests {
             ]
         );
         assert!(verify_viewpack(&vp).is_empty());
+    }
+
+    #[test]
+    fn roundtrip_persists_artifact_store_v1() {
+        let dir = tempdir().expect("tempdir must be created");
+        let file_path = dir.path().join("artifact_store_roundtrip.diycad");
+        let mut project = sample_project();
+
+        project.artifact_store_v1 = Some(ArtifactStoreV1 {
+            schema_version: 1,
+            entries: vec![],
+        });
+
+        save(&file_path, &project).expect("save should succeed");
+        let loaded = load(&file_path).expect("load should succeed");
+
+        assert_eq!(loaded.artifact_store_v1, project.artifact_store_v1);
     }
 
     #[test]

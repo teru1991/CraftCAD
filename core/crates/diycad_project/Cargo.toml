@@ -6,6 +6,7 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
+craftcad_artifact_store = { path = "../craftcad_artifact_store" }
 craftcad_ssot = { path = "../craftcad_ssot" }
 craftcad_viewpack = { path = "../craftcad_viewpack" }
 serde = { version = "1", features = ["derive"] }
