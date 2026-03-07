@@ -839,6 +839,21 @@
         "docs/verification/G11-STEP1-PALETTE-INSPECTOR-001.md"
       ],
       "verification": "docs/verification/G11-STEP1-PALETTE-INSPECTOR-001.md"
+    },
+    "G1-STEP2-DESKTOP-RUN-001": {
+      "branch": "feature/g1-step2-desktop-run-001",
+      "artifacts": [
+        "scripts/run_desktop.sh",
+        "apps/desktop/README.md",
+        "README.md",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G1-STEP2-DESKTOP-RUN-001.md"
+      ],
+      "verification": "docs/verification/G1-STEP2-DESKTOP-RUN-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G1-STEP2-DESKTOP-RUN-001.md",
+        "tests": "./scripts/build_desktop.sh; bash ./scripts/run_desktop.sh --print-env; bash ./scripts/run_desktop.sh --smoke-view3d tests/fixtures/view3d_smoke_fixture.json; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
+      }
     }
   }
 }
