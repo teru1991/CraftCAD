@@ -68,7 +68,7 @@ Official desktop build/run route:
 
 ```bash
 ./scripts/build_desktop.sh
-./scripts/run_desktop.sh
+bash ./scripts/run_desktop.sh [args...]
 ```
 
 `just desktop-build` may also be available in local setups, but `./scripts/build_desktop.sh` is the canonical command used for reproducible Desktop builds.
@@ -81,6 +81,14 @@ Requirements:
 Notes:
 - The official build route uses release→release linkage (`craftcad_ffi_desktop` + desktop app).
 - CI may skip desktop build if Qt6 development packages are unavailable.
+
+Run policy:
+- All desktop execution routes (including `--smoke-*`) must go through `bash ./scripts/run_desktop.sh [args...]`.
+- Build outputs and shared libraries under `build/` or `target/` are runtime artifacts only and must never be committed.
+
+Runtime troubleshooting:
+- Missing shared libraries: the runner reports `ldd` (Linux) / `otool -L` (macOS) hints.
+- Qt platform plugin failures: the runner prints best-effort `QT_PLUGIN_PATH` candidates.
 
 ## 初期セットアップ完了条件
 

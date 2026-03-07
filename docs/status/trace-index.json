@@ -839,6 +839,88 @@
         "docs/verification/G11-STEP1-PALETTE-INSPECTOR-001.md"
       ],
       "verification": "docs/verification/G11-STEP1-PALETTE-INSPECTOR-001.md"
+    },
+    "G1-STEP2-DESKTOP-RUN-001": {
+      "branch": "feature/g1-step2-desktop-run-001",
+      "artifacts": [
+        "scripts/run_desktop.sh",
+        "apps/desktop/README.md",
+        "README.md",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G1-STEP2-DESKTOP-RUN-001.md"
+      ],
+      "verification": "docs/verification/G1-STEP2-DESKTOP-RUN-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G1-STEP2-DESKTOP-RUN-001.md",
+        "tests": "./scripts/build_desktop.sh; bash ./scripts/run_desktop.sh --print-env; bash ./scripts/run_desktop.sh --smoke-view3d tests/fixtures/view3d_smoke_fixture.json; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
+      }
+    },
+    "G1-STEP4-CI-DESKTOP-GATE-001": {
+      "branch": "feature/g1-step4-ci-desktop-gate-001",
+      "artifacts": [
+        "scripts/ci/run_all.sh",
+        "scripts/ci/validate_smoke_json.py",
+        "apps/desktop/src/main.cpp",
+        ".github/workflows/ci.yml",
+        "docs/specs/product/testing/e2e-flows.md",
+        "docs/verification/G1-STEP4-CI-DESKTOP-GATE-001.md"
+      ],
+      "verification": "docs/verification/G1-STEP4-CI-DESKTOP-GATE-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G1-STEP4-CI-DESKTOP-GATE-001.md",
+        "tests": "bash -n scripts/ci/run_all.sh; python3 -m py_compile scripts/ci/validate_smoke_json.py; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
+      }
+    },
+    "G1-STEP5-CI-ARTIFACTS-001": {
+      "branch": "feature/g1-step5-ci-artifacts-001",
+      "artifacts": [
+        "scripts/ci/run_all.sh",
+        "scripts/ci/collect_artifacts.sh",
+        "scripts/ci/artifacts_index.py",
+        ".github/workflows/ci.yml",
+        "docs/specs/product/testing/e2e-flows.md",
+        "docs/verification/G1-STEP5-CI-ARTIFACTS-001.md"
+      ],
+      "verification": "docs/verification/G1-STEP5-CI-ARTIFACTS-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G1-STEP5-CI-ARTIFACTS-001.md",
+        "tests": "bash -n scripts/ci/run_all.sh; bash -n scripts/ci/collect_artifacts.sh; python3 -m py_compile scripts/ci/artifacts_index.py scripts/ci/validate_smoke_json.py; ./scripts/ci/run_all.sh; python -m json.tool build/ci_artifacts/index.json; python -m json.tool docs/status/trace-index.json"
+      }
+    },
+    "G1-7-DESKTOP-DIST-LAYOUT-001": {
+      "branch": "feature/g1-7-desktop-dist-layout-001",
+      "artifacts": [
+        "docs/specs/product/contracts/resources.md",
+        "apps/desktop/src/resources/resource_locator.h",
+        "apps/desktop/src/resources/resource_locator.cpp",
+        "apps/desktop/resources/**",
+        "apps/desktop/src/main.cpp",
+        "apps/desktop/CMakeLists.txt",
+        "scripts/build_desktop.sh",
+        "scripts/run_desktop.sh",
+        "scripts/ci/run_all.sh",
+        "tests/desktop/resources_preflight_smoke.sh",
+        "docs/verification/G1-7-DESKTOP-DIST-LAYOUT-001.md"
+      ],
+      "verification": "docs/verification/G1-7-DESKTOP-DIST-LAYOUT-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G1-7-DESKTOP-DIST-LAYOUT-001.md",
+        "tests": "python -m json.tool docs/status/trace-index.json; ./scripts/build_desktop.sh; bash ./scripts/run_desktop.sh --smoke-resources; ./scripts/ci/run_all.sh"
+      }
+    },
+    "G1-8-CROSSPLATFORM-GUARDS-001": {
+      "branch": "feature/g1-8-crossplatform-guards-001",
+      "artifacts": [
+        "docs/specs/product/contracts/crossplatform.md",
+        "scripts/ci/crossplatform_checks.py",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G1-8-CROSSPLATFORM-GUARDS-001.md"
+      ],
+      "verification": "docs/verification/G1-8-CROSSPLATFORM-GUARDS-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G1-8-CROSSPLATFORM-GUARDS-001.md",
+        "tests": "python3 scripts/ci/crossplatform_checks.py --self-test; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
+      }
     }
   }
 }
