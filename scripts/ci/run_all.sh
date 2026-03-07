@@ -6,6 +6,8 @@ LOG_DIR="${ROOT_DIR}/.ci_logs"
 SUMMARY_SCRIPT="${ROOT_DIR}/scripts/ci/parse_failures.py"
 SUMMARY_FILE="${LOG_DIR}/summary.json"
 ARTIFACTS_DIR="${ROOT_DIR}/build/ci_artifacts"
+COLLECTOR_SCRIPT="${ROOT_DIR}/scripts/ci/collect_artifacts.sh"
+ARTIFACTS_INDEX_SCRIPT="${ROOT_DIR}/scripts/ci/artifacts_index.py"
 
 mkdir -p "${LOG_DIR}" "${ARTIFACTS_DIR}"
 rm -f "${LOG_DIR}"/*.log "${SUMMARY_FILE}"
@@ -14,29 +16,16 @@ overall_status=0
 
 collect_failure_artifacts() {
   local step_name="$1"
-  local log_file="$2"
-  local bundle_path="${ARTIFACTS_DIR}/${step_name}.tar.gz"
-  local tmp_dir
-  tmp_dir="$(mktemp -d "${ARTIFACTS_DIR}/${step_name}.XXXXXX")"
+  local exit_code="$2"
+  local stdout_file="$3"
+  local stderr_file="$4"
+  local log_file="$5"
 
-  if [ -f "${log_file}" ]; then
-    cp -f "${log_file}" "${tmp_dir}/"
+  if [ -x "${COLLECTOR_SCRIPT}" ] || [ -f "${COLLECTOR_SCRIPT}" ]; then
+    bash "${COLLECTOR_SCRIPT}" "${step_name}" "${exit_code}" "${stdout_file}" "${stderr_file}" "${log_file}" || true
+  else
+    echo "[ARTIFACT] collector missing: ${COLLECTOR_SCRIPT}" >&2
   fi
-  if [ -d "${ROOT_DIR}/build/e2e_failures" ]; then
-    cp -R "${ROOT_DIR}/build/e2e_failures" "${tmp_dir}/"
-  fi
-  if [ -d "${ROOT_DIR}/build/determinism_failures" ]; then
-    cp -R "${ROOT_DIR}/build/determinism_failures" "${tmp_dir}/"
-  fi
-  if [ -d "${ROOT_DIR}/build/desktop" ]; then
-    find "${ROOT_DIR}/build/desktop" -maxdepth 2 -type f \( -name '*.log' -o -name '*smoke*' \) -print0 2>/dev/null | while IFS= read -r -d '' f; do
-      cp -f "$f" "${tmp_dir}/" 2>/dev/null || true
-    done
-  fi
-
-  tar -czf "${bundle_path}" -C "${tmp_dir}" . >/dev/null 2>&1 || true
-  rm -rf "${tmp_dir}"
-  echo "[ARTIFACT] ${step_name} -> ${bundle_path}"
 }
 
 run_step() {
@@ -44,20 +33,29 @@ run_step() {
   local workdir="$2"
   shift 2
   local log_file="${LOG_DIR}/${name}.log"
+  local stdout_file
+  local stderr_file
+  stdout_file="$(mktemp "${LOG_DIR}/${name}.stdout.XXXXXX")"
+  stderr_file="$(mktemp "${LOG_DIR}/${name}.stderr.XXXXXX")"
 
   echo "==> ${name}" | tee "${log_file}"
   (
     cd "${workdir}" && "$@"
-  ) >>"${log_file}" 2>&1
+  ) >"${stdout_file}" 2>"${stderr_file}"
   local status=$?
+
+  cat "${stdout_file}" >>"${log_file}" 2>/dev/null || true
+  cat "${stderr_file}" >>"${log_file}" 2>/dev/null || true
 
   if [ ${status} -ne 0 ]; then
     echo "[FAIL] ${name} (exit ${status})" | tee -a "${log_file}"
-    collect_failure_artifacts "${name}" "${log_file}"
+    collect_failure_artifacts "${name}" "${status}" "${stdout_file}" "${stderr_file}" "${log_file}"
     overall_status=1
   else
     echo "[PASS] ${name}" | tee -a "${log_file}"
   fi
+
+  rm -f "${stdout_file}" "${stderr_file}"
 }
 
 run_step_skip() {
@@ -74,26 +72,36 @@ run_step_expect_fail_grep() {
   local expect="$3"
   shift 3
   local log_file="${LOG_DIR}/${name}.log"
+  local stdout_file
+  local stderr_file
+  stdout_file="$(mktemp "${LOG_DIR}/${name}.stdout.XXXXXX")"
+  stderr_file="$(mktemp "${LOG_DIR}/${name}.stderr.XXXXXX")"
 
   echo "==> ${name}" | tee "${log_file}"
   (
     cd "${workdir}" && "$@"
-  ) >>"${log_file}" 2>&1
+  ) >"${stdout_file}" 2>"${stderr_file}"
   local status=$?
+
+  cat "${stdout_file}" >>"${log_file}" 2>/dev/null || true
+  cat "${stderr_file}" >>"${log_file}" 2>/dev/null || true
 
   if [ ${status} -eq 0 ]; then
     echo "[FAIL] ${name} expected failure but got success" | tee -a "${log_file}"
-    collect_failure_artifacts "${name}" "${log_file}"
+    collect_failure_artifacts "${name}" "${status}" "${stdout_file}" "${stderr_file}" "${log_file}"
     overall_status=1
+    rm -f "${stdout_file}" "${stderr_file}"
     return
   fi
   if ! grep -q "${expect}" "${log_file}"; then
     echo "[FAIL] ${name} missing expected pattern: ${expect}" | tee -a "${log_file}"
-    collect_failure_artifacts "${name}" "${log_file}"
+    collect_failure_artifacts "${name}" "${status}" "${stdout_file}" "${stderr_file}" "${log_file}"
     overall_status=1
+    rm -f "${stdout_file}" "${stderr_file}"
     return
   fi
   echo "[PASS] ${name}" | tee -a "${log_file}"
+  rm -f "${stdout_file}" "${stderr_file}"
 }
 
 require_cmd() {
@@ -153,9 +161,12 @@ elif ! detect_qt6; then
   run_step_skip desktop_gate "Qt6 tooling not detected; desktop build+smoke gate skipped"
 else
   DESKTOP_BUILD_DIR="${ROOT_DIR}/build/desktop"
+  DESKTOP_SMOKE_JSON_DIR="${ROOT_DIR}/build/desktop_smoke"
   DESKTOP_SMOKE_FIXTURE="${ROOT_DIR}/build/desktop/view3d_smoke_fixture.diycad"
   DESKTOP_RULES_FIXTURE="${ROOT_DIR}/build/desktop/rules_edge_smoke_fixture.diycad"
   SMOKE_VALIDATOR="${ROOT_DIR}/scripts/ci/validate_smoke_json.py"
+
+  mkdir -p "${DESKTOP_SMOKE_JSON_DIR}"
 
   run_step desktop_build "${ROOT_DIR}" scripts/build_desktop.sh
   run_step desktop_print_env "${ROOT_DIR}" bash ./scripts/run_desktop.sh --print-env
@@ -169,25 +180,25 @@ else
   fi
 
   run_step desktop_smoke_view3d "${ROOT_DIR}" bash ./scripts/run_desktop.sh --smoke-view3d "${DESKTOP_SMOKE_FIXTURE}"
-  run_step desktop_smoke_view3d_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_view3d.log" --expect-token "VIEW3D_SMOKE_OK" --out "${DESKTOP_BUILD_DIR}/desktop_smoke_view3d.json"
+  run_step desktop_smoke_view3d_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_view3d.log" --expect-token "VIEW3D_SMOKE_OK" --out "${DESKTOP_SMOKE_JSON_DIR}/desktop_smoke_view3d.json"
 
   run_step desktop_smoke_projection_lite "${ROOT_DIR}" bash ./scripts/run_desktop.sh --smoke-projection-lite "${DESKTOP_SMOKE_FIXTURE}"
-  run_step desktop_smoke_projection_lite_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_projection_lite.log" --expect-token "PROJ_LITE_SMOKE_OK" --out "${DESKTOP_BUILD_DIR}/desktop_smoke_projection_lite.json"
+  run_step desktop_smoke_projection_lite_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_projection_lite.log" --expect-token "PROJ_LITE_SMOKE_OK" --out "${DESKTOP_SMOKE_JSON_DIR}/desktop_smoke_projection_lite.json"
 
   run_step desktop_smoke_estimate_lite "${ROOT_DIR}" bash ./scripts/run_desktop.sh --smoke-estimate-lite "${DESKTOP_SMOKE_FIXTURE}"
-  run_step desktop_smoke_estimate_lite_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_estimate_lite.log" --expect-token "ESTIMATE_LITE_SMOKE_OK" --out "${DESKTOP_BUILD_DIR}/desktop_smoke_estimate_lite.json"
+  run_step desktop_smoke_estimate_lite_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_estimate_lite.log" --expect-token "ESTIMATE_LITE_SMOKE_OK" --out "${DESKTOP_SMOKE_JSON_DIR}/desktop_smoke_estimate_lite.json"
 
   run_step desktop_smoke_fastener_bom_lite "${ROOT_DIR}" bash ./scripts/run_desktop.sh --smoke-fastener-bom-lite "${DESKTOP_RULES_FIXTURE}"
-  run_step desktop_smoke_fastener_bom_lite_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_fastener_bom_lite.log" --expect-token "FASTENER_BOM_LITE_SMOKE_OK" --out "${DESKTOP_BUILD_DIR}/desktop_smoke_fastener_bom_lite.json"
+  run_step desktop_smoke_fastener_bom_lite_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_fastener_bom_lite.log" --expect-token "FASTENER_BOM_LITE_SMOKE_OK" --out "${DESKTOP_SMOKE_JSON_DIR}/desktop_smoke_fastener_bom_lite.json"
 
   run_step desktop_smoke_rules_edge "${ROOT_DIR}" bash ./scripts/run_desktop.sh --smoke-rules-edge "${DESKTOP_RULES_FIXTURE}"
-  run_step desktop_smoke_rules_edge_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_rules_edge.log" --expect-token "RULES_EDGE_SMOKE_OK" --out "${DESKTOP_BUILD_DIR}/desktop_smoke_rules_edge.json"
+  run_step desktop_smoke_rules_edge_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_rules_edge.log" --expect-token "RULES_EDGE_SMOKE_OK" --out "${DESKTOP_SMOKE_JSON_DIR}/desktop_smoke_rules_edge.json"
 
   run_step desktop_smoke_mfg_hints_lite "${ROOT_DIR}" bash ./scripts/run_desktop.sh --smoke-mfg-hints-lite "${DESKTOP_RULES_FIXTURE}"
-  run_step desktop_smoke_mfg_hints_lite_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_mfg_hints_lite.log" --expect-token "MFG_HINTS_LITE_SMOKE_OK" --out "${DESKTOP_BUILD_DIR}/desktop_smoke_mfg_hints_lite.json"
+  run_step desktop_smoke_mfg_hints_lite_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_mfg_hints_lite.log" --expect-token "MFG_HINTS_LITE_SMOKE_OK" --out "${DESKTOP_SMOKE_JSON_DIR}/desktop_smoke_mfg_hints_lite.json"
 
   run_step desktop_smoke_inspector_edit "${ROOT_DIR}" bash ./scripts/run_desktop.sh --smoke-inspector-edit "${DESKTOP_RULES_FIXTURE}"
-  run_step desktop_smoke_inspector_edit_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_inspector_edit.log" --expect-token "INSPECTOR_SMOKE_OK" --out "${DESKTOP_BUILD_DIR}/desktop_smoke_inspector_edit.json"
+  run_step desktop_smoke_inspector_edit_json "${ROOT_DIR}" python3 "${SMOKE_VALIDATOR}" --log "${LOG_DIR}/desktop_smoke_inspector_edit.log" --expect-token "INSPECTOR_SMOKE_OK" --out "${DESKTOP_SMOKE_JSON_DIR}/desktop_smoke_inspector_edit.json"
 
   run_step_expect_fail_grep desktop_smoke_export_preflight "${ROOT_DIR}" "BLOCKED=1" bash ./scripts/run_desktop.sh --smoke-export-preflight "${DESKTOP_RULES_FIXTURE}"
 
@@ -212,9 +223,7 @@ PY
   overall_status=$?
 fi
 
-# Always try to collect reproducible perf artifacts (non-fatal).
-set +e
-"${ROOT_DIR}/scripts/ci/collect_artifacts.sh" "${ROOT_DIR}/artifacts" || true
-set -e
+# Always generate artifact index (even if empty).
+python3 "${ARTIFACTS_INDEX_SCRIPT}" --artifacts-dir "${ARTIFACTS_DIR}" >/dev/null 2>&1 || true
 
 exit ${overall_status}

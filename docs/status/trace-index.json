@@ -870,6 +870,22 @@
         "head_sha": "see docs/verification/G1-STEP4-CI-DESKTOP-GATE-001.md",
         "tests": "bash -n scripts/ci/run_all.sh; python3 -m py_compile scripts/ci/validate_smoke_json.py; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
       }
+    },
+    "G1-STEP5-CI-ARTIFACTS-001": {
+      "branch": "feature/g1-step5-ci-artifacts-001",
+      "artifacts": [
+        "scripts/ci/run_all.sh",
+        "scripts/ci/collect_artifacts.sh",
+        "scripts/ci/artifacts_index.py",
+        ".github/workflows/ci.yml",
+        "docs/specs/product/testing/e2e-flows.md",
+        "docs/verification/G1-STEP5-CI-ARTIFACTS-001.md"
+      ],
+      "verification": "docs/verification/G1-STEP5-CI-ARTIFACTS-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G1-STEP5-CI-ARTIFACTS-001.md",
+        "tests": "bash -n scripts/ci/run_all.sh; bash -n scripts/ci/collect_artifacts.sh; python3 -m py_compile scripts/ci/artifacts_index.py scripts/ci/validate_smoke_json.py; ./scripts/ci/run_all.sh; python -m json.tool build/ci_artifacts/index.json; python -m json.tool docs/status/trace-index.json"
+      }
     }
   }
 }

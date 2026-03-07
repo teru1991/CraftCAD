@@ -47,3 +47,8 @@ These flows are the acceptance criteria for the 6 pillars.
 - Qt6 が利用できない環境では、Desktop gate は理由付きで `SKIP` として明示し、CI 全体は継続する。
 - Desktop 判定・実行・SKIP 判定の SSOT は `scripts/ci/run_all.sh` とし、workflow 側に重複ロジックを持たない。
 
+## Failure Artifacts Contract
+- All CI runs must upload `build/ci_artifacts/**` regardless of success/failure (`if: always()`).
+- Each failing step writes `build/ci_artifacts/<step_name>/` containing captured stdout/stderr and best-effort diagnostics bundle inputs.
+- `build/ci_artifacts/index.json` is always generated and lists collected files per step.
+
