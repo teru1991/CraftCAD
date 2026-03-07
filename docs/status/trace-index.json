@@ -921,6 +921,22 @@
         "head_sha": "see docs/verification/G1-8-CROSSPLATFORM-GUARDS-001.md",
         "tests": "python3 scripts/ci/crossplatform_checks.py --self-test; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
       }
+    },
+    "G2-11-DIRTY-DEPENDENCY-TABLE-001": {
+      "branch": "feature/g2-11-dirty-dependency-table-001",
+      "artifacts": [
+        "docs/specs/product/contracts/dirty-deps.md",
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "core/crates/craftcad_dirty_deps/**",
+        "core/Cargo.toml",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G2-11-DIRTY-DEPENDENCY-TABLE-001.md"
+      ],
+      "verification": "docs/verification/G2-11-DIRTY-DEPENDENCY-TABLE-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G2-11-DIRTY-DEPENDENCY-TABLE-001.md",
+        "tests": "cargo test -p craftcad_dirty_deps; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
+      }
     }
   }
 }

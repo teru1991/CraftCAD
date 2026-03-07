@@ -43,6 +43,7 @@ members = [
   "crates/craftcad_viewpack_inspect",
   "crates/craftcad_viewpack",
   "crates/craftcad_determinism_harness",
+  "crates/craftcad_dirty_deps",
   "serialize",
   "commands",
   "edit_ops",
