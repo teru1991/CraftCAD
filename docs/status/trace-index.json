@@ -937,6 +937,21 @@
         "head_sha": "see docs/verification/G2-11-DIRTY-DEPENDENCY-TABLE-001.md",
         "tests": "cargo test -p craftcad_dirty_deps; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
       }
+    },
+    "G2-12-DIRTY-ENGINE-001": {
+      "branch": "feature/g2-12-dirty-engine-001",
+      "artifacts": [
+        "docs/specs/product/contracts/dirty-engine.md",
+        "core/crates/craftcad_dirty_engine/**",
+        "core/Cargo.toml",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G2-12-DIRTY-ENGINE-001.md"
+      ],
+      "verification": "docs/verification/G2-12-DIRTY-ENGINE-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G2-12-DIRTY-ENGINE-001.md",
+        "tests": "cargo test -p craftcad_dirty_engine; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
+      }
     }
   }
 }

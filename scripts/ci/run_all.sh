@@ -138,6 +138,7 @@ run_step rust_test "${ROOT_DIR}/core" cargo test -p craftcad_wizards --all-targe
 run_step viewpack_build_verify "${ROOT_DIR}/core" cargo test -p craftcad_viewpack
 run_step determinism_harness "${ROOT_DIR}/core" cargo run -q -p craftcad_determinism_harness --bin craftcad-determinism-check
 run_step dirty_deps_tests "${ROOT_DIR}" cargo test -p craftcad_dirty_deps --manifest-path core/Cargo.toml
+run_step dirty_engine_tests "${ROOT_DIR}" cargo test -p craftcad_dirty_engine --manifest-path core/Cargo.toml
 run_step diycad_format_tests "${ROOT_DIR}/core" cargo test -p diycad_format --tests
 run_step diycad_format_tests_latest2 "${ROOT_DIR}/core" cargo test -p diycad_format --features test_latest_2 --test migrate_applies_under_feature
 run_step migration_tests "${ROOT_DIR}/core" cargo test -p migration
