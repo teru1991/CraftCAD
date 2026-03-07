@@ -58,7 +58,14 @@ def main() -> int:
                 {
                     "feature_id": "00000000-0000-0000-0000-0000000000f1",
                     "feature_type": "screw_feature",
-                    "params": {"points": [{"x": 5.0, "y": 50.0}]},
+                    "params": {
+                        "v": 1,
+                        "spec_name": "screw_3_5x30",
+                        "pilot_hole_mm": 2.5,
+                        "countersink": True,
+                        "countersink_depth_mm": 1.2,
+                        "points": [{"x": 5.0, "y": 50.0}]
+                    },
                     "targets": [{"part_id": "00000000-0000-0000-0000-0000000000a1"}],
                 }
             ]

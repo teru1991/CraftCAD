@@ -146,6 +146,21 @@ static int runSmokeProjectionLite(const QString& path) {
     return 0;
 }
 
+static int runSmokeMfgHintsLite(const QString& path) {
+    craftcad_mfg_hints_lite_hash_t hints{};
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_mfg_hints_lite_hash(p.constData(), &hints);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "MFG_HINTS_LITE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const char* hash = reinterpret_cast<const char*>(hints.hash_hex);
+    std::fprintf(stdout, "MFG_HINTS_LITE_SMOKE_OK hash=%s items=%zu\n", hash, hints.item_count);
+    return 0;
+}
+
 static int runSmokeView3d(const QString& path) {
     QString err;
     auto boxes = loadView3dPartBoxes(path, &err);
@@ -222,6 +237,15 @@ int main(int argc, char* argv[]) {
             return 2;
         }
         return runSmokeProjectionLite(args.at(smokeProjectionIdx + 1));
+    }
+
+    const int smokeHintsIdx = args.indexOf("--smoke-mfg-hints-lite");
+    if (smokeHintsIdx >= 0) {
+        if (smokeHintsIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "MFG_HINTS_LITE_SMOKE_FAIL error=missing_project_path\n");
+            return 2;
+        }
+        return runSmokeMfgHintsLite(args.at(smokeHintsIdx + 1));
     }
 
     const int smokeRulesIdx = args.indexOf("--smoke-rules-edge");

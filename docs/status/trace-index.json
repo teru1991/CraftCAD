@@ -770,6 +770,27 @@
         "docs/verification/G7-STEP1-RULES-EDGE-001.md"
       ],
       "verification": "docs/verification/G7-STEP1-RULES-EDGE-001.md"
+    },
+    "G8-STEP1-MFG-HINTS-001": {
+      "branch": "feature/g8-step1-mfg-hints-001",
+      "artifacts": [
+        "docs/specs/product/contracts/derived-artifacts.md",
+        "docs/specs/product/contracts/master-model.md",
+        "docs/specs/product/contracts/reason-codes.md",
+        "core/Cargo.toml",
+        "core/crates/craftcad_mfg_hints_lite/**",
+        "core/ffi_desktop/Cargo.toml",
+        "core/ffi_desktop/include/craftcad_desktop_ffi.h",
+        "core/ffi_desktop/src/lib.rs",
+        "apps/desktop/src/ffi/craftcad_ffi.h",
+        "apps/desktop/src/main.cpp",
+        "scripts/ci/create_rules_edge_smoke_fixture.py",
+        "scripts/ci/run_all.sh",
+        "docs/specs/system/ffi_contract.md",
+        "docs/verification/G8-STEP1-MFG-HINTS-001.md",
+        "tests/**"
+      ],
+      "verification": "docs/verification/G8-STEP1-MFG-HINTS-001.md"
     }
   }
 }

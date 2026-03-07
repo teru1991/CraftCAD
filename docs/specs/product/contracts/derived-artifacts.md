@@ -34,6 +34,17 @@ Generated from SSOT (`Part/Material/FeatureGraph`):
 - minimal steps list (cut → drill → chamfer → assemble)
 - link each step to relevant parts/features (IDs)
 
+6) **ManufacturingHintsLiteV1 (Step1)**
+- inputs: SSOT `feature_graph` (`ScrewFeature` only in Step1)
+- item shape (per feature):
+  - `{feature_id, part_id, spec_name, pilot_hole_mm, countersink, note_text}`
+- deterministic ordering: sorted by `(part_id, feature_id)`
+- hash: `sha256(canonical json bytes)`
+
+7) **AnnotationPayloadLite (Step1 contract note)**
+- manufacturing hints are emitted as machine-readable payloads that can be mapped into 2D note annotations in later steps.
+- Step1 stores payload only (no GUI placement/layout generation in this task).
+
 ## Update & invalidation rules
 - Any SSOT change marks impacted artifacts dirty.
 - Immediate update: BOM estimate / simple labels.

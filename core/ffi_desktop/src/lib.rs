@@ -38,6 +38,7 @@ use craftcad_export::{
 };
 use craftcad_faces::{extract_faces, Face};
 use craftcad_i18n::resolve_user_message;
+use craftcad_mfg_hints_lite::{compute_mfg_hints_lite, hints_hash_hex};
 use craftcad_projection_lite::{
     project_to_sheet_lite, sheet_hash_hex, Aabb as ProjAabb, PartBox as ProjPartBox, ViewLite,
 };
@@ -108,6 +109,7 @@ pub const EXPORTED_SYMBOLS: &[&str] = &[
     "craftcad_last_error_message",
     "craftcad_projection_lite_hashes",
     "craftcad_estimate_lite_hash",
+    "craftcad_mfg_hints_lite_hash",
     "craftcad_rules_edge_report",
     "craftcad_rules_edge_free_json",
     "craftcad_export_preflight_check",
@@ -1619,6 +1621,13 @@ pub struct CraftcadEstimateLiteHash {
     pub first_material_id_utf8: [u8; 37],
 }
 
+#[repr(C)]
+#[derive(Debug, Clone, Copy)]
+pub struct CraftcadMfgHintsLiteHash {
+    pub hash_hex: [u8; 65],
+    pub item_count: usize,
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn craftcad_estimate_lite_hash(
     project_path_utf8: *const c_char,
@@ -1657,6 +1666,48 @@ pub unsafe extern "C" fn craftcad_estimate_lite_hash(
         hash_hex: hash_buf(&hash),
         item_count: est.items.len(),
         first_material_id_utf8,
+    };
+    set_last_error("");
+    0
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_mfg_hints_lite_hash(
+    project_path_utf8: *const c_char,
+    out_hints: *mut CraftcadMfgHintsLiteHash,
+) -> i32 {
+    if project_path_utf8.is_null() || out_hints.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+
+    let ssot = match load_ssot_for_project(Path::new(&path)) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 3;
+        }
+    };
+
+    let hints = match compute_mfg_hints_lite(&ssot) {
+        Ok(v) => v,
+        Err((code, detail)) => {
+            set_last_error(format!("{code}: {detail}"));
+            return 4;
+        }
+    };
+    let hash = hints_hash_hex(&hints);
+    *out_hints = CraftcadMfgHintsLiteHash {
+        hash_hex: hash_buf(&hash),
+        item_count: hints.items.len(),
     };
     set_last_error("");
     0

@@ -98,6 +98,7 @@ if [ -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
     run_step desktop_smoke_view3d "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-view3d "${DESKTOP_SMOKE_FIXTURE}"
     run_step desktop_smoke_projection_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-projection-lite "${DESKTOP_SMOKE_FIXTURE}"
     run_step desktop_smoke_estimate_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-estimate-lite "${DESKTOP_SMOKE_FIXTURE}"
+    run_step desktop_smoke_mfg_hints_lite "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-mfg-hints-lite "${DESKTOP_RULES_FIXTURE}"
     run_step desktop_smoke_rules_edge "${ROOT_DIR}" ./scripts/run_desktop.sh --smoke-rules-edge "${DESKTOP_RULES_FIXTURE}"
     run_step_expect_fail_grep desktop_smoke_export_preflight "${ROOT_DIR}" "BLOCKED=1" ./scripts/run_desktop.sh --smoke-export-preflight "${DESKTOP_RULES_FIXTURE}"
 

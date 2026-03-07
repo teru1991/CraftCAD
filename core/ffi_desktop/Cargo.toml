@@ -14,6 +14,7 @@ craftcad_ssot = { path = "../crates/craftcad_ssot" }
 craftcad_projection_lite = { path = "../crates/craftcad_projection_lite" }
 craftcad_estimate_lite = { path = "../crates/craftcad_estimate_lite" }
 craftcad_rules_engine = { path = "../crates/craftcad_rules_engine" }
+craftcad_mfg_hints_lite = { path = "../crates/craftcad_mfg_hints_lite" }
 craftcad_serialize = { path = "../serialize" }
 craftcad_commands = { path = "../commands" }
 craftcad_part_ops = { path = "../part_ops" }
