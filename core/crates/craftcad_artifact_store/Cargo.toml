@@ -1,0 +1,9 @@
+[package]
+name = "craftcad_artifact_store"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+craftcad_dirty_deps = { path = "../craftcad_dirty_deps" }

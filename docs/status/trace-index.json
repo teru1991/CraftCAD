@@ -952,6 +952,25 @@
         "head_sha": "see docs/verification/G2-12-DIRTY-ENGINE-001.md",
         "tests": "cargo test -p craftcad_dirty_engine; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json"
       }
+    },
+    "G2-13-REGEN-SCHEDULER-001": {
+      "branch": "feature/g2-13-regen-scheduler-001",
+      "artifacts": [
+        "docs/specs/product/contracts/artifact-store.md",
+        "docs/specs/product/contracts/jobs.md",
+        "core/crates/craftcad_artifact_store/**",
+        "core/crates/craftcad_regen_scheduler/**",
+        "core/crates/diycad_project/src/lib.rs",
+        "core/crates/diycad_project/Cargo.toml",
+        "core/Cargo.toml",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G2-13-REGEN-SCHEDULER-001.md"
+      ],
+      "verification": "docs/verification/G2-13-REGEN-SCHEDULER-001.md",
+      "evidence": {
+        "tests": "cargo test -p craftcad_artifact_store --manifest-path core/Cargo.toml; cargo test -p craftcad_regen_scheduler --manifest-path core/Cargo.toml; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json",
+        "head_sha": "see docs/verification/G2-13-REGEN-SCHEDULER-001.md"
+      }
     }
   }
 }

@@ -45,6 +45,8 @@ members = [
   "crates/craftcad_determinism_harness",
   "crates/craftcad_dirty_deps",
   "crates/craftcad_dirty_engine",
+  "crates/craftcad_artifact_store",
+  "crates/craftcad_regen_scheduler",
   "serialize",
   "commands",
   "edit_ops",

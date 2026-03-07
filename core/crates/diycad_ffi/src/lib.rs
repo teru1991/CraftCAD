@@ -95,6 +95,7 @@ mod tests {
             thumbnail_png: None,
             ssot_v1: None,
             viewer_pack_v1: None,
+            artifact_store_v1: None,
         }
     }
 
