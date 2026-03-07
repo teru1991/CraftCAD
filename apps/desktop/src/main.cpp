@@ -153,6 +153,22 @@ static int runSmokeProjectionLite(const QString& path) {
     return 0;
 }
 
+
+static int runSmokeFastenerBomLite(const QString& path) {
+    craftcad_mfg_hints_lite_hash_t hints{};
+    const QByteArray p = path.toUtf8();
+    const int rc = craftcad_mfg_hints_lite_hash(p.constData(), &hints);
+    if (rc != 0) {
+        const QString err = take(craftcad_last_error_message());
+        std::fprintf(stderr, "FASTENER_BOM_LITE_SMOKE_FAIL error=%s\n", err.toUtf8().constData());
+        return 2;
+    }
+
+    const char* hash = reinterpret_cast<const char*>(hints.hash_hex);
+    std::fprintf(stdout, "FASTENER_BOM_LITE_SMOKE_OK hash=%s items=%zu\n", hash, hints.item_count);
+    return 0;
+}
+
 static int runSmokeMfgHintsLite(const QString& path) {
     craftcad_mfg_hints_lite_hash_t hints{};
     const QByteArray p = path.toUtf8();
@@ -301,6 +317,16 @@ int main(int argc, char* argv[]) {
             return 2;
         }
         return runSmokeProjectionLite(args.at(smokeProjectionIdx + 1));
+    }
+
+    const int smokeFastenerIdx = args.indexOf("--smoke-fastener-bom-lite");
+    if (smokeFastenerIdx >= 0) {
+        if (smokeFastenerIdx + 1 >= args.size()) {
+            std::fprintf(stderr, "FASTENER_BOM_LITE_SMOKE_FAIL error=missing_project_path
+");
+            return 2;
+        }
+        return runSmokeFastenerBomLite(args.at(smokeFastenerIdx + 1));
     }
 
     const int smokeHintsIdx = args.indexOf("--smoke-mfg-hints-lite");
