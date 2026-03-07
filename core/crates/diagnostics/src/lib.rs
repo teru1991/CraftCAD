@@ -20,7 +20,9 @@ pub use security_iface::{ConsentProvider, DefaultDenyConsent, Limits, Redactor, 
 pub use ssot_fingerprint::SsotFingerprint;
 
 pub use store::{CleanupResult, DiagnosticsStore, StoreIndexEntry};
-pub use support_zip::{SupportZipBuilder, ZipResult};
+pub use support_zip::{
+    DerivedHashes, ReproEnv, SupportZipBuilder, SupportZipReproBundle, ZipResult,
+};
 
 #[derive(Clone)]
 pub struct SecurityCtx {

@@ -31,3 +31,23 @@ Support ZIP Contract (Sprint17)
 ## Naming (must not include PII)
 - support-<job_id>-<timestamp_utc>.zip
 - job_idはUUID等（PII無し）
+
+
+## SupportZip Contents vNext (Step: hashes + SSOT snapshot)
+`repro/` に再現最小セットを含める。
+
+- `repro/ssot_snapshot.json`
+  - `SsotV1` canonical snapshot を redaction 済みで格納。
+- `repro/derived_hashes.json`
+  - `projection_front` / `projection_top` / `projection_side`
+  - `estimate`
+  - `fastener_bom`
+  - `mfg_hints`
+  - `viewpack`
+- `repro/dirty_plan.json`（DirtyPlan がある場合のみ）
+- `repro/env.json`
+  - `git_sha`, `rustc_version`, `os`, `app_version`
+
+### Redaction & privacy
+- user path / username / external file path は redaction 必須。
+- `repro/` は SSOT snapshot + hash + plan + env のみを入れ、許可されていない生入力や外部パス情報は含めない。

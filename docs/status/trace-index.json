@@ -986,6 +986,23 @@
         "tests": "cargo test -p craftcad_determinism_harness --manifest-path core/Cargo.toml; cargo run -q -p craftcad_determinism_harness --bin craftcad-determinism-check --manifest-path core/Cargo.toml; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json",
         "head_sha": "see docs/verification/G10-2-DETERMINISM-EXT-MFG-VIEWPACK-001.md"
       }
+    },
+    "G10-8-SUPPORTZIP-EXT-001": {
+      "branch": "feature/g10-8-supportzip-ext-001",
+      "artifacts": [
+        "docs/specs/diagnostics/support_zip.md",
+        "core/crates/diagnostics/Cargo.toml",
+        "core/crates/diagnostics/src/lib.rs",
+        "core/crates/diagnostics/src/support_zip.rs",
+        "core/crates/diagnostics/tests/support_zip_repro_bundle.rs",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G10-8-SUPPORTZIP-EXT-001.md"
+      ],
+      "verification": "docs/verification/G10-8-SUPPORTZIP-EXT-001.md",
+      "evidence": {
+        "tests": "cargo test -p craftcad_diagnostics --manifest-path core/Cargo.toml; ./scripts/ci/run_all.sh; python -m json.tool docs/status/trace-index.json",
+        "head_sha": "see docs/verification/G10-8-SUPPORTZIP-EXT-001.md"
+      }
     }
   }
 }

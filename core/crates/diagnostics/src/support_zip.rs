@@ -5,7 +5,15 @@ use crate::retention::RetentionPolicy;
 use crate::ssot_fingerprint::SsotFingerprint;
 use crate::store::{DiagnosticsStore, StoreIndexEntry};
 use crate::SecurityCtx;
+use craftcad_dirty_engine::DirtyPlanV1;
+use craftcad_estimate_lite::{compute_estimate_lite, estimate_hash_hex};
+use craftcad_mfg_hints_lite::{
+    compute_fastener_bom_with_hints_lite, fastener_bom_hash_hex, hints_hash_hex,
+};
 use craftcad_perf::PerfReport;
+use craftcad_projection_lite::{project_to_sheet_lite, sheet_hash_hex, Aabb, PartBox, ViewLite};
+use craftcad_ssot::SsotV1;
+use craftcad_viewpack::build_viewpack_from_ssot;
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::io::{self, Write};
@@ -29,6 +37,131 @@ pub fn set_zip_ts_fn_for_tests(f: fn() -> String) {
     let _ = ZIP_TS_FN.set(f);
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct DerivedHashes {
+    pub projection_front: String,
+    pub projection_top: String,
+    pub projection_side: String,
+    pub estimate: String,
+    pub fastener_bom: String,
+    pub mfg_hints: String,
+    pub viewpack: String,
+}
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct ReproEnv {
+    pub git_sha: String,
+    pub rustc_version: String,
+    pub os: String,
+    pub app_version: String,
+}
+
+#[derive(Clone, Debug)]
+pub struct SupportZipReproBundle {
+    pub ssot_snapshot_redacted: serde_json::Value,
+    pub derived_hashes: DerivedHashes,
+    pub dirty_plan: Option<DirtyPlanV1>,
+    pub env: ReproEnv,
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    let mut h = Sha256::new();
+    h.update(bytes);
+    hex::encode(h.finalize())
+}
+
+fn detect_git_sha() -> String {
+    if let Ok(v) = std::env::var("GITHUB_SHA") {
+        if !v.trim().is_empty() {
+            return v;
+        }
+    }
+    if let Ok(v) = std::env::var("GIT_SHA") {
+        if !v.trim().is_empty() {
+            return v;
+        }
+    }
+    std::process::Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "unknown".to_string())
+}
+
+fn detect_rustc_version() -> String {
+    std::process::Command::new("rustc")
+        .arg("-V")
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "unknown".to_string())
+}
+
+fn to_projection_part_boxes(ssot: &SsotV1) -> Vec<PartBox> {
+    let mut parts = ssot.parts.clone();
+    parts.sort_by_key(|p| p.part_id);
+    parts
+        .into_iter()
+        .map(|part| {
+            let aabb = match part.manufacturing_outline_2d {
+                Some(outline) => Aabb {
+                    min_x: outline.min_x.min(outline.max_x),
+                    min_y: outline.min_y.min(outline.max_y),
+                    min_z: 0.0,
+                    max_x: outline.max_x.max(outline.min_x),
+                    max_y: outline.max_y.max(outline.min_y),
+                    max_z: part.thickness_mm.unwrap_or(0.0).max(0.0),
+                },
+                None => Aabb {
+                    min_x: 0.0,
+                    min_y: 0.0,
+                    min_z: 0.0,
+                    max_x: 100.0,
+                    max_y: 100.0,
+                    max_z: part.thickness_mm.unwrap_or(0.0).max(0.0),
+                },
+            };
+            PartBox {
+                part_id: part.part_id,
+                aabb,
+            }
+        })
+        .collect()
+}
+
+fn derive_hashes_from_ssot(ssot: &SsotV1) -> io::Result<DerivedHashes> {
+    let boxes = to_projection_part_boxes(ssot);
+    let projection_front = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, boxes.clone()));
+    let projection_top = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Top, boxes.clone()));
+    let projection_side = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Side, boxes));
+
+    let estimate = estimate_hash_hex(&compute_estimate_lite(ssot));
+
+    let fastener_bundle = compute_fastener_bom_with_hints_lite(ssot)
+        .map_err(|(code, message)| io::Error::other(format!("{code}: {message}")))?;
+    let fastener_bom = fastener_bom_hash_hex(&fastener_bundle.fastener_bom);
+    let mfg_hints = hints_hash_hex(&fastener_bundle.mfg_hints);
+
+    let viewpack = build_viewpack_from_ssot(ssot)
+        .map_err(|(code, message)| io::Error::other(format!("{code}: {message}")))?;
+    let viewpack_bytes = serde_json::to_vec(&viewpack).map_err(io::Error::other)?;
+
+    Ok(DerivedHashes {
+        projection_front,
+        projection_top,
+        projection_side,
+        estimate,
+        fastener_bom,
+        mfg_hints,
+        viewpack: sha256_hex(&viewpack_bytes),
+    })
+}
+
 #[derive(Clone, Debug)]
 pub struct ZipResult {
     pub path: PathBuf,
@@ -46,6 +179,7 @@ pub struct SupportZipBuilder {
     consent: Option<security::ConsentState>,
     inputs_copy: Vec<(String, Vec<u8>)>,
     ssot_fingerprint: Option<SsotFingerprint>,
+    repro_bundle: Option<SupportZipReproBundle>,
 }
 
 impl Default for SupportZipBuilder {
@@ -65,6 +199,7 @@ impl SupportZipBuilder {
             consent: None,
             inputs_copy: Vec::new(),
             ssot_fingerprint: None,
+            repro_bundle: None,
         }
     }
 
@@ -113,6 +248,42 @@ impl SupportZipBuilder {
         self
     }
 
+    pub fn support_zip_add_repro_bundle(
+        mut self,
+        ssot: &SsotV1,
+        hashes: Option<DerivedHashes>,
+        dirty_plan_opt: Option<DirtyPlanV1>,
+        app_version: Option<&str>,
+    ) -> io::Result<Self> {
+        let sec = SecurityCtx::load_default()?;
+        let canonical_ssot = ssot.clone().canonicalize();
+        let ssot_json = serde_json::to_value(canonical_ssot).map_err(io::Error::other)?;
+        let ssot_snapshot_redacted = sec.redactor.redact_json(&ssot_json);
+
+        let derived_hashes = match hashes {
+            Some(h) => h,
+            None => derive_hashes_from_ssot(ssot)?,
+        };
+
+        let env = ReproEnv {
+            git_sha: detect_git_sha(),
+            rustc_version: detect_rustc_version(),
+            os: format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
+            app_version: app_version
+                .map(ToString::to_string)
+                .or_else(|| std::env::var("CRAFTCAD_APP_VERSION").ok())
+                .unwrap_or_else(|| "unknown".to_string()),
+        };
+
+        self.repro_bundle = Some(SupportZipReproBundle {
+            ssot_snapshot_redacted,
+            derived_hashes,
+            dirty_plan: dirty_plan_opt,
+            env,
+        });
+        Ok(self)
+    }
+
     pub fn build(self, path: impl AsRef<Path>) -> io::Result<PathBuf> {
         let path = path.as_ref();
         let parent = path.parent().unwrap_or_else(|| Path::new("."));
@@ -155,6 +326,7 @@ impl SupportZipBuilder {
             consent: _,
             inputs_copy,
             ssot_fingerprint,
+            repro_bundle,
         } = self;
 
         let fingerprint = ssot_fingerprint.unwrap_or_else(SsotFingerprint::empty);
@@ -237,6 +409,40 @@ impl SupportZipBuilder {
 
         zip.start_file("ssot_fingerprint.json", opts)?;
         zip.write_all(&serde_json::to_vec_pretty(&fingerprint).map_err(io::Error::other)?)?;
+
+        if let Some(repro) = repro_bundle {
+            zip.start_file("repro/ssot_snapshot.json", opts)?;
+            let payload = serde_json::to_vec_pretty(&repro.ssot_snapshot_redacted)
+                .map_err(io::Error::other)?;
+            sec.limits
+                .check_bytes(security::LimitKind::SingleEntryBytes, payload.len() as u64)
+                .map_err(|e| io::Error::other(e.message.to_string()))?;
+            zip.write_all(&payload)?;
+
+            zip.start_file("repro/derived_hashes.json", opts)?;
+            let payload =
+                serde_json::to_vec_pretty(&repro.derived_hashes).map_err(io::Error::other)?;
+            sec.limits
+                .check_bytes(security::LimitKind::SingleEntryBytes, payload.len() as u64)
+                .map_err(|e| io::Error::other(e.message.to_string()))?;
+            zip.write_all(&payload)?;
+
+            if let Some(dirty_plan) = repro.dirty_plan {
+                zip.start_file("repro/dirty_plan.json", opts)?;
+                let payload = serde_json::to_vec_pretty(&dirty_plan).map_err(io::Error::other)?;
+                sec.limits
+                    .check_bytes(security::LimitKind::SingleEntryBytes, payload.len() as u64)
+                    .map_err(|e| io::Error::other(e.message.to_string()))?;
+                zip.write_all(&payload)?;
+            }
+
+            zip.start_file("repro/env.json", opts)?;
+            let payload = serde_json::to_vec_pretty(&repro.env).map_err(io::Error::other)?;
+            sec.limits
+                .check_bytes(security::LimitKind::SingleEntryBytes, payload.len() as u64)
+                .map_err(|e| io::Error::other(e.message.to_string()))?;
+            zip.write_all(&payload)?;
+        }
 
         zip.finish()?;
         fs::rename(&tmp, &path)?;

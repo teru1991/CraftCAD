@@ -160,6 +160,7 @@ run_step tools_migrate_tests "${ROOT_DIR}/tools/migrate" cargo test -q -p diycad
 run_step diagnostics_tests "${ROOT_DIR}/core" cargo test -p craftcad_diagnostics --tests
 run_step diagnostics_golden "${ROOT_DIR}/core/crates/ssot_lint" cargo test --test diagnostics_golden
 run_step diagnostics_support_zip_e2e "${ROOT_DIR}/core/crates/ssot_lint" cargo test --test diagnostics_support_zip
+run_step supportzip_smoke "${ROOT_DIR}/core" cargo test -p craftcad_diagnostics --test support_zip_repro_bundle
 run_step perf_smoke "${ROOT_DIR}" scripts/ci/perf_smoke.sh
 
 if [ ! -f "${ROOT_DIR}/apps/desktop/CMakeLists.txt" ]; then
