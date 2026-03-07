@@ -18,11 +18,11 @@
     "S18-SEC-INTEGRATE-003": {
       "branch": "feature/s18-sec-integrate-003",
       "artifacts": [
-        "core/crates/diycad_format/**",
-        "core/crates/io/**",
-        "core/crates/io_svg/**",
-        "core/crates/diagnostics/**",
-        "tools/migrate/**",
+        "core/crates/diycad_format",
+        "core/crates/io",
+        "core/crates/io_svg",
+        "core/crates/diagnostics",
+        "tools/migrate",
         "tests/security/integration_limits.rs",
         "tests/e2e/support_zip_is_safe.rs",
         "docs/verification/S18-SEC-INTEGRATE-003.md"
@@ -32,7 +32,7 @@
     "S18-SEC-CORE-002": {
       "branch": "feature/s18-sec-core-002",
       "artifacts": [
-        "core/crates/security/**",
+        "core/crates/security",
         "docs/verification/S18-SEC-CORE-002.md"
       ],
       "verification": "docs/verification/S18-SEC-CORE-002.md"
@@ -46,7 +46,8 @@
         "history": [],
         "preflight": [],
         "tests": []
-      }
+      },
+      "verification": "docs/verification/S12-IO-SSOT-001.md"
     },
     "S12-IO-SVG-002": {
       "branch": "feature/s12-io-svg-002-001",
@@ -57,7 +58,8 @@
         "history": [],
         "preflight": [],
         "tests": []
-      }
+      },
+      "verification": "docs/verification/S12-IO-SVG-002.md"
     },
     "S12-IO-DXF-003": {
       "branch": "feature/s12-io-dxf-003-001",
@@ -68,7 +70,8 @@
         "history": [],
         "preflight": [],
         "tests": []
-      }
+      },
+      "verification": "docs/verification/S12-IO-DXF-003.md"
     },
     "S12-IO-BRIDGE-004": {
       "branch": "feature/s12-io-bridge-004-001",
@@ -79,7 +82,8 @@
         "history": [],
         "preflight": [],
         "tests": []
-      }
+      },
+      "verification": "docs/verification/S12-IO-BRIDGE-004.md"
     },
     "S12-IO-COMPAT-005": {
       "branch": "feature/s12-io-compat-005-001",
@@ -90,15 +94,16 @@
         "history": [],
         "preflight": [],
         "tests": []
-      }
+      },
+      "verification": "docs/verification/S12-IO-COMPAT-005.md"
     },
     "S13-PRESETS-SSOT-LINT-001": {
       "branch": "feature/s13-presets-ssot-lint-001",
       "artifacts": [
-        "docs/specs/presets/*",
-        "docs/specs/templates/*",
-        "docs/specs/library/*",
-        "docs/specs/determinism/*"
+        "docs/specs/presets",
+        "docs/specs/templates",
+        "docs/specs/library",
+        "docs/specs/determinism"
       ],
       "verification": "docs/verification/S13-PRESETS-SSOT-LINT-001.md",
       "evidence": {
@@ -109,7 +114,7 @@
     "S13-WIZARDS-ENGINE-004": {
       "branch": "feature/s13-wizards-engine-004",
       "artifacts": [
-        "core/crates/wizards/**"
+        "core/crates/wizards"
       ],
       "verification": "docs/verification/S13-WIZARDS-ENGINE-004.md",
       "evidence": {
@@ -120,7 +125,7 @@
     "S13-LIBRARY-CRATE-003": {
       "branch": "feature/s13-library-crate-003",
       "artifacts": [
-        "core/crates/library/**"
+        "core/crates/library"
       ],
       "verification": "docs/verification/S13-LIBRARY-CRATE-003.md",
       "evidence": {
@@ -131,8 +136,8 @@
     "S13-WIZARDS-IMPL-005": {
       "branch": "feature/s13-wizards-impl-005",
       "artifacts": [
-        "core/crates/wizards/**",
-        "tests/golden/wizards/**"
+        "core/crates/wizards",
+        "tests/golden/wizards"
       ],
       "verification": "docs/verification/S13-WIZARDS-IMPL-005.md",
       "evidence": {
@@ -144,8 +149,8 @@
       "branch": "feature/s13-diycad-assets-integration-006",
       "artifacts": [
         "docs/specs/schema/diycad/document.schema.json",
-        "core/serialize/**",
-        "core/crates/presets/**",
+        "core/serialize",
+        "core/crates/presets",
         "core/crates/wizards/src/run_record.rs",
         "tests/compat/diycad_document_migration.rs",
         "tests/golden/diycad_document_v1.json"
@@ -174,8 +179,8 @@
     "SPRINT14-STEP1": {
       "branch": "feature/sprint14-step1-001",
       "artifacts": [
-        "docs/specs/schema/diycad/*",
-        "core/crates/ssot_lint/**",
+        "docs/specs/schema/diycad",
+        "core/crates/ssot_lint",
         "scripts/ci/run_all.sh",
         "docs/verification/SPRINT14-STEP1.md"
       ],
@@ -188,7 +193,7 @@
     "SPRINT14-STEP2": {
       "branch": "feature/sprint14-step2-001",
       "artifacts": [
-        "core/crates/diycad_format/**",
+        "core/crates/diycad_format",
         "scripts/ci/run_all.sh",
         "docs/verification/SPRINT14-STEP2.md"
       ],
@@ -201,8 +206,8 @@
     "SPRINT14-STEP4": {
       "branch": "feature/sprint14-step4-001",
       "artifacts": [
-        "core/crates/migration/**",
-        "core/crates/diycad_format/**",
+        "core/crates/migration",
+        "core/crates/diycad_format",
         "tools/migrate/Cargo.toml",
         "scripts/ci/run_all.sh",
         "docs/verification/SPRINT14-STEP4.md"
@@ -216,7 +221,7 @@
     "SPRINT14-STEP5": {
       "branch": "feature/sprint14-step5-001",
       "artifacts": [
-        "core/crates/recovery/**",
+        "core/crates/recovery",
         "tests/e2e/project_crash_recovery.rs",
         "scripts/ci/run_all.sh",
         "docs/verification/SPRINT14-STEP5.md"
@@ -230,7 +235,7 @@
     "SPRINT14-STEP6": {
       "branch": "feature/sprint14-step6-001",
       "artifacts": [
-        "tools/migrate/**",
+        "tools/migrate",
         "scripts/ci/run_all.sh",
         "docs/verification/SPRINT14-STEP6.md"
       ],
@@ -257,7 +262,8 @@
         "tests/golden/io_roundtrip/expected/compat/compat_report.json",
         "docs/verification/SPRINT14-STEP7.md"
       ],
-      "verification_evidence": "docs/verification/SPRINT14-STEP7.md"
+      "verification_evidence": "docs/verification/SPRINT14-STEP7.md",
+      "verification": "docs/verification/SPRINT14-STEP7.md"
     },
     "SPRINT14-STEP8": {
       "branch": "feature/sprint14-step8-001",
@@ -288,7 +294,7 @@
     "S15-STEP2": {
       "branch": "feature/s15-step2-001",
       "artifacts": [
-        "failure_artifacts/<dataset_id>"
+        "docs/verification/S15-STEP2.md"
       ],
       "verification": "docs/verification/S15-STEP2.md"
     },
@@ -296,8 +302,8 @@
       "branch": "feature/s15-step3-001",
       "artifacts": [
         "tests/datasets/manifest.json",
-        "tests/golden/inputs/**",
-        "tests/golden/expected/**",
+        "tests/golden/inputs",
+        "tests/golden/expected",
         "tests/golden/README.md",
         "core/tests/golden_datasets.rs",
         "scripts/testing/run_golden.sh",
@@ -308,7 +314,7 @@
     "S15-STEP4": {
       "branch": "feature/s15-step4-001",
       "artifacts": [
-        "tests/compat/**",
+        "tests/compat",
         "core/src/testing/compat_harness.rs",
         "core/tests/compat_projects_read.rs",
         "core/tests/compat_presets_read.rs",
@@ -509,7 +515,7 @@
     "S17-DIAG-GATES-006": {
       "branch": "feature/s17-diag-gates-006",
       "artifacts": [
-        "tests/golden/diagnostics/*",
+        "tests/golden/diagnostics",
         "tests/golden/diagnostics_golden.rs",
         "tests/e2e/diagnostics_support_zip.rs",
         "core/crates/diagnostics/tests/determinism_10x.rs",
@@ -756,8 +762,8 @@
         "docs/specs/product/contracts/reason-codes.md",
         "docs/specs/product/contracts/jobs.md",
         "core/Cargo.toml",
-        "core/crates/craftcad_screw_lite/**",
-        "core/crates/craftcad_rules_engine/**",
+        "core/crates/craftcad_screw_lite",
+        "core/crates/craftcad_rules_engine",
         "core/ffi_desktop/Cargo.toml",
         "core/ffi_desktop/include/craftcad_desktop_ffi.h",
         "core/ffi_desktop/src/lib.rs",
@@ -778,7 +784,7 @@
         "docs/specs/product/contracts/master-model.md",
         "docs/specs/product/contracts/reason-codes.md",
         "core/Cargo.toml",
-        "core/crates/craftcad_mfg_hints_lite/**",
+        "core/crates/craftcad_mfg_hints_lite",
         "core/ffi_desktop/Cargo.toml",
         "core/ffi_desktop/include/craftcad_desktop_ffi.h",
         "core/ffi_desktop/src/lib.rs",
@@ -788,7 +794,7 @@
         "scripts/ci/run_all.sh",
         "docs/specs/system/ffi_contract.md",
         "docs/verification/G8-STEP1-MFG-HINTS-001.md",
-        "tests/**"
+        "tests"
       ],
       "verification": "docs/verification/G8-STEP1-MFG-HINTS-001.md"
     },
@@ -798,15 +804,15 @@
         "docs/specs/product/contracts/derived-artifacts.md",
         "docs/specs/product/contracts/master-model.md",
         "core/Cargo.toml",
-        "core/crates/craftcad_viewpack/**",
-        "core/crates/craftcad_viewpack_inspect/**",
+        "core/crates/craftcad_viewpack",
+        "core/crates/craftcad_viewpack_inspect",
         "core/crates/diycad_project/Cargo.toml",
         "core/crates/diycad_project/src/lib.rs",
         "core/crates/diycad_ffi/src/lib.rs",
         "apps/mobile/README.md",
         "scripts/ci/run_all.sh",
         "docs/verification/G9-STEP1-VIEWPACK-MIN-001.md",
-        "tests/**"
+        "tests"
       ],
       "verification": "docs/verification/G9-STEP1-VIEWPACK-MIN-001.md"
     },
@@ -818,8 +824,8 @@
         "docs/specs/determinism/wizard_policy.md",
         "core/Cargo.toml",
         "core/crates/craftcad_mfg_hints_lite/src/lib.rs",
-        "core/crates/craftcad_determinism_harness/**",
-        "tests/**",
+        "core/crates/craftcad_determinism_harness",
+        "tests",
         "scripts/ci/run_all.sh",
         "docs/verification/G10-STEP1-DETERMINISM-HARNESS-001.md"
       ],
@@ -885,6 +891,56 @@
       "evidence": {
         "head_sha": "see docs/verification/G1-STEP5-CI-ARTIFACTS-001.md",
         "tests": "bash -n scripts/ci/run_all.sh; bash -n scripts/ci/collect_artifacts.sh; python3 -m py_compile scripts/ci/artifacts_index.py scripts/ci/validate_smoke_json.py; ./scripts/ci/run_all.sh; python -m json.tool build/ci_artifacts/index.json; python -m json.tool docs/status/trace-index.json"
+      }
+    },
+    "S16-JOBS-QUEUE-003": {
+      "branch": "feature/s16-jobs-queue-003-001",
+      "artifacts": [
+        "docs/verification/S16-JOBS-QUEUE-003.md"
+      ],
+      "verification": "docs/verification/S16-JOBS-QUEUE-003.md"
+    },
+    "S19-B20-PR1": {
+      "branch": "feature/s19-b20-pr1-001",
+      "artifacts": [
+        "docs/verification/S19-B20-PR1.md"
+      ],
+      "verification": "docs/verification/S19-B20-PR1.md"
+    },
+    "S19-B20-PR3": {
+      "branch": "feature/s19-b20-pr3-001",
+      "artifacts": [
+        "docs/verification/S19-B20-PR3.md"
+      ],
+      "verification": "docs/verification/S19-B20-PR3.md"
+    },
+    "S19-B20-PR4": {
+      "branch": "feature/s19-b20-pr4-001",
+      "artifacts": [
+        "docs/verification/S19-B20-PR4.md"
+      ],
+      "verification": "docs/verification/S19-B20-PR4.md"
+    },
+    "S20-STEP4": {
+      "branch": "feature/s20-step4-001",
+      "artifacts": [
+        "docs/verification/S20-STEP4.md"
+      ],
+      "verification": "docs/verification/S20-STEP4.md"
+    },
+    "G1-6-TRACE-VERIFICATION-ALIGN-001": {
+      "branch": "feature/g1-6-trace-verification-align-001",
+      "artifacts": [
+        "docs/status/trace-index.json",
+        "docs/status/trace-contract.md",
+        "scripts/ci/trace_index_check.py",
+        "scripts/ci/run_all.sh",
+        "docs/verification/G1-6-TRACE-VERIFICATION-ALIGN-001.md"
+      ],
+      "verification": "docs/verification/G1-6-TRACE-VERIFICATION-ALIGN-001.md",
+      "evidence": {
+        "head_sha": "see docs/verification/G1-6-TRACE-VERIFICATION-ALIGN-001.md",
+        "tests": "python -m json.tool docs/status/trace-index.json; python3 scripts/ci/trace_index_check.py; ./scripts/ci/run_all.sh"
       }
     }
   }

@@ -123,6 +123,8 @@ detect_qt6() {
   return 1
 }
 
+run_step trace_index_check "${ROOT_DIR}" python3 scripts/ci/trace_index_check.py
+
 # Sprint14 final PR-gate checklist (must stay aligned with docs/verification/SPRINT14-STEP8.md):
 # 1) ssot-lint (required files + schema hash)
 # 2) diycad_format tests: unit/determinism/limits/atomic-save/schema-compat + test_latest_2 hook
