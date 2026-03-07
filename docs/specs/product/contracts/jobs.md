@@ -53,6 +53,7 @@
   - optional diagnostic attachments (SupportZip integration; see ../diagnostics/)
 
 Preflight rules must run before export, nesting-confirm, and regen jobs that emit manufacturing outputs.
+Command palette executions are UX primitives for triggering jobs and must surface job results/errors via ReasonCode.
 If any preflight finding is `FATAL`, the job must fail with its `ReasonCode` and no output artifact is produced.
 
 ## Links

@@ -66,6 +66,10 @@ int craftcad_rules_edge_report(const char *project_path_utf8, char **out_json_pt
 void craftcad_rules_edge_free_json(char *ptr);
 int craftcad_export_preflight_check(const char *project_path_utf8);
 
+int craftcad_ssot_get_part(const char *project_path_utf8, const char *part_id_utf8, char **out_json_ptr, size_t *out_len);
+int craftcad_ssot_set_part_name(const char *project_path_utf8, const char *part_id_utf8, const char *new_name_utf8);
+int craftcad_ssot_set_part_quantity(const char *project_path_utf8, const char *part_id_utf8, uint32_t quantity_u32);
+
 uint64_t craftcad_history_new(void);
 void craftcad_history_free(uint64_t h);
 char *craftcad_history_apply_create_line(uint64_t h, const char *doc_json, const char *layer_id_uuid, const char *a_json, const char *b_json);

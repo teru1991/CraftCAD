@@ -824,6 +824,21 @@
         "docs/verification/G10-STEP1-DETERMINISM-HARNESS-001.md"
       ],
       "verification": "docs/verification/G10-STEP1-DETERMINISM-HARNESS-001.md"
+    },
+    "G11-STEP1-PALETTE-INSPECTOR-001": {
+      "branch": "feature/g11-step1-palette-inspector-001",
+      "artifacts": [
+        "docs/specs/product/feature-scope.md",
+        "docs/specs/product/contracts/jobs.md",
+        "core/ffi_desktop/src/lib.rs",
+        "core/ffi_desktop/include/craftcad_desktop_ffi.h",
+        "apps/desktop/src/ffi/craftcad_ffi.h",
+        "apps/desktop/src/main.cpp",
+        "scripts/ci/run_all.sh",
+        "tests/fixtures/inspector_smoke_expected.json",
+        "docs/verification/G11-STEP1-PALETTE-INSPECTOR-001.md"
+      ],
+      "verification": "docs/verification/G11-STEP1-PALETTE-INSPECTOR-001.md"
     }
   }
 }

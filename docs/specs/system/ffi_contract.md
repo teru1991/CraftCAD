@@ -56,5 +56,8 @@ Exported symbols (snapshot):
 - `craftcad_rules_edge_report`
 - `craftcad_rules_edge_free_json`
 - `craftcad_export_preflight_check`
+- `craftcad_ssot_get_part`
+- `craftcad_ssot_set_part_name`
+- `craftcad_ssot_set_part_quantity`
 
-ffi_symbols_sha256: `3a74a5de47372acf750c30a186d834d09fed79bb5177580c366b318abe743207`
+ffi_symbols_sha256: `e3029daa68357779cc320397b81544601ab3d2e20aec82b1ccf78d665281d9c0`

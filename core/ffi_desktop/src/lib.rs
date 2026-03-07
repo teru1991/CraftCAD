@@ -48,12 +48,12 @@ use craftcad_rules_engine::{
 use craftcad_serialize::{load_diycad, Document, Part, Reason, ReasonCode, Vec2};
 use diycad_geom::{intersect, project_point, split_at, EpsilonPolicy, Geom2D, SplitBy};
 use diycad_nesting::RunLimits;
-use diycad_project::load as load_project_file;
+use diycad_project::{load as load_project_file, save as save_project_file, DiycadProject};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::ffi::{c_char, CStr, CString};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
 use uuid::Uuid;
@@ -113,6 +113,9 @@ pub const EXPORTED_SYMBOLS: &[&str] = &[
     "craftcad_rules_edge_report",
     "craftcad_rules_edge_free_json",
     "craftcad_export_preflight_check",
+    "craftcad_ssot_get_part",
+    "craftcad_ssot_set_part_name",
+    "craftcad_ssot_set_part_quantity",
 ];
 
 fn reason_json(reason: &Reason) -> serde_json::Value {
@@ -1446,6 +1449,90 @@ fn run_edge_report_for_project(path: &Path) -> std::result::Result<RuleReport, S
     run_rules_edge_distance(&ssot, RuleConfig::default()).map_err(|e| e.to_string())
 }
 
+#[derive(Serialize)]
+struct PartMaterialJson {
+    material_id: Uuid,
+    name: String,
+    thickness_mm: Option<f64>,
+}
+
+#[derive(Serialize)]
+struct PartInfoJson {
+    part_id: Uuid,
+    name: String,
+    quantity: u32,
+    material: PartMaterialJson,
+}
+
+fn load_project_for_mutation(path: &Path) -> std::result::Result<DiycadProject, String> {
+    let project = load_project_file(path).map_err(|e| e.to_string())?;
+    if project.ssot_v1.is_none() {
+        return Err("SSOT_MISSING: project has no ssot_v1".to_string());
+    }
+    Ok(project)
+}
+
+fn save_project_atomic(path: &Path, project: &DiycadProject) -> std::result::Result<(), String> {
+    let file_name = path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .ok_or_else(|| "PROJECT_IO_FAILED: invalid project file name".to_string())?;
+    let mut tmp_path = PathBuf::from(path);
+    tmp_path.set_file_name(format!("{file_name}.tmp.diycad"));
+    save_project_file(&tmp_path, project).map_err(|e| e.to_string())?;
+    std::fs::rename(&tmp_path, path).map_err(|e| e.to_string())
+}
+
+fn validate_part_name(new_name: &str) -> std::result::Result<(), String> {
+    let trimmed = new_name.trim();
+    if trimmed.is_empty() {
+        return Err("PART_INVALID_FIELDS: part name must be non-empty".to_string());
+    }
+    if trimmed.chars().count() > 128 {
+        return Err("PART_INVALID_FIELDS: part name length must be <= 128".to_string());
+    }
+    Ok(())
+}
+
+fn validate_part_quantity(quantity: u32) -> std::result::Result<(), String> {
+    if !(1..=1_000_000).contains(&quantity) {
+        return Err("PART_INVALID_FIELDS: quantity must be between 1 and 1000000".to_string());
+    }
+    Ok(())
+}
+
+fn part_info_json(
+    ssot: &craftcad_ssot::SsotV1,
+    part_id: Uuid,
+) -> std::result::Result<String, String> {
+    let part = ssot
+        .parts
+        .iter()
+        .find(|p| p.part_id == part_id)
+        .ok_or_else(|| format!("MODEL_REFERENCE_NOT_FOUND: part_id {part_id} not found"))?;
+    let material = ssot
+        .materials
+        .iter()
+        .find(|m| m.material_id == part.material_id)
+        .ok_or_else(|| {
+            format!(
+                "MODEL_REFERENCE_NOT_FOUND: material_id {} not found",
+                part.material_id
+            )
+        })?;
+    serde_json::to_string(&PartInfoJson {
+        part_id: part.part_id,
+        name: part.name.clone(),
+        quantity: part.quantity,
+        material: PartMaterialJson {
+            material_id: material.material_id,
+            name: material.name.clone(),
+            thickness_mm: material.thickness_mm,
+        },
+    })
+    .map_err(|e| e.to_string())
+}
+
 fn c_string_and_len(s: String) -> std::result::Result<(*mut c_char, usize), String> {
     let len = s.len();
     CString::new(s)
@@ -1800,6 +1887,193 @@ pub unsafe extern "C" fn craftcad_export_preflight_check(project_path_utf8: *con
         }
     }
 }
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_ssot_get_part(
+    project_path_utf8: *const c_char,
+    part_id_utf8: *const c_char,
+    out_json_ptr: *mut *mut c_char,
+    out_len: *mut usize,
+) -> i32 {
+    if project_path_utf8.is_null()
+        || part_id_utf8.is_null()
+        || out_json_ptr.is_null()
+        || out_len.is_null()
+    {
+        set_last_error("null pointer input");
+        return 1;
+    }
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+    let part_id = match parse_cstr(part_id_utf8, "part_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 3;
+        }
+    };
+    let ssot = match load_ssot_for_project(Path::new(&path)) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 4;
+        }
+    };
+    let payload = match part_info_json(&ssot, part_id) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 5;
+        }
+    };
+    match c_string_and_len(payload) {
+        Ok((ptr, len)) => {
+            *out_json_ptr = ptr;
+            *out_len = len;
+            set_last_error("");
+            0
+        }
+        Err(e) => {
+            set_last_error(e);
+            6
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_ssot_set_part_name(
+    project_path_utf8: *const c_char,
+    part_id_utf8: *const c_char,
+    new_name_utf8: *const c_char,
+) -> i32 {
+    if project_path_utf8.is_null() || part_id_utf8.is_null() || new_name_utf8.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+    let part_id = match parse_cstr(part_id_utf8, "part_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 3;
+        }
+    };
+    let new_name = match parse_cstr(new_name_utf8, "new_name") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 4;
+        }
+    };
+    if let Err(e) = validate_part_name(&new_name) {
+        set_last_error(e);
+        return 5;
+    }
+
+    let path_ref = Path::new(&path);
+    let mut project = match load_project_for_mutation(path_ref) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 6;
+        }
+    };
+    let ssot = project.ssot_v1.as_mut().expect("ssot checked");
+    let Some(part) = ssot.parts.iter_mut().find(|p| p.part_id == part_id) else {
+        set_last_error(format!(
+            "MODEL_REFERENCE_NOT_FOUND: part_id {part_id} not found"
+        ));
+        return 7;
+    };
+    part.name = new_name.trim().to_string();
+    *ssot = ssot.clone().canonicalize();
+
+    match save_project_atomic(path_ref, &project) {
+        Ok(()) => {
+            set_last_error("");
+            0
+        }
+        Err(e) => {
+            set_last_error(format!("PROJECT_IO_FAILED: {e}"));
+            8
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn craftcad_ssot_set_part_quantity(
+    project_path_utf8: *const c_char,
+    part_id_utf8: *const c_char,
+    quantity_u32: u32,
+) -> i32 {
+    if project_path_utf8.is_null() || part_id_utf8.is_null() {
+        set_last_error("null pointer input");
+        return 1;
+    }
+    let path = match parse_cstr(project_path_utf8, "project_path") {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 2;
+        }
+    };
+    let part_id = match parse_cstr(part_id_utf8, "part_id").and_then(|s| {
+        Uuid::parse_str(&s).map_err(|_| Reason::from_code(ReasonCode::ModelReferenceNotFound))
+    }) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e.code);
+            return 3;
+        }
+    };
+    if let Err(e) = validate_part_quantity(quantity_u32) {
+        set_last_error(e);
+        return 4;
+    }
+
+    let path_ref = Path::new(&path);
+    let mut project = match load_project_for_mutation(path_ref) {
+        Ok(v) => v,
+        Err(e) => {
+            set_last_error(e);
+            return 5;
+        }
+    };
+    let ssot = project.ssot_v1.as_mut().expect("ssot checked");
+    let Some(part) = ssot.parts.iter_mut().find(|p| p.part_id == part_id) else {
+        set_last_error(format!(
+            "MODEL_REFERENCE_NOT_FOUND: part_id {part_id} not found"
+        ));
+        return 6;
+    };
+    part.quantity = quantity_u32;
+    *ssot = ssot.clone().canonicalize();
+
+    match save_project_atomic(path_ref, &project) {
+        Ok(()) => {
+            set_last_error("");
+            0
+        }
+        Err(e) => {
+            set_last_error(format!("PROJECT_IO_FAILED: {e}"));
+            7
+        }
+    }
+}
 
 #[cfg(test)]
 mod view3d_tests {
@@ -1906,5 +2180,62 @@ mod view3d_tests {
         let h1 = estimate_hash_hex(&compute_estimate_lite(&ssot));
         let h2 = estimate_hash_hex(&compute_estimate_lite(&ssot));
         assert_eq!(h1, h2);
+    }
+
+    #[test]
+    fn part_name_validation_boundaries() {
+        assert!(validate_part_name("name").is_ok());
+        assert!(validate_part_name(" ").is_err());
+        assert!(validate_part_name(&"x".repeat(129)).is_err());
+    }
+
+    #[test]
+    fn part_quantity_validation_boundaries() {
+        assert!(validate_part_quantity(1).is_ok());
+        assert!(validate_part_quantity(1_000_000).is_ok());
+        assert!(validate_part_quantity(0).is_err());
+    }
+
+    #[test]
+    fn set_part_mutations_persist_to_disk() {
+        let mut project =
+            diycad_project::create_empty_project("test", "mm", "2026-01-01T00:00:00Z");
+        let mut ssot = sample_ssot();
+        let target_part = ssot.parts[0].part_id;
+        ssot.parts[0].name = "before".to_string();
+        ssot.parts[0].quantity = 1;
+        project.ssot_v1 = Some(ssot);
+
+        let tmp_dir = std::env::temp_dir().join(format!("craftcad_ffi_desktop_{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&tmp_dir).unwrap();
+        let project_path = tmp_dir.join("fixture.diycad");
+        save_project_file(&project_path, &project).unwrap();
+
+        let path_c = CString::new(project_path.to_string_lossy().as_bytes()).unwrap();
+        let part_c = CString::new(target_part.to_string()).unwrap();
+        let name_c = CString::new("smoke_name").unwrap();
+
+        let rc_name = unsafe {
+            craftcad_ssot_set_part_name(path_c.as_ptr(), part_c.as_ptr(), name_c.as_ptr())
+        };
+        assert_eq!(rc_name, 0, "{}", get_last_error());
+
+        let rc_qty =
+            unsafe { craftcad_ssot_set_part_quantity(path_c.as_ptr(), part_c.as_ptr(), 2) };
+        assert_eq!(rc_qty, 0, "{}", get_last_error());
+
+        let reloaded = load_project_file(&project_path).unwrap();
+        let part = reloaded
+            .ssot_v1
+            .unwrap()
+            .parts
+            .into_iter()
+            .find(|p| p.part_id == target_part)
+            .unwrap();
+        assert_eq!(part.name, "smoke_name");
+        assert_eq!(part.quantity, 2);
+
+        let _ = std::fs::remove_file(&project_path);
+        let _ = std::fs::remove_dir_all(&tmp_dir);
     }
 }
