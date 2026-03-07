@@ -1,10 +1,16 @@
-use craftcad_estimate_lite::{compute_estimate_lite, estimate_hash_hex};
-use craftcad_mfg_hints_lite::{compute_fastener_bom_with_hints_lite, fastener_bom_hash_hex};
-use craftcad_projection_lite::{project_to_sheet_lite, sheet_hash_hex, Aabb, PartBox, ViewLite};
+use craftcad_estimate_lite::{compute_estimate_lite, estimate_hash_hex, EstimateLiteV1};
+use craftcad_mfg_hints_lite::{
+    compute_fastener_bom_with_hints_lite, fastener_bom_hash_hex, hints_hash_hex, FastenerBomLiteV1,
+    ManufacturingHintsLiteV1,
+};
+use craftcad_projection_lite::{
+    project_to_sheet_lite, sheet_hash_hex, Aabb, PartBox, SheetLiteV1, ViewLite,
+};
 use craftcad_ssot::{
     deterministic_uuid, FeatureGraphV1, FeatureNodeV1, FeatureTargetV1, FeatureTypeV1,
     GrainPolicyV1, ManufacturingOutline2dV1, MaterialCategoryV1, MaterialV1, PartV1, SsotV1,
 };
+use craftcad_viewpack::{build_viewpack_from_ssot, ViewerPackV1};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -21,6 +27,8 @@ pub struct DeterminismSummary {
     pub projection: ProjectionHashes,
     pub estimate: String,
     pub fastener_bom: String,
+    pub mfg_hints_hash: String,
+    pub viewpack_hash: String,
     pub input_ssot_hash: String,
 }
 
@@ -29,12 +37,32 @@ pub struct RunHashes {
     pub projection: ProjectionHashes,
     pub estimate: String,
     pub fastener_bom: String,
+    pub mfg_hints_hash: String,
+    pub viewpack_hash: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct RunArtifacts {
+    pub projection_front: SheetLiteV1,
+    pub projection_top: SheetLiteV1,
+    pub projection_side: SheetLiteV1,
+    pub estimate: EstimateLiteV1,
+    pub fastener_bom: FastenerBomLiteV1,
+    pub mfg_hints: ManufacturingHintsLiteV1,
+    pub viewpack: ViewerPackV1,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CheckResult {
     pub summary: DeterminismSummary,
     pub runs: Vec<RunHashes>,
+    pub run_artifacts: Vec<RunArtifacts>,
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(bytes);
+    hex::encode(hasher.finalize())
 }
 
 fn to_projection_part_boxes(ssot: &SsotV1) -> Vec<PartBox> {
@@ -72,37 +100,65 @@ fn to_projection_part_boxes(ssot: &SsotV1) -> Vec<PartBox> {
 pub fn ssot_hash_hex(ssot: &SsotV1) -> String {
     let canonical = ssot.clone().canonicalize();
     let bytes = serde_json::to_vec(&canonical).expect("ssot canonical serialization must not fail");
-    let mut hasher = Sha256::new();
-    hasher.update(bytes);
-    hex::encode(hasher.finalize())
+    sha256_hex(&bytes)
 }
 
-fn compute_once(ssot: &SsotV1) -> Result<RunHashes, String> {
+fn compute_once(ssot: &SsotV1) -> Result<(RunHashes, RunArtifacts), String> {
     let boxes = to_projection_part_boxes(ssot);
-    let front = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Front, boxes.clone()));
-    let top = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Top, boxes.clone()));
-    let side = sheet_hash_hex(&project_to_sheet_lite(ViewLite::Side, boxes));
+    let projection_front = project_to_sheet_lite(ViewLite::Front, boxes.clone());
+    let projection_top = project_to_sheet_lite(ViewLite::Top, boxes.clone());
+    let projection_side = project_to_sheet_lite(ViewLite::Side, boxes);
 
-    let estimate = estimate_hash_hex(&compute_estimate_lite(ssot));
-
-    let fastener_bom = {
-        let bundle = compute_fastener_bom_with_hints_lite(ssot)
-            .map_err(|(code, msg)| format!("{code}: {msg}"))?;
-        fastener_bom_hash_hex(&bundle.fastener_bom)
+    let projection = ProjectionHashes {
+        front: sheet_hash_hex(&projection_front),
+        top: sheet_hash_hex(&projection_top),
+        side: sheet_hash_hex(&projection_side),
     };
 
-    Ok(RunHashes {
-        projection: ProjectionHashes { front, top, side },
-        estimate,
-        fastener_bom,
-    })
+    let estimate = compute_estimate_lite(ssot);
+    let estimate_hash = estimate_hash_hex(&estimate);
+
+    let fastener_bundle = compute_fastener_bom_with_hints_lite(ssot)
+        .map_err(|(code, msg)| format!("{code}: {msg}"))?;
+    let fastener_bom_hash = fastener_bom_hash_hex(&fastener_bundle.fastener_bom);
+    let mfg_hints_hash = hints_hash_hex(&fastener_bundle.mfg_hints);
+
+    let viewpack =
+        build_viewpack_from_ssot(ssot).map_err(|(code, msg)| format!("{code}: {msg}"))?;
+    let viewpack_hash = {
+        let bytes =
+            serde_json::to_vec(&viewpack).map_err(|e| format!("VIEWPACK_SERIALIZE_FAILED: {e}"))?;
+        sha256_hex(&bytes)
+    };
+
+    Ok((
+        RunHashes {
+            projection,
+            estimate: estimate_hash,
+            fastener_bom: fastener_bom_hash,
+            mfg_hints_hash,
+            viewpack_hash,
+        },
+        RunArtifacts {
+            projection_front,
+            projection_top,
+            projection_side,
+            estimate,
+            fastener_bom: fastener_bundle.fastener_bom,
+            mfg_hints: fastener_bundle.mfg_hints,
+            viewpack,
+        },
+    ))
 }
 
 pub fn run_check(ssot: &SsotV1, n_runs: usize) -> Result<CheckResult, String> {
     let n_runs = n_runs.max(1);
     let mut runs = Vec::with_capacity(n_runs);
+    let mut run_artifacts = Vec::with_capacity(n_runs);
     for _ in 0..n_runs {
-        runs.push(compute_once(ssot)?);
+        let (hashes, artifacts) = compute_once(ssot)?;
+        runs.push(hashes);
+        run_artifacts.push(artifacts);
     }
 
     let first = runs[0].clone();
@@ -114,9 +170,12 @@ pub fn run_check(ssot: &SsotV1, n_runs: usize) -> Result<CheckResult, String> {
             projection: first.projection,
             estimate: first.estimate,
             fastener_bom: first.fastener_bom,
+            mfg_hints_hash: first.mfg_hints_hash,
+            viewpack_hash: first.viewpack_hash,
             input_ssot_hash: ssot_hash_hex(ssot),
         },
         runs,
+        run_artifacts,
     })
 }
 
@@ -214,6 +273,8 @@ mod tests {
         assert_eq!(result.runs.len(), 3);
         assert_eq!(result.runs[0], result.runs[1]);
         assert_eq!(result.runs[1], result.runs[2]);
+        assert!(!result.summary.mfg_hints_hash.is_empty());
+        assert!(!result.summary.viewpack_hash.is_empty());
     }
 
     #[test]
@@ -228,8 +289,9 @@ mod tests {
         assert_eq!(ra.summary.projection, rb.summary.projection);
         assert_eq!(ra.summary.estimate, rb.summary.estimate);
         assert_eq!(ra.summary.fastener_bom, rb.summary.fastener_bom);
+        assert_eq!(ra.summary.mfg_hints_hash, rb.summary.mfg_hints_hash);
+        assert_eq!(ra.summary.viewpack_hash, rb.summary.viewpack_hash);
 
-        // keep variable mutable usage explicit to avoid accidental lint changes
         a.parts.sort_by_key(|p| p.part_id);
         assert_eq!(a.parts.len(), b.parts.len());
     }

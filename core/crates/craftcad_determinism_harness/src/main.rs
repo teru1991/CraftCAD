@@ -52,6 +52,46 @@ fn write_repro_bundle(ssot: &craftcad_ssot::SsotV1, result: &CheckResult) -> Opt
     let hashes_json = serde_json::to_vec_pretty(&result.runs).ok()?;
     fs::write(dir.join("hashes.json"), hashes_json).ok()?;
 
+    for (idx, artifacts) in result.run_artifacts.iter().enumerate() {
+        let run_dir = dir.join(format!("run_{}", idx + 1));
+        fs::create_dir_all(&run_dir).ok()?;
+        fs::write(
+            run_dir.join("projection_front.json"),
+            serde_json::to_vec_pretty(&artifacts.projection_front).ok()?,
+        )
+        .ok()?;
+        fs::write(
+            run_dir.join("projection_top.json"),
+            serde_json::to_vec_pretty(&artifacts.projection_top).ok()?,
+        )
+        .ok()?;
+        fs::write(
+            run_dir.join("projection_side.json"),
+            serde_json::to_vec_pretty(&artifacts.projection_side).ok()?,
+        )
+        .ok()?;
+        fs::write(
+            run_dir.join("estimate_lite.json"),
+            serde_json::to_vec_pretty(&artifacts.estimate).ok()?,
+        )
+        .ok()?;
+        fs::write(
+            run_dir.join("fastener_bom_lite.json"),
+            serde_json::to_vec_pretty(&artifacts.fastener_bom).ok()?,
+        )
+        .ok()?;
+        fs::write(
+            run_dir.join("mfg_hints_lite.json"),
+            serde_json::to_vec_pretty(&artifacts.mfg_hints).ok()?,
+        )
+        .ok()?;
+        fs::write(
+            run_dir.join("viewpack_v1.json"),
+            serde_json::to_vec_pretty(&artifacts.viewpack).ok()?,
+        )
+        .ok()?;
+    }
+
     let env_text = format!("{}\ngit_sha={}\n", rustc_version(), git_sha());
     fs::write(dir.join("environment.txt"), env_text).ok()?;
     Some(dir)

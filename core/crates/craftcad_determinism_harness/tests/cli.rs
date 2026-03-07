@@ -14,5 +14,7 @@ fn cli_outputs_ok_json_summary() {
     assert!(v.get("projection").is_some());
     assert!(v.get("estimate").and_then(Value::as_str).is_some());
     assert!(v.get("fastener_bom").and_then(Value::as_str).is_some());
+    assert!(v.get("mfg_hints_hash").and_then(Value::as_str).is_some());
+    assert!(v.get("viewpack_hash").and_then(Value::as_str).is_some());
     assert!(v.get("input_ssot_hash").and_then(Value::as_str).is_some());
 }

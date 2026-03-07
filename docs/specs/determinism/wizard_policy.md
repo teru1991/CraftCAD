@@ -9,3 +9,5 @@
 - “同入力→同出力” をテストで担保（Step7で追加）
 
 - CI determinism harness (lite artifacts): see `core/crates/craftcad_determinism_harness` and `docs/specs/product/contracts/jobs.md` (`JOB_DETERMINISM_CHECK`).
+
+- G10-2 coverage extension: determinism harness also validates `mfg_hints_lite` and `viewpack_v1` hashes and stores mismatch bundles in `build/determinism_failures/<run_id>/`.
